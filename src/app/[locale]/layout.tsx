@@ -5,6 +5,8 @@ import { setRequestLocale, getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Toaster } from "sonner";
 import { routing } from "@/i18n/routing";
+import { Providers } from "@/components/providers";
+import { Analytics } from "@/components/analytics";
 import "../globals.css";
 
 const sans = Inter({
@@ -62,8 +64,11 @@ export default async function LocaleLayout({
     >
       <body className="min-h-screen bg-paper text-ink antialiased">
         <NextIntlClientProvider messages={messages} locale={locale}>
-          {children}
-          <Toaster position="bottom-right" richColors />
+          <Providers>
+            {children}
+            <Toaster position="bottom-right" richColors />
+            <Analytics />
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

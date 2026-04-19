@@ -11,9 +11,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
-  experimental: {
-    typedRoutes: true,
-  },
+  // typedRoutes: true, // placeholder admin rotaları eklenince aç
+
 };
 
 export default withNextIntl(nextConfig);

@@ -2,6 +2,7 @@ import { Header } from "@/components/shop/header";
 import { Footer } from "@/components/shop/footer";
 import { CartDrawer } from "@/components/shop/cart-drawer";
 import { SmoothScroll } from "@/components/shop/smooth-scroll";
+import { CookieBanner } from "@/components/shop/cookie-banner";
 import { setRequestLocale } from "next-intl/server";
 
 export default async function ShopLayout({
@@ -21,6 +22,7 @@ export default async function ShopLayout({
       <main>{children}</main>
       <Footer />
       <CartDrawer locale={locale as "tr" | "en"} />
+      <CookieBanner />
     </>
   );
 }

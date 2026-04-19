@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Toaster } from "sonner";
 import { auth } from "@/lib/auth";
 import {
   Box,
@@ -55,14 +55,14 @@ export default async function AdminLayout({
         </div>
         <nav className="flex flex-col gap-1 p-3">
           {NAV.map((item) => (
-            <Link
+            <a
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 rounded px-3 py-2 text-sm text-mist transition-colors hover:bg-bone hover:text-ink"
             >
               <item.icon className="size-4" />
               {item.label}
-            </Link>
+            </a>
           ))}
         </nav>
         <div className="absolute inset-x-3 bottom-4 border-t border-line pt-4">
@@ -73,6 +73,7 @@ export default async function AdminLayout({
         </div>
       </aside>
       <main className="ml-60 flex-1 p-10">{children}</main>
+      <Toaster position="bottom-right" richColors />
     </div>
   );
 }
