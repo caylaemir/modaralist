@@ -1,0 +1,94 @@
+{
+  "Nav": {
+    "shop": "Shop",
+    "drops": "Drops",
+    "about": "About",
+    "contact": "Contact",
+    "account": "Account",
+    "cart": "Cart",
+    "search": "Search"
+  },
+  "Home": {
+    "heroHeadline": "make yourself comfortable",
+    "heroSubline": "trust your body and feel free",
+    "shopAll": "Shop All",
+    "lineupTitle": "THE BIGGEST LINEUP IN TOWN",
+    "featuredCollection": "Featured Collection",
+    "viewCollection": "View Collection",
+    "newsletterTitle": "enter the inner list",
+    "newsletterSubtitle": "subscribe for early access",
+    "newsletterEmail": "Your email",
+    "newsletterSubmit": "Subscribe"
+  },
+  "Product": {
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "soldOut": "Sold Out",
+    "comingSoon": "Coming Soon",
+    "notifyMe": "Notify Me",
+    "selectSize": "Select size",
+    "selectColor": "Select color",
+    "sizeGuide": "Size Guide",
+    "description": "Description",
+    "material": "Material",
+    "shipping": "Shipping & Returns",
+    "relatedProducts": "Related Products",
+    "price": "Price",
+    "save": "Save"
+  },
+  "Cart": {
+    "title": "Your Cart",
+    "empty": "Oops, your cart is empty.",
+    "emptyDescription": "Time to refill it with silhouettes that hit different.",
+    "goToShop": "Go to Shop",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "quantity": "Quantity"
+  },
+  "Checkout": {
+    "title": "Checkout",
+    "contact": "Contact",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "sameAsShipping": "Same as shipping address",
+    "paymentMethod": "Payment Method",
+    "placeOrder": "Place Order",
+    "orderSummary": "Order Summary"
+  },
+  "Account": {
+    "myOrders": "My Orders",
+    "myAddresses": "My Addresses",
+    "wishlist": "Wishlist",
+    "profile": "Profile",
+    "logout": "Log Out",
+    "login": "Log In",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?"
+  },
+  "Footer": {
+    "drops": "Drops",
+    "information": "Information",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "returns": "Returns & Exchanges",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "kvkk": "Data Protection",
+    "followUs": "Follow Us"
+  },
+  "Common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "tryAgain": "Try Again",
+    "close": "Close",
+    "back": "Back",
+    "continue": "Continue",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}

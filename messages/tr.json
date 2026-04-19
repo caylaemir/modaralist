@@ -1,0 +1,94 @@
+{
+  "Nav": {
+    "shop": "Mağaza",
+    "drops": "Koleksiyonlar",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "account": "Hesabım",
+    "cart": "Sepet",
+    "search": "Ara"
+  },
+  "Home": {
+    "heroHeadline": "kendini rahat hisset",
+    "heroSubline": "bedenine güven, özgürce hareket et",
+    "shopAll": "Tümünü Gör",
+    "lineupTitle": "SEZONUN EN GENİŞ SEÇKİSİ",
+    "featuredCollection": "Öne Çıkan Koleksiyon",
+    "viewCollection": "Koleksiyonu Gör",
+    "newsletterTitle": "içerideki listeye katıl",
+    "newsletterSubtitle": "erken erişim için abone ol",
+    "newsletterEmail": "E-posta adresin",
+    "newsletterSubmit": "Abone Ol"
+  },
+  "Product": {
+    "addToCart": "Sepete Ekle",
+    "outOfStock": "Stokta Yok",
+    "soldOut": "Tükendi",
+    "comingSoon": "Çok Yakında",
+    "notifyMe": "Haberdar Et",
+    "selectSize": "Beden seç",
+    "selectColor": "Renk seç",
+    "sizeGuide": "Beden Tablosu",
+    "description": "Açıklama",
+    "material": "Materyal",
+    "shipping": "Kargo ve İade",
+    "relatedProducts": "İlgili Ürünler",
+    "price": "Fiyat",
+    "save": "İndirim"
+  },
+  "Cart": {
+    "title": "Sepetin",
+    "empty": "Sepetin şu an bomboş.",
+    "emptyDescription": "Seni bekleyen siluetlerle buluş.",
+    "goToShop": "Alışverişe Başla",
+    "subtotal": "Ara Toplam",
+    "shipping": "Kargo",
+    "total": "Toplam",
+    "checkout": "Ödemeye Geç",
+    "remove": "Kaldır",
+    "quantity": "Adet"
+  },
+  "Checkout": {
+    "title": "Ödeme",
+    "contact": "İletişim",
+    "shippingAddress": "Teslimat Adresi",
+    "billingAddress": "Fatura Adresi",
+    "sameAsShipping": "Teslimat adresiyle aynı",
+    "paymentMethod": "Ödeme Yöntemi",
+    "placeOrder": "Siparişi Tamamla",
+    "orderSummary": "Sipariş Özeti"
+  },
+  "Account": {
+    "myOrders": "Siparişlerim",
+    "myAddresses": "Adreslerim",
+    "wishlist": "Favorilerim",
+    "profile": "Profilim",
+    "logout": "Çıkış Yap",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre",
+    "forgotPassword": "Şifremi unuttum"
+  },
+  "Footer": {
+    "drops": "Koleksiyonlar",
+    "information": "Bilgi",
+    "aboutUs": "Hakkımızda",
+    "contact": "İletişim",
+    "returns": "İade ve Değişim",
+    "privacy": "Gizlilik",
+    "terms": "Şartlar",
+    "kvkk": "KVKK",
+    "followUs": "Bizi Takip Et"
+  },
+  "Common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "tryAgain": "Tekrar Dene",
+    "close": "Kapat",
+    "back": "Geri",
+    "continue": "Devam Et",
+    "save": "Kaydet",
+    "cancel": "İptal"
+  }
+}

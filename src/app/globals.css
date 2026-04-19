@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #1a1a1a;
+  --color-paper: #ffffff;
+  --color-bone: #f5f2ed;
+  --color-sand: #efede8;
+  --color-mist: #8a8a8a;
+  --color-line: #e5e1db;
+  --color-accent: #0a0a0a;
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+
+  --tracking-wider-plus: 0.18em;
+  --tracking-widest-plus: 0.24em;
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: var(--tracking-widest-plus);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.display {
+  font-family: var(--font-display), var(--font-sans), serif;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+.caps-wide {
+  letter-spacing: var(--tracking-widest-plus);
+  text-transform: uppercase;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
