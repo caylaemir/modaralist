@@ -1,6 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (_resend) return _resend;
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  _resend = new Resend(key);
+  return _resend;
+}
 
 const FROM = process.env.EMAIL_FROM ?? "Modaralist <no-reply@modaralist.com>";
 
@@ -12,7 +19,8 @@ type SendArgs = {
 };
 
 export async function sendEmail({ to, subject, html, replyTo }: SendArgs) {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend();
+  if (!resend) {
     console.log("[email] RESEND_API_KEY yok, mail atlanıyor:", { to, subject });
     return { id: null };
   }
