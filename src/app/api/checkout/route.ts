@@ -123,6 +123,38 @@ export async function POST(req: NextRequest) {
     req.headers.get("x-real-ip") ??
     "127.0.0.1";
 
+  // Simülasyon modu — iyzico API key alınana kadar bu aktif.
+  // Canlıda gerçek iyzico'ya geçmek için PAYMENT_SIMULATION_MODE=false yap.
+  if (process.env.PAYMENT_SIMULATION_MODE === "true") {
+    await db.$transaction([
+      db.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: "CAPTURED",
+          status: "PAID",
+          history: {
+            create: {
+              fromStatus: "PENDING",
+              toStatus: "PAID",
+              note: "simülasyon modu — iyzico atlandı",
+            },
+          },
+        },
+      }),
+      db.payment.create({
+        data: {
+          orderId: order.id,
+          provider: "simulation",
+          providerTxnId: `SIM-${orderNumber}`,
+          amount: grandTotal,
+          status: "CAPTURED",
+          raw: { simulation: true, card: { last4: card.cardNumber.slice(-4) } },
+        },
+      }),
+    ]);
+    return NextResponse.json({ ok: true, orderNumber, simulation: true });
+  }
+
   try {
     const result = await initiateThreeDSPayment({
       orderNumber,
