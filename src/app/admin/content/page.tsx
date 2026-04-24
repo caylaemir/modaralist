@@ -30,6 +30,12 @@ export default async function AdminContentPage() {
             sayfa.
           </p>
         </div>
+        <Link
+          href="/admin/content/new"
+          className="inline-flex items-center gap-3 bg-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-paper hover:opacity-90"
+        >
+          + Yeni Sayfa
+        </Link>
       </header>
 
       <div className="mt-10 overflow-x-auto border-t border-line">
@@ -63,11 +69,16 @@ export default async function AdminContentPage() {
                   <p className="display mt-4 text-3xl italic text-mist">
                     Henüz sayfa yok
                   </p>
-                  <p className="mt-4 max-w-md mx-auto text-sm text-mist">
-                    Statik sayfalar (hakkımızda, iletişim, KVKK, iade, mesafeli
-                    satış vs.) şu an kod içinde tanımlı. DB üzerinden düzenleme
-                    için sayfa editörü MVP sonrasında açılacak.
+                  <p className="mt-4 mx-auto max-w-md text-sm text-mist">
+                    Hakkımızda, iletişim, KVKK gibi sayfalar için ilk kaydı
+                    oluştur. TR ve EN içerikleri tek formda.
                   </p>
+                  <Link
+                    href="/admin/content/new"
+                    className="mt-6 inline-block border-b border-ink pb-1 text-[11px] uppercase tracking-[0.3em]"
+                  >
+                    Yeni Sayfa →
+                  </Link>
                 </td>
               </tr>
             ) : (
@@ -78,7 +89,14 @@ export default async function AdminContentPage() {
                     key={p.id}
                     className="border-b border-line transition-colors hover:bg-bone/70"
                   >
-                    <td className="py-4 pr-4">{tr?.title ?? p.slug}</td>
+                    <td className="py-4 pr-4">
+                      <Link
+                        href={`/admin/content/${p.id}`}
+                        className="hover:underline"
+                      >
+                        {tr?.title ?? p.slug}
+                      </Link>
+                    </td>
                     <td className="px-4 py-4 font-mono text-[11px] text-mist">
                       {p.slug}
                     </td>
@@ -97,7 +115,15 @@ export default async function AdminContentPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-xs text-mist tabular-nums">
-                      {dateFmt.format(p.updatedAt)}
+                      <div className="flex items-center justify-between gap-4">
+                        <span>{dateFmt.format(p.updatedAt)}</span>
+                        <Link
+                          href={`/admin/content/${p.id}`}
+                          className="text-[11px] uppercase tracking-[0.3em] text-mist hover:text-ink"
+                        >
+                          Düzenle →
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
