@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Inter, Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
 import { auth } from "@/lib/auth";
 import {
@@ -12,6 +13,20 @@ import {
   Settings,
   Mail,
 } from "lucide-react";
+import "../globals.css";
+
+const sans = Inter({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const display = Instrument_Serif({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Modaralist Admin",
@@ -45,35 +60,54 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#fafafa] text-ink">
-      <aside className="fixed inset-y-0 left-0 w-60 border-r border-line bg-paper">
-        <div className="flex h-16 items-center border-b border-line px-6">
-          <span className="display text-xl">modaralist</span>
-          <span className="ml-2 rounded bg-ink px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-paper">
-            admin
-          </span>
+    <html
+      lang="tr"
+      className={`${sans.variable} ${display.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-bone text-ink antialiased">
+        <div className="flex min-h-screen">
+          <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-line bg-paper">
+            <div className="flex h-20 items-center gap-3 border-b border-line px-7">
+              <span className="display text-2xl leading-none">modaralist</span>
+              <span className="inline-flex h-5 items-center rounded-sm bg-ink px-2 text-[9px] font-medium uppercase tracking-[0.25em] text-paper">
+                admin
+              </span>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto px-4 py-6">
+              <p className="px-3 pb-3 text-[10px] uppercase tracking-[0.3em] text-mist">
+                Yönetim
+              </p>
+              <ul className="flex flex-col gap-0.5">
+                {NAV.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      className="group flex items-center gap-3 rounded-sm px-3 py-2.5 text-[13px] text-mist transition-colors hover:bg-bone hover:text-ink"
+                    >
+                      <item.icon className="size-4 shrink-0" strokeWidth={1.5} />
+                      <span>{item.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="border-t border-line px-7 py-5">
+              <p className="truncate text-[11px] text-ink">
+                {session.user.email}
+              </p>
+              <p className="mt-1 text-[9px] uppercase tracking-[0.3em] text-mist">
+                {session.user.role}
+              </p>
+            </div>
+          </aside>
+
+          <main className="ml-64 flex-1 px-10 py-10">{children}</main>
         </div>
-        <nav className="flex flex-col gap-1 p-3">
-          {NAV.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded px-3 py-2 text-sm text-mist transition-colors hover:bg-bone hover:text-ink"
-            >
-              <item.icon className="size-4" />
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="absolute inset-x-3 bottom-4 border-t border-line pt-4">
-          <p className="px-3 text-xs text-mist">{session.user.email}</p>
-          <p className="mt-1 px-3 text-[10px] uppercase tracking-wider text-mist">
-            {session.user.role}
-          </p>
-        </div>
-      </aside>
-      <main className="ml-60 flex-1 p-10">{children}</main>
-      <Toaster position="bottom-right" richColors />
-    </div>
+        <Toaster position="bottom-right" richColors />
+      </body>
+    </html>
   );
 }
