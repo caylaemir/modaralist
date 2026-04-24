@@ -6,28 +6,23 @@ import { ProductCard } from "@/components/shop/product-card";
 import { Countdown } from "@/components/shop/countdown";
 import { NotifyMe } from "@/components/shop/notify-me";
 import { Marquee } from "@/components/shop/marquee";
-import {
-  getCollection,
-  getCollectionProducts,
-  DEMO_COLLECTIONS,
-} from "@/lib/demo-data";
+import { getCollection, getCollectionProducts } from "@/lib/shop";
 
-export async function generateStaticParams() {
-  return DEMO_COLLECTIONS.map((c) => ({ slug: c.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
-  const c = getCollection(slug);
+  const { slug, locale } = await params;
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
+  const c = await getCollection(slug, lang);
   if (!c) return { title: "Bulunamadı" };
   return {
     title: c.name,
-    description: c.tagline,
-    openGraph: { images: [{ url: c.heroImage }] },
+    description: c.tagline ?? undefined,
+    openGraph: c.heroImageUrl ? { images: [{ url: c.heroImageUrl }] } : undefined,
   };
 }
 
@@ -38,24 +33,35 @@ export default async function CollectionPage({
 }) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const collection = getCollection(slug);
+  const [collection, products] = await Promise.all([
+    getCollection(slug, lang),
+    getCollectionProducts(slug, lang),
+  ]);
+
   if (!collection) notFound();
 
-  const products = getCollectionProducts(slug);
   const isUpcoming = collection.status === "UPCOMING";
+  const heroBgStyle = collection.heroImageUrl?.startsWith("http")
+    ? { backgroundImage: `url('${collection.heroImageUrl}')` }
+    : { background: "linear-gradient(135deg, #2a2a2a 0%, #0a0a0a 100%)" };
 
   return (
     <>
       <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden bg-ink">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${collection.heroImage}')` }}
+          style={heroBgStyle}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
         <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-between px-5 py-10 md:px-10 md:py-14">
           <p className="text-[10px] uppercase tracking-[0.4em] text-paper/80">
-            {isUpcoming ? "○ Yakında" : "● Şu an satışta"}
+            {isUpcoming
+              ? "○ Yakında"
+              : collection.status === "SOLD_OUT"
+                ? "○ Tükendi"
+                : "● Şu an satışta"}
           </p>
 
           <div className="space-y-10">
@@ -64,16 +70,18 @@ export default async function CollectionPage({
               as="h1"
               className="display text-[14vw] leading-[0.9] text-paper md:text-[8vw]"
             />
-            <Reveal delay={0.4}>
-              <p className="max-w-2xl text-lg text-paper/80 md:text-2xl">
-                {collection.tagline}
-              </p>
-            </Reveal>
+            {collection.tagline ? (
+              <Reveal delay={0.4}>
+                <p className="max-w-2xl text-lg text-paper/80 md:text-2xl">
+                  {collection.tagline}
+                </p>
+              </Reveal>
+            ) : null}
 
-            {isUpcoming && (
+            {isUpcoming && collection.startsAt ? (
               <Reveal delay={0.6}>
                 <div className="grid gap-8 border-t border-paper/20 pt-10 md:grid-cols-2 md:items-end md:gap-16">
-                  <Countdown target={collection.startsAt} />
+                  <Countdown target={collection.startsAt.toISOString()} />
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.3em] text-paper/60">
                       Drop açıldığında haberin olsun
@@ -84,34 +92,40 @@ export default async function CollectionPage({
                   </div>
                 </div>
               </Reveal>
-            )}
+            ) : null}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-40">
-        <Reveal>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-            — manifesto
-          </p>
-        </Reveal>
-        <div className="mt-10 grid gap-16 md:grid-cols-12">
-          <div className="md:col-span-7">
-            <SplitText
-              text={collection.tagline}
-              as="h2"
-              className="display text-[8vw] leading-[1] md:text-[4.5vw]"
-            />
+      {collection.tagline || collection.description ? (
+        <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-40">
+          <Reveal>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+              — manifesto
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-16 md:grid-cols-12">
+            <div className="md:col-span-7">
+              {collection.tagline ? (
+                <SplitText
+                  text={collection.tagline}
+                  as="h2"
+                  className="display text-[8vw] leading-[1] md:text-[4.5vw]"
+                />
+              ) : null}
+            </div>
+            <div className="md:col-span-5">
+              {collection.description ? (
+                <Reveal delay={0.3}>
+                  <p className="text-base leading-relaxed text-mist">
+                    {collection.description}
+                  </p>
+                </Reveal>
+              ) : null}
+            </div>
           </div>
-          <div className="md:col-span-5">
-            <Reveal delay={0.3}>
-              <p className="text-base leading-relaxed text-mist">
-                {collection.description}
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {products.length > 0 ? (
         <section className="mx-auto max-w-[1600px] px-5 pb-40 md:px-10">
@@ -130,10 +144,10 @@ export default async function CollectionPage({
                 product={{
                   slug: p.slug,
                   name: p.name,
-                  dropLabel: p.dropLabel,
+                  dropLabel: p.dropLabel ?? "",
                   price: p.price,
-                  image: p.images[0],
-                  hoverImage: p.images[1],
+                  image: p.images[0] ?? "",
+                  hoverImage: p.hoverImage ?? undefined,
                   soldOut: p.soldOut,
                 }}
                 locale={locale as "tr" | "en"}
@@ -156,7 +170,12 @@ export default async function CollectionPage({
       )}
 
       <Marquee
-        items={["MODARALIST", collection.name.toUpperCase(), "LIMITED", "MODARALIST"]}
+        items={[
+          "MODARALIST",
+          collection.name.toUpperCase(),
+          "LIMITED",
+          "MODARALIST",
+        ]}
       />
     </>
   );

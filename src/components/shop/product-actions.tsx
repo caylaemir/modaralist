@@ -6,13 +6,13 @@ import { toast } from "sonner";
 import { useCart } from "@/stores/cart";
 import { formatPrice } from "@/lib/utils";
 import { SizeGuide } from "./size-guide";
-import type { DemoProduct } from "@/lib/demo-data";
+import type { ShopProduct } from "@/lib/shop";
 
 export function ProductActions({
   product,
   locale,
 }: {
-  product: DemoProduct;
+  product: ShopProduct;
   locale: "tr" | "en";
 }) {
   const add = useCart((s) => s.add);

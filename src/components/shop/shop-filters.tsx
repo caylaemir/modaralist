@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { SlidersHorizontal, X } from "lucide-react";
-import { CATEGORIES } from "@/lib/demo-data";
 
 export type ShopFilter = {
   category: string;
@@ -15,10 +14,12 @@ export function ShopFilters({
   value,
   onChange,
   total,
+  categories,
 }: {
   value: ShopFilter;
   onChange: (v: ShopFilter) => void;
   total: number;
+  categories: { slug: string; name: string }[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -88,7 +89,7 @@ export function ShopFilters({
                   Kategori
                 </p>
                 <ul className="mt-4 space-y-3">
-                  {CATEGORIES.map((c) => (
+                  {categories.map((c) => (
                     <li key={c.slug}>
                       <button
                         onClick={() => onChange({ ...value, category: c.slug })}

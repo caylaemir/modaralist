@@ -6,25 +6,24 @@ import { ProductCard } from "@/components/shop/product-card";
 import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
 import { Link } from "@/i18n/navigation";
-import { getProduct, getRelatedProducts, DEMO_PRODUCTS } from "@/lib/demo-data";
-
-export async function generateStaticParams() {
-  return DEMO_PRODUCTS.map((p) => ({ slug: p.slug }));
-}
+import { getProduct, getRelatedProducts } from "@/lib/shop";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
-  const product = getProduct(slug);
+  const { slug, locale } = await params;
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
+  const product = await getProduct(slug, lang);
   if (!product) return { title: "Bulunamadı" };
   return {
-    title: `${product.name} — ${product.dropLabel}`,
+    title: product.dropLabel
+      ? `${product.name} — ${product.dropLabel}`
+      : product.name,
     description: product.description.slice(0, 160),
     openGraph: {
-      images: [{ url: product.images[0] }],
+      images: product.images[0] ? [{ url: product.images[0] }] : undefined,
     },
   };
 }
@@ -36,11 +35,14 @@ export default async function ProductPage({
 }) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const product = getProduct(slug);
+  const [product, related] = await Promise.all([
+    getProduct(slug, lang),
+    getRelatedProducts(slug, lang),
+  ]);
+
   if (!product) notFound();
-
-  const related = getRelatedProducts(slug);
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
   const productJsonLd = {
@@ -112,10 +114,10 @@ export default async function ProductPage({
                 product={{
                   slug: p.slug,
                   name: p.name,
-                  dropLabel: p.dropLabel,
+                  dropLabel: p.dropLabel ?? "",
                   price: p.price,
-                  image: p.images[0],
-                  hoverImage: p.images[1],
+                  image: p.images[0] ?? "",
+                  hoverImage: p.hoverImage ?? undefined,
                   soldOut: p.soldOut,
                 }}
                 locale={locale as "tr" | "en"}

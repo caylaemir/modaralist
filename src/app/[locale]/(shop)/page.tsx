@@ -8,8 +8,11 @@ import { Marquee } from "@/components/shop/marquee";
 import { SplitText } from "@/components/shop/split-text";
 import { Reveal } from "@/components/shop/reveal";
 import { ArrowUpRight } from "lucide-react";
+import { getFeaturedProducts } from "@/lib/shop";
 
-const DEMO_PRODUCTS: ProductCardData[] = [
+export const dynamic = "force-dynamic";
+
+const FALLBACK_PRODUCTS: ProductCardData[] = [
   {
     slug: "asymetric-drape-top",
     name: "Asymetric Drape Top",
@@ -87,6 +90,21 @@ export default async function Home({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Home");
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
+
+  const dbProducts = await getFeaturedProducts(lang, 8);
+  const featured: ProductCardData[] =
+    dbProducts.length > 0
+      ? dbProducts.map((p) => ({
+          slug: p.slug,
+          name: p.name,
+          dropLabel: p.dropLabel ?? "",
+          price: p.price,
+          image: p.images[0] ?? "",
+          hoverImage: p.hoverImage ?? undefined,
+          soldOut: p.soldOut,
+        }))
+      : FALLBACK_PRODUCTS;
 
   return (
     <>
@@ -134,7 +152,7 @@ export default async function Home({
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
-          {DEMO_PRODUCTS.map((p, i) => (
+          {featured.map((p, i) => (
             <ProductCard
               key={p.slug}
               product={p}
