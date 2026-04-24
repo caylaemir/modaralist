@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
         expireYear: card.expireYear.length === 2 ? `20${card.expireYear}` : card.expireYear,
         cvc: card.cvc,
       },
-      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/payment/callback?order=${orderNumber}`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payment/callback?order=${orderNumber}`,
     });
 
     if (result.status !== "success" || !result.threeDSHtmlContent) {

@@ -5,9 +5,9 @@
 import Iyzipay from "iyzipay";
 
 export const iyzipay = new Iyzipay({
-  apiKey: process.env.IYZICO_API_KEY ?? "sandbox-placeholder",
-  secretKey: process.env.IYZICO_SECRET_KEY ?? "sandbox-placeholder",
-  uri: process.env.IYZICO_BASE_URL ?? "https://sandbox-api.iyzipay.com",
+  apiKey: process.env.IYZICO_API_KEY || "sandbox-placeholder",
+  secretKey: process.env.IYZICO_SECRET_KEY || "sandbox-placeholder",
+  uri: process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com",
 });
 
 export type InitiateInput = {

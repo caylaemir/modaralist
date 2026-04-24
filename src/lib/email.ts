@@ -9,7 +9,7 @@ function getResend() {
   return _resend;
 }
 
-const FROM = process.env.EMAIL_FROM ?? "Modaralist <no-reply@modaralist.com>";
+const FROM = process.env.EMAIL_FROM || "Modaralist <no-reply@modaralist.com>";
 
 type SendArgs = {
   to: string;
