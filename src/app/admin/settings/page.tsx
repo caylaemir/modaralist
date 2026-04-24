@@ -1,9 +1,12 @@
 import { auth } from "@/lib/auth";
+import { getAllSettings } from "@/lib/settings";
+import { SettingsForm } from "./settings-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  const session = await auth();
+  const [session, settings] = await Promise.all([auth(), getAllSettings()]);
+
   const paymentSim = process.env.PAYMENT_SIMULATION_MODE === "true";
   const hasResend = !!process.env.RESEND_API_KEY;
   const hasIyzico = !!process.env.IYZICO_API_KEY;
@@ -26,7 +29,11 @@ export default async function AdminSettingsPage() {
       name: "iyzico",
       key: "3DS ödeme",
       connected: hasIyzico,
-      note: paymentSim ? "Simülasyon modu aktif" : hasIyzico ? "Bağlı" : "Key bekleniyor",
+      note: paymentSim
+        ? "Simülasyon modu aktif"
+        : hasIyzico
+          ? "Bağlı"
+          : "Key bekleniyor",
     },
     {
       name: "Resend",
@@ -55,37 +62,60 @@ export default async function AdminSettingsPage() {
           — ayarlar
         </p>
         <h1 className="display mt-3 text-5xl leading-none">Sistem Ayarları</h1>
-        <p className="mt-4 text-xs text-mist">
-          Entegrasyon durumu, env bayrakları, hesap bilgileri.
+        <p className="mt-4 max-w-xl text-xs text-mist">
+          Markadan iletişime, mağaza ayarlarından yasal bilgiye kadar tüm site
+          ayarları burada. Değişiklikler her yerde anında yansır.
         </p>
       </header>
 
-      <section className="mt-14">
+      <aside className="mt-10 border-t border-line pt-6">
         <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-          — hesap
+          — hızlı geçiş
         </p>
-        <div className="mt-4 border-t border-line pt-5">
+        <nav className="mt-4 flex flex-wrap gap-3">
+          {[
+            { id: "brand", label: "Marka" },
+            { id: "contact", label: "İletişim" },
+            { id: "social", label: "Sosyal" },
+            { id: "shop", label: "Mağaza" },
+            { id: "banner", label: "Duyuru" },
+            { id: "legal", label: "Yasal" },
+            { id: "integrations", label: "Entegrasyonlar" },
+            { id: "account", label: "Hesap" },
+          ].map((link) => (
+            <a
+              key={link.id}
+              href={`#${link.id}`}
+              className="border border-line px-3 py-1.5 text-[11px] uppercase tracking-[0.25em] text-mist hover:border-ink hover:text-ink"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      <div className="mt-16">
+        <SettingsForm initialValues={settings} />
+      </div>
+
+      <section id="integrations" className="mt-20">
+        <div className="border-t border-line pt-6">
           <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-            Oturum
+            — entegrasyonlar
           </p>
-          <p className="display mt-3 text-2xl leading-none">
-            {session?.user?.name ?? "—"}
-          </p>
-          <p className="mt-2 font-mono text-xs text-mist">
-            {session?.user?.email} · {session?.user?.role}
+          <h2 className="display mt-3 text-3xl leading-none">
+            Bağlı Servisler
+          </h2>
+          <p className="mt-3 max-w-xl text-xs text-mist">
+            Bu servisler env değişkeniyle yapılandırılır; bağlantı durumunu
+            buradan izle. Canlı deploy için eksik olan entegrasyonları tamamla.
           </p>
         </div>
-      </section>
-
-      <section className="mt-14">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-          — entegrasyonlar
-        </p>
-        <ul className="mt-6">
+        <ul className="mt-8">
           {integrations.map((i) => (
             <li
               key={i.name}
-              className="flex items-center justify-between gap-6 border-t border-line py-5 last:border-b"
+              className="flex items-start justify-between gap-6 border-t border-line py-5 last:border-b"
             >
               <div>
                 <p className="text-sm">{i.name}</p>
@@ -108,14 +138,12 @@ export default async function AdminSettingsPage() {
             </li>
           ))}
         </ul>
-      </section>
 
-      <section className="mt-14">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-          — bayraklar
-        </p>
-        <ul className="mt-6">
-          <li className="flex items-center justify-between gap-6 border-t border-line py-5">
+        <div className="mt-6 border-t border-line pt-5">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+            bayrak
+          </p>
+          <div className="mt-3 flex items-start justify-between gap-6">
             <div>
               <p className="text-sm">Ödeme Simülasyonu</p>
               <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-mist">
@@ -136,8 +164,28 @@ export default async function AdminSettingsPage() {
             >
               {paymentSim ? "Aktif" : "Kapalı"}
             </span>
-          </li>
-        </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="account" className="mt-16">
+        <div className="border-t border-line pt-6">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+            — hesap
+          </p>
+          <h2 className="display mt-3 text-3xl leading-none">Oturum</h2>
+        </div>
+        <div className="mt-6 border-t border-line pt-5">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+            Giriş yapan
+          </p>
+          <p className="display mt-3 text-2xl leading-none">
+            {session?.user?.name ?? "—"}
+          </p>
+          <p className="mt-2 font-mono text-xs text-mist">
+            {session?.user?.email} · {session?.user?.role}
+          </p>
+        </div>
       </section>
     </div>
   );
