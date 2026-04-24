@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { initiateThreeDSPayment } from "@/lib/payment/iyzico";
+import { restoreStockForOrder } from "@/lib/stock";
 
 const schema = z.object({
   lines: z
@@ -64,58 +65,89 @@ export async function POST(req: NextRequest) {
   const [name, ...rest] = customer.fullName.trim().split(" ");
   const surname = rest.join(" ") || name;
 
-  // Siparişi PENDING olarak oluştur — 3DS başarılı olunca PAID'e çekilir
+  // Stok kontrol + atomic decrement + sipariş oluşturma — hepsi tek transaction.
+  // Stok yetmezse veya varyant yoksa transaction rollback olur.
   let order;
   try {
-    order = await db.order.create({
-      data: {
-        orderNumber,
-        userId,
-        email: customer.email,
-        phone: customer.phone,
-        subtotal,
-        shippingCost,
-        grandTotal,
-        status: "PENDING",
-        paymentStatus: "PENDING",
-        items: {
-          create: lines.map((l) => ({
-            variantId: l.variantId,
-            productNameSnapshot: l.name,
-            variantSnapshot: [l.size, l.color].filter(Boolean).join(" · "),
-            unitPrice: l.unitPrice,
-            quantity: l.quantity,
-            lineTotal: l.unitPrice * l.quantity,
-          })),
+    order = await db.$transaction(async (tx) => {
+      // Her satır için stoğu atomic olarak düş; yetmezse hata at.
+      for (const line of lines) {
+        const updated = await tx.productVariant.updateMany({
+          where: {
+            id: line.variantId,
+            isActive: true,
+            stock: { gte: line.quantity },
+          },
+          data: { stock: { decrement: line.quantity } },
+        });
+        if (updated.count === 0) {
+          throw new Error(`STOK_YETERSIZ:${line.variantId}:${line.name}`);
+        }
+      }
+
+      return tx.order.create({
+        data: {
+          orderNumber,
+          userId,
+          email: customer.email,
+          phone: customer.phone,
+          subtotal,
+          shippingCost,
+          grandTotal,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          items: {
+            create: lines.map((l) => ({
+              variantId: l.variantId,
+              productNameSnapshot: l.name,
+              variantSnapshot: [l.size, l.color].filter(Boolean).join(" · "),
+              unitPrice: l.unitPrice,
+              quantity: l.quantity,
+              lineTotal: l.unitPrice * l.quantity,
+            })),
+          },
+          addresses: {
+            create: [
+              {
+                type: "SHIPPING",
+                fullName: customer.fullName,
+                phone: customer.phone,
+                city: address.city,
+                district: address.district,
+                street: address.street,
+                zip: address.zip,
+              },
+              {
+                type: "BILLING",
+                fullName: customer.fullName,
+                phone: customer.phone,
+                city: address.city,
+                district: address.district,
+                street: address.street,
+                zip: address.zip,
+              },
+            ],
+          },
         },
-        addresses: {
-          create: [
-            {
-              type: "SHIPPING",
-              fullName: customer.fullName,
-              phone: customer.phone,
-              city: address.city,
-              district: address.district,
-              street: address.street,
-              zip: address.zip,
-            },
-            {
-              type: "BILLING",
-              fullName: customer.fullName,
-              phone: customer.phone,
-              city: address.city,
-              district: address.district,
-              street: address.street,
-              zip: address.zip,
-            },
-          ],
-        },
-      },
+      });
     });
   } catch (err) {
-    // DB yoksa (lokal dev) mock bir akış: ödeme iframe'i atla
-    console.warn("[checkout] DB yok — mock akışa düştü", err);
-    return NextResponse.json({ ok: true, orderNumber, mock: true });
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.startsWith("STOK_YETERSIZ:")) {
+      const [, , itemName] = msg.split(":");
+      return NextResponse.json(
+        {
+          error: `Stok yetersiz: ${itemName ?? "ürün"}. Sepetini güncelle.`,
+          code: "OUT_OF_STOCK",
+        },
+        { status: 409 }
+      );
+    }
+    console.error("[checkout] order create failed", err);
+    return NextResponse.json(
+      { error: "Sipariş oluşturulamadı. Tekrar dene." },
+      { status: 500 }
+    );
   }
 
   const ip =
@@ -204,9 +236,12 @@ export async function POST(req: NextRequest) {
     });
 
     if (result.status !== "success" || !result.threeDSHtmlContent) {
-      await db.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: "FAILED", status: "CANCELLED" },
+      await db.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "FAILED", status: "CANCELLED" },
+        });
+        await restoreStockForOrder(order.id, tx);
       });
       return NextResponse.json(
         { error: result.errorMessage ?? "Ödeme başlatılamadı" },
@@ -230,6 +265,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, orderNumber, htmlContent: html });
   } catch (err) {
     console.error("[checkout] iyzico error", err);
+    await db.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "FAILED", status: "CANCELLED" },
+      });
+      await restoreStockForOrder(order.id, tx);
+    }).catch(() => undefined);
     return NextResponse.json(
       { error: "Ödeme sağlayıcısına ulaşılamadı" },
       { status: 502 }

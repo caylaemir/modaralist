@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { finalizeThreeDSPayment } from "@/lib/payment/iyzico";
 import { sendEmail, orderConfirmationHtml } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
+import { restoreStockForOrder } from "@/lib/stock";
 
 // iyzico 3DS sonunda buraya POST atar.
 // Body: application/x-www-form-urlencoded
@@ -29,10 +30,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (status !== "success" || mdStatus !== "1") {
-    await db.order.update({
-      where: { id: order.id },
-      data: { paymentStatus: "FAILED", status: "CANCELLED" },
-    });
+    if (order.status === "PENDING") {
+      await db.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "FAILED", status: "CANCELLED" },
+        });
+        await restoreStockForOrder(order.id, tx);
+      });
+    }
     return NextResponse.redirect(
       new URL(`/tr/checkout/failed?reason=3ds`, req.url)
     );
@@ -41,10 +47,15 @@ export async function POST(req: NextRequest) {
   try {
     const final = await finalizeThreeDSPayment(paymentId, conversationId);
     if (final.status !== "success") {
-      await db.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: "FAILED", status: "CANCELLED" },
-      });
+      if (order.status === "PENDING") {
+        await db.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: order.id },
+            data: { paymentStatus: "FAILED", status: "CANCELLED" },
+          });
+          await restoreStockForOrder(order.id, tx);
+        });
+      }
       return NextResponse.redirect(
         new URL(`/tr/checkout/failed?reason=capture`, req.url)
       );
