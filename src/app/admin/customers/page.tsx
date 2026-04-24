@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -84,14 +85,21 @@ export default async function CustomersPage() {
                   key={u.id}
                   className="border-b border-line transition-colors hover:bg-bone/70"
                 >
-                  <td className="py-4 pr-4">{u.name ?? "—"}</td>
+                  <td className="py-4 pr-4">
+                    <Link
+                      href={`/admin/customers/${u.id}`}
+                      className="hover:underline"
+                    >
+                      {u.name ?? "—"}
+                    </Link>
+                  </td>
                   <td className="px-4 py-4">
-                    <a
-                      href={`mailto:${u.email}`}
+                    <Link
+                      href={`/admin/customers/${u.id}`}
                       className="font-mono text-xs text-mist hover:text-ink"
                     >
                       {u.email}
-                    </a>
+                    </Link>
                   </td>
                   <td className="px-4 py-4">
                     <span
@@ -108,7 +116,15 @@ export default async function CustomersPage() {
                     {dateFmt.format(u.createdAt)}
                   </td>
                   <td className="px-4 py-4 text-right tabular-nums">
-                    {u._count.orders}
+                    <div className="flex items-center justify-end gap-4">
+                      <span>{u._count.orders}</span>
+                      <Link
+                        href={`/admin/customers/${u.id}`}
+                        className="text-[11px] uppercase tracking-[0.3em] text-mist hover:text-ink"
+                      >
+                        Profil →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))
