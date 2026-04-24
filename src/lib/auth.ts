@@ -63,10 +63,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    // ADMIN/STAFF rolü sadece DB'de manuel verilir.
+    // Google OAuth ile yeni kayıt olanlar her zaman CUSTOMER.
+    // Var olan ADMIN/STAFF'a Google provider'ını otomatik bind etmeyi engelle —
+    // admin hesabına yalnız credentials ile giriş.
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user?.email) {
+        const existing = await db.user.findUnique({
+          where: { email: user.email },
+          select: { role: true },
+        });
+        if (existing && (existing.role === "ADMIN" || existing.role === "STAFF")) {
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+      }
+      // Her isteğin JWT refresh'inde DB'den role çek — DB'de role güncellenirse
+      // token yenilendiğinde yansısın, stale role'le admin erişim sürmesin.
+      if (token.id && !user) {
+        const fresh = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+        if (fresh) token.role = fresh.role;
       }
       return token;
     },

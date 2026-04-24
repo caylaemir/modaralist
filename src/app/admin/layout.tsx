@@ -30,6 +30,19 @@ const display = Instrument_Serif({
 
 export const metadata = {
   title: "Modaralist Admin",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      "max-video-preview": -1,
+      "max-image-preview": "none" as const,
+      "max-snippet": -1,
+    },
+  },
 };
 
 const NAV = [

@@ -126,6 +126,55 @@ export function orderConfirmationHtml(args: {
   });
 }
 
+export function passwordResetHtml(args: {
+  name: string | null;
+  resetUrl: string;
+  ttlMinutes: number;
+}) {
+  const greeting = args.name ? `Merhaba ${args.name}` : "Merhaba";
+  return baseLayout({
+    title: "Şifre sıfırlama",
+    body: `
+      <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0;">— şifre sıfırlama</p>
+      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">${greeting}.</h1>
+      <p style="font-size:14px;line-height:1.6;color:#8a8a8a;margin:16px 0 24px;">
+        Modaralist hesabın için şifre sıfırlama talebi aldık. Aşağıdaki bağlantıyla yeni şifre belirleyebilirsin. Bağlantı <strong>${args.ttlMinutes} dakika</strong> geçerli.
+      </p>
+      <a href="${args.resetUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;">Yeni Şifre Belirle</a>
+      <p style="margin-top:32px;font-size:12px;color:#8a8a8a;line-height:1.6;">
+        Bu talebi sen yapmadıysan bu e-postayı görmezden gel; hesabın güvende.
+      </p>
+      <p style="margin-top:24px;font-size:11px;color:#8a8a8a;word-break:break-all;">
+        Bağlantı çalışmıyorsa tarayıcına yapıştır:<br/>
+        <span style="color:#0a0a0a;">${args.resetUrl}</span>
+      </p>
+    `,
+  });
+}
+
+export async function sendPasswordResetEmail(args: {
+  to: string;
+  name: string | null;
+  resetUrl: string;
+  ttlMinutes: number;
+}) {
+  const resend = getResend();
+  if (!resend) {
+    // Resend kurulu değilken dev için URL'i logla, test edilebilir olsun.
+    console.log(`[email/sim] password reset for ${args.to}: ${args.resetUrl}`);
+    return { id: null };
+  }
+  return sendEmail({
+    to: args.to,
+    subject: "Modaralist — şifre sıfırlama",
+    html: passwordResetHtml({
+      name: args.name,
+      resetUrl: args.resetUrl,
+      ttlMinutes: args.ttlMinutes,
+    }),
+  });
+}
+
 export function shipmentUpdateHtml(args: {
   orderNumber: string;
   customerName: string;
