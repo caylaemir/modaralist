@@ -2,6 +2,8 @@
 
 Modaralist — modern, drop-based moda/streetwear e-ticaret platformu. Türkçe + İngilizce, admin panelli.
 
+**Canlı:** https://modaralist.shop
+
 ## Stack
 
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript
