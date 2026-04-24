@@ -13,6 +13,7 @@ import {
   Settings,
   Mail,
   Ticket,
+  Star,
 } from "lucide-react";
 import "../globals.css";
 
@@ -53,6 +54,7 @@ const NAV = [
   { href: "/admin/collections", label: "Koleksiyonlar", icon: Box },
   { href: "/admin/orders", label: "Siparişler", icon: ShoppingCart },
   { href: "/admin/customers", label: "Müşteriler", icon: Users },
+  { href: "/admin/reviews", label: "Yorumlar", icon: Star },
   { href: "/admin/coupons", label: "Kuponlar", icon: Ticket },
   { href: "/admin/content", label: "İçerik", icon: Palette },
   { href: "/admin/newsletter", label: "Bülten", icon: Mail },
