@@ -42,8 +42,32 @@ export default async function ProductPage({
 
   const related = getRelatedProducts(slug);
 
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: product.images,
+    sku: product.slug,
+    brand: { "@type": "Brand", name: "Modaralist" },
+    offers: {
+      "@type": "Offer",
+      url: `${base}/${locale}/products/${product.slug}`,
+      priceCurrency: "TRY",
+      price: product.price,
+      availability: product.soldOut
+        ? "https://schema.org/SoldOut"
+        : "https://schema.org/InStock",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <div className="mx-auto max-w-[1600px] px-5 pt-10 md:px-10 md:pt-14">
         <Reveal>
           <nav className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-mist">
