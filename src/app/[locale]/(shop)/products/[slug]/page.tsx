@@ -5,7 +5,10 @@ import { ProductActions } from "@/components/shop/product-actions";
 import { ProductCard } from "@/components/shop/product-card";
 import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
+import { TrackView } from "@/components/shop/track-view";
+import { ReviewForm } from "@/components/shop/review-form";
 import { Link } from "@/i18n/navigation";
+import { auth } from "@/lib/auth";
 import { getProduct, getRelatedProducts } from "@/lib/shop";
 
 export async function generateMetadata({
@@ -37,12 +40,14 @@ export default async function ProductPage({
   setRequestLocale(locale);
   const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const [product, related] = await Promise.all([
+  const [product, related, session] = await Promise.all([
     getProduct(slug, lang),
     getRelatedProducts(slug, lang),
+    auth(),
   ]);
 
   if (!product) notFound();
+  const isLoggedIn = !!session?.user?.id;
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
   const productJsonLd = {
@@ -115,6 +120,8 @@ export default async function ProductPage({
         </Reveal>
       </div>
 
+      <TrackView slug={product.slug} />
+
       <section className="mx-auto mt-10 grid max-w-[1600px] gap-10 px-5 md:mt-16 md:grid-cols-12 md:px-10">
         <div className="md:col-span-7 lg:col-span-8">
           <ProductGallery images={product.images} alt={product.name} />
@@ -122,6 +129,10 @@ export default async function ProductPage({
         <div className="md:col-span-5 lg:col-span-4">
           <ProductActions product={product} locale={locale as "tr" | "en"} />
         </div>
+      </section>
+
+      <section className="mx-auto mt-32 max-w-3xl px-5 md:px-10">
+        <ReviewForm productSlug={product.slug} isLoggedIn={isLoggedIn} />
       </section>
 
       {related.length > 0 && (
