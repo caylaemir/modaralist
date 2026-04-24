@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -60,7 +61,7 @@ export async function createBlockAction(
       type: parsed.data.type,
       sortOrder: parsed.data.sortOrder,
       isActive: parsed.data.isActive,
-      config: parsed.data.config,
+      config: parsed.data.config as Prisma.InputJsonValue,
     },
   });
 
@@ -87,7 +88,12 @@ export async function updateBlockAction(
 
   await db.homepageBlock.update({
     where: { id },
-    data: parsed.data,
+    data: {
+      type: parsed.data.type,
+      sortOrder: parsed.data.sortOrder,
+      isActive: parsed.data.isActive,
+      config: parsed.data.config as Prisma.InputJsonValue,
+    },
   });
 
   revalidatePath("/admin/homepage");

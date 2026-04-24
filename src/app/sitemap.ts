@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.collection
       .findMany({
         where: { status: { in: ["LIVE", "UPCOMING"] } },
-        select: { slug: true, updatedAt: true },
+        select: { slug: true, createdAt: true },
       })
       .catch(() => []),
   ]);
@@ -57,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const c of collections) {
       urls.push({
         url: `${BASE}/${locale}/drops/${c.slug}`,
-        lastModified: c.updatedAt,
+        lastModified: c.createdAt,
         changeFrequency: "daily",
         priority: 0.9,
       });
