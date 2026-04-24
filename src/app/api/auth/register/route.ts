@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -10,6 +11,15 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // 1 saatte en fazla 10 kayıt/IP — sahte hesap üretimini engelle
+  const rl = rateLimit(`register:${getClientIp(req)}`, 10, 60 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla istek. Birazdan tekrar dene." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

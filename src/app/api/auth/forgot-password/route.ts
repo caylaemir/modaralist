@@ -3,12 +3,22 @@ import { z } from "zod";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const schema = z.object({ email: z.string().email() });
 
 const TOKEN_TTL_MIN = 30;
 
 export async function POST(req: NextRequest) {
+  // 15 dk'da en fazla 5 istek/IP — brute force engellemek icin
+  const rl = rateLimit(`forgot:${getClientIp(req)}`, 5, 15 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla istek. Birkaç dakika sonra dene." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

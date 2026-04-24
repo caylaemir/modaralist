@@ -3,6 +3,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const schema = z.object({
   token: z.string().min(32),
@@ -11,6 +12,15 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // 15 dk'da en fazla 10 reset denemesi/IP
+  const rl = rateLimit(`reset:${getClientIp(req)}`, 10, 15 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla istek. Birkaç dakika sonra dene." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
