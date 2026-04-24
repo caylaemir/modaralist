@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { routing } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
 import { Analytics } from "@/components/analytics";
+import { getAllSettings } from "@/lib/settings";
 import "../globals.css";
 
 const sans = Inter({
@@ -54,7 +55,41 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
-  const messages = await getMessages();
+  const [messages, settings] = await Promise.all([
+    getMessages(),
+    getAllSettings().catch(() => null),
+  ]);
+
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+
+  const sameAs = [
+    settings?.["social.instagram"],
+    settings?.["social.tiktok"],
+    settings?.["social.x"],
+    settings?.["social.facebook"],
+    settings?.["social.youtube"],
+    settings?.["social.pinterest"],
+  ].filter((s): s is string => !!s && s.startsWith("http"));
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: settings?.["site.title"] || "Modaralist",
+    url: base,
+    logo: `${base}/logo.svg`,
+    sameAs,
+    contactPoint: settings?.["contact.email"]
+      ? {
+          "@type": "ContactPoint",
+          email: settings["contact.email"],
+          contactType: "customer support",
+          ...(settings["contact.phone"]
+            ? { telephone: settings["contact.phone"] }
+            : {}),
+        }
+      : undefined,
+  };
 
   return (
     <html
@@ -63,6 +98,10 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-paper text-ink antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <Providers>
             {children}

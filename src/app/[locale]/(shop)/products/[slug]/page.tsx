@@ -57,11 +57,36 @@ export default async function ProductPage({
       "@type": "Offer",
       url: `${base}/${locale}/products/${product.slug}`,
       priceCurrency: "TRY",
-      price: product.price,
+      price: product.discountPrice ?? product.price,
       availability: product.soldOut
         ? "https://schema.org/SoldOut"
         : "https://schema.org/InStock",
     },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "en" ? "Home" : "Ana Sayfa",
+        item: `${base}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: locale === "en" ? "Shop" : "Mağaza",
+        item: `${base}/${locale}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.name,
+        item: `${base}/${locale}/products/${product.slug}`,
+      },
+    ],
   };
 
   return (
@@ -69,6 +94,10 @@ export default async function ProductPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="mx-auto max-w-[1600px] px-5 pt-10 md:px-10 md:pt-14">
         <Reveal>
