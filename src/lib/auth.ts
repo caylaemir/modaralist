@@ -1,6 +1,5 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -32,10 +31,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
     Credentials({
       credentials: {
         email: { label: "E-posta", type: "email" },
@@ -63,22 +58,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    // ADMIN/STAFF rolü sadece DB'de manuel verilir.
-    // Google OAuth ile yeni kayıt olanlar her zaman CUSTOMER.
-    // Var olan ADMIN/STAFF'a Google provider'ını otomatik bind etmeyi engelle —
-    // admin hesabına yalnız credentials ile giriş.
-    async signIn({ user, account }) {
-      if (account?.provider === "google" && user?.email) {
-        const existing = await db.user.findUnique({
-          where: { email: user.email },
-          select: { role: true },
-        });
-        if (existing && (existing.role === "ADMIN" || existing.role === "STAFF")) {
-          return false;
-        }
-      }
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

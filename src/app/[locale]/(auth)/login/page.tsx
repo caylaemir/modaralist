@@ -96,19 +96,6 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-10 flex items-center gap-4 text-[10px] uppercase tracking-[0.3em] text-mist">
-        <span className="h-px flex-1 bg-line" />
-        veya
-        <span className="h-px flex-1 bg-line" />
-      </div>
-
-      <button
-        onClick={() => signIn("google", { callbackUrl })}
-        className="mt-6 flex w-full items-center justify-center gap-3 border border-line px-6 py-4 text-[11px] uppercase tracking-[0.3em] hover:border-ink"
-      >
-        Google ile devam et
-      </button>
-
       <p className="mt-10 text-center text-sm text-mist">
         Hesabın yok mu?{" "}
         <Link href="/register" className="text-ink underline underline-offset-4">
