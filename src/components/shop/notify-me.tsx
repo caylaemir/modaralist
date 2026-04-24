@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 
-export function NotifyMe({ collectionSlug }: { collectionSlug: string }) {
+export function NotifyMe({
+  collectionSlug,
+  productSlug,
+}: {
+  collectionSlug?: string;
+  productSlug?: string;
+}) {
+  const locale = useLocale() as "tr" | "en";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -13,11 +21,22 @@ export function NotifyMe({ collectionSlug }: { collectionSlug: string }) {
     if (!email) return;
     setLoading(true);
     try {
-      // TODO: /api/notify endpoint with collectionSlug
-      console.log("notify for", collectionSlug);
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, collectionSlug, productSlug, locale }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? "Kaydedilemedi.");
+        return;
+      }
       setSent(true);
-      toast.success("Listedesin. Drop açıldığında sana haber vereceğiz.");
+      toast.success(
+        data.alreadySubscribed
+          ? "Zaten listedeydin."
+          : "Listedesin. Drop açıldığında haber vereceğiz."
+      );
     } catch {
       toast.error("Bir şeyler ters gitti.");
     } finally {
