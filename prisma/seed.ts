@@ -258,6 +258,139 @@ async function main() {
     console.log(`✓ product: ${p.slug}`);
   }
 
+  // Static pages — placeholder content, admin'den düzenlenebilir
+  const pagesData = [
+    {
+      slug: "about",
+      tr: {
+        title: "Hakkımızda",
+        body: "<p>Modaralist, numaralı koleksiyonlar üreten modern bir streetwear markasıdır. Az ama öz — her drop sınırlı sayıda üretilir.</p>",
+        seoTitle: "Hakkımızda — Modaralist",
+        seoDesc: "Modaralist: numaralı koleksiyonlar, sınırlı üretim.",
+      },
+      en: {
+        title: "About",
+        body: "<p>Modaralist is a modern streetwear brand producing numbered collections. Less is more — each drop is limited.</p>",
+        seoTitle: "About — Modaralist",
+        seoDesc: "Modaralist: numbered collections, limited production.",
+      },
+    },
+    {
+      slug: "contact",
+      tr: {
+        title: "İletişim",
+        body: "<p>Her türlü sorun ve öneriniz için bize ulaşın. İletişim bilgilerimiz ayarlardan güncellenebilir.</p>",
+        seoTitle: "İletişim — Modaralist",
+        seoDesc: "Modaralist iletişim bilgileri ve destek.",
+      },
+      en: {
+        title: "Contact",
+        body: "<p>Reach us for any inquiries or feedback. Contact details can be updated from admin settings.</p>",
+        seoTitle: "Contact — Modaralist",
+        seoDesc: "Modaralist contact info and support.",
+      },
+    },
+    {
+      slug: "kvkk",
+      tr: {
+        title: "KVKK Aydınlatma Metni",
+        body: "<p>KVKK kapsamında kişisel verilerinizin işlenmesine ilişkin aydınlatma metni. Bu alanı yasal danışmanınızın hazırladığı metinle değiştirin.</p>",
+      },
+      en: {
+        title: "KVKK Disclosure",
+        body: "<p>Disclosure regarding the processing of personal data under KVKK. Replace with legal counsel's text.</p>",
+      },
+    },
+    {
+      slug: "privacy",
+      tr: {
+        title: "Gizlilik Politikası",
+        body: "<p>Gizlilik politikası metni — çerezler, veri işleme, üçüncü parti entegrasyonlar. Yasal danışmanınızın onayından sonra yayınlayın.</p>",
+      },
+      en: {
+        title: "Privacy Policy",
+        body: "<p>Privacy policy text — cookies, data processing, third-party integrations. Publish after legal review.</p>",
+      },
+    },
+    {
+      slug: "terms",
+      tr: {
+        title: "Kullanım Koşulları",
+        body: "<p>Site kullanım koşulları. Üyelik, içerik, fikri mülkiyet, sorumluluk sınırlamaları.</p>",
+      },
+      en: {
+        title: "Terms of Use",
+        body: "<p>Site terms of use. Membership, content, IP, liability limits.</p>",
+      },
+    },
+    {
+      slug: "distance-sales",
+      tr: {
+        title: "Mesafeli Satış Sözleşmesi",
+        body: "<p>Mesafeli satış sözleşmesi metni. Taraflar, konu, teslimat, ödeme, cayma hakkı.</p>",
+      },
+      en: {
+        title: "Distance Sales Contract",
+        body: "<p>Distance sales contract. Parties, subject, delivery, payment, right of withdrawal.</p>",
+      },
+    },
+    {
+      slug: "returns",
+      tr: {
+        title: "İade & Değişim",
+        body: "<p>İade ve değişim politikası: süre, koşullar, kargo, iade süreci.</p>",
+      },
+      en: {
+        title: "Returns & Exchange",
+        body: "<p>Returns and exchange policy: timeframe, conditions, shipping, refund process.</p>",
+      },
+    },
+    {
+      slug: "faq",
+      tr: {
+        title: "Sıkça Sorulan Sorular",
+        body: "<h3>Kargom ne zaman gelir?</h3><p>Ödenen siparişler 1-3 iş günü içinde kargolanır.</p><h3>İade yapabilir miyim?</h3><p>14 gün içinde etiketler takılı ürünleri iade edebilirsin.</p>",
+      },
+      en: {
+        title: "FAQ",
+        body: "<h3>When will my order ship?</h3><p>Paid orders ship within 1-3 business days.</p><h3>Can I return?</h3><p>You can return within 14 days with tags attached.</p>",
+      },
+    },
+  ];
+
+  for (const pg of pagesData) {
+    await db.page.upsert({
+      where: { slug: pg.slug },
+      update: {},
+      create: {
+        slug: pg.slug,
+        isPublished: true,
+        template: "default",
+        translations: {
+          create: [
+            {
+              locale: "tr",
+              title: pg.tr.title,
+              slug: pg.slug,
+              bodyHtml: pg.tr.body,
+              seoTitle: pg.tr.seoTitle ?? pg.tr.title,
+              seoDesc: pg.tr.seoDesc ?? pg.tr.title,
+            },
+            {
+              locale: "en",
+              title: pg.en.title,
+              slug: pg.slug,
+              bodyHtml: pg.en.body,
+              seoTitle: pg.en.seoTitle ?? pg.en.title,
+              seoDesc: pg.en.seoDesc ?? pg.en.title,
+            },
+          ],
+        },
+      },
+    });
+    console.log(`✓ page: ${pg.slug}`);
+  }
+
   console.log("✓ seed complete");
 }
 
