@@ -1,6 +1,8 @@
 import { Link } from "@/i18n/navigation";
 import { Reveal } from "@/components/shop/reveal";
 
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutSuccess({
   searchParams,
 }: {
