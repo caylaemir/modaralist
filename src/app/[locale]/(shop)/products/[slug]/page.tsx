@@ -7,6 +7,7 @@ import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
 import { TrackView } from "@/components/shop/track-view";
 import { ReviewForm } from "@/components/shop/review-form";
+import { RecentlyViewed } from "@/components/shop/recently-viewed";
 import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -220,6 +221,13 @@ export default async function ProductPage({
           </div>
         </section>
       )}
+
+      <RecentlyViewed
+        excludeSlug={product.slug}
+        locale={locale as "tr" | "en"}
+        title="— son baktıkların"
+        heading="Son baktıkların"
+      />
     </>
   );
 }

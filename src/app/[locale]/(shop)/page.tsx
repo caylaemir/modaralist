@@ -9,6 +9,8 @@ import { SplitText } from "@/components/shop/split-text";
 import { Reveal } from "@/components/shop/reveal";
 import { ArrowUpRight } from "lucide-react";
 import { getFeaturedProducts } from "@/lib/shop";
+import { getActiveHomepageBlocks } from "@/lib/homepage";
+import { DynamicBlocks } from "@/components/shop/blocks/dynamic-blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +94,10 @@ export default async function Home({
   const t = await getTranslations("Home");
   const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const dbProducts = await getFeaturedProducts(lang, 8);
+  const [dbProducts, activeBlocks] = await Promise.all([
+    getFeaturedProducts(lang, 8),
+    getActiveHomepageBlocks(),
+  ]);
   const featured: ProductCardData[] =
     dbProducts.length > 0
       ? dbProducts.map((p) => ({
@@ -105,6 +110,17 @@ export default async function Home({
           soldOut: p.soldOut,
         }))
       : FALLBACK_PRODUCTS;
+
+  // Admin'de aktif HomepageBlock varsa onları kullan, yoksa hardcoded fallback
+  if (activeBlocks.length > 0) {
+    return (
+      <>
+        <Splash />
+        <DynamicBlocks blocks={activeBlocks} locale={lang} />
+        <Newsletter />
+      </>
+    );
+  }
 
   return (
     <>
