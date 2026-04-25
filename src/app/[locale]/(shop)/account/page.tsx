@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { Link } from "@/i18n/navigation";
 import { Reveal } from "@/components/shop/reveal";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountHome() {
   const session = await auth();
 

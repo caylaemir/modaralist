@@ -4,6 +4,8 @@ import { Reveal } from "@/components/shop/reveal";
 import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 
+export const dynamic = "force-dynamic";
+
 const statusLabel: Record<string, string> = {
   PENDING: "Beklemede",
   PAID: "Ödendi",
