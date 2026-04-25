@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale, getMessages } from "next-intl/server";
@@ -30,11 +30,32 @@ export const metadata: Metadata = {
   },
   description:
     "Modaralist — modern siluetler, numaralı koleksiyonlar, sınırlı üretim.",
-  metadataBase: new URL("https://modaralist.com"),
+  metadataBase: new URL("https://modaralist.shop"),
+  applicationName: "Modaralist",
+  appleWebApp: {
+    capable: true,
+    title: "Modaralist",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     siteName: "Modaralist",
     type: "website",
   },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  colorScheme: "light",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export function generateStaticParams() {
