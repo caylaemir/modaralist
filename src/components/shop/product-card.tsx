@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/utils";
+import { WishlistHeart } from "./wishlist-heart";
 
 export type ProductCardData = {
   slug: string;
@@ -35,7 +36,9 @@ export function ProductCard({
         delay: (index % 4) * 0.1,
       }}
     >
-      <Link href={`/products/${product.slug}`} className="group block">
+      <div className="group relative">
+        <WishlistHeart slug={product.slug} />
+        <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
           <Image
             src={product.image}
@@ -78,6 +81,7 @@ export function ProductCard({
           </p>
         </div>
       </Link>
+      </div>
     </motion.div>
   );
 }
