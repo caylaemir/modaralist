@@ -4,7 +4,9 @@ import { Reveal } from "@/components/shop/reveal";
 import { db } from "@/lib/db";
 import type { Locale } from "@prisma/client";
 
-export const dynamic = "force-dynamic";
+// Statik sayfalar nadiren degisir — 1 saat cache.
+// Admin actions revalidatePath cagiriyor, anlik update OK.
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,

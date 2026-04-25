@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { initiateThreeDSPayment } from "@/lib/payment/iyzico";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const schema = z.object({
   lines: z
@@ -45,6 +46,15 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // 1 dakikada en fazla 10 checkout/IP — bot/spam koruma
+  const rl = rateLimit(`checkout:${getClientIp(req)}`, 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla istek. Birkaç saniye sonra dene." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
