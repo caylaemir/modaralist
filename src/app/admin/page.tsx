@@ -4,6 +4,7 @@ import type { OrderStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 import { ORDER_STATUS_LABELS, formatDateTimeTR } from "./orders/_lib";
+import { SalesChart } from "./_components/sales-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ function SecondaryStat({ label, value }: { label: string; value: string }) {
 export default async function AdminDashboard() {
   const todayStart = startOfToday();
   const pendingShipmentStatuses: OrderStatus[] = ["PAID", "PREPARING"];
+  const thirtyDaysAgo = new Date(todayStart.getTime() - 29 * 86400_000);
 
   const [
     todayOrderCount,
@@ -70,6 +72,8 @@ export default async function AdminDashboard() {
     totalCustomerCount,
     recentOrders,
     recentCustomers,
+    last30Orders,
+    topProducts,
   ] = await Promise.all([
     db.order.count({ where: { placedAt: { gte: todayStart } } }),
     db.order.aggregate({
@@ -112,7 +116,50 @@ export default async function AdminDashboard() {
       take: 5,
       select: { id: true, name: true, email: true, createdAt: true },
     }),
+    // Son 30 gün siparişler — chart için günlük gruplama (memory)
+    db.order.findMany({
+      where: {
+        placedAt: { gte: thirtyDaysAgo },
+        status: { notIn: ["CANCELLED", "REFUNDED"] },
+      },
+      select: { placedAt: true, grandTotal: true },
+    }),
+    // Top 5 ürün (son 30 günde sipariş kalemi sayısına göre)
+    db.orderItem.groupBy({
+      by: ["productNameSnapshot"],
+      where: {
+        order: {
+          placedAt: { gte: thirtyDaysAgo },
+          status: { notIn: ["CANCELLED", "REFUNDED"] },
+        },
+      },
+      _sum: { quantity: true, lineTotal: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 5,
+    }),
   ]);
+
+  // Daily aggregation for chart
+  const dailyMap = new Map<string, { revenue: number; orders: number }>();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(thirtyDaysAgo.getTime() + i * 86400_000);
+    const key = `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+    dailyMap.set(key, { revenue: 0, orders: 0 });
+  }
+  for (const o of last30Orders) {
+    const d = new Date(o.placedAt);
+    const key = `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const entry = dailyMap.get(key);
+    if (entry) {
+      entry.revenue += Number(o.grandTotal);
+      entry.orders += 1;
+    }
+  }
+  const chartPoints = Array.from(dailyMap.entries()).map(([date, v]) => ({
+    date,
+    revenue: v.revenue,
+    orders: v.orders,
+  }));
 
   const todayRevenue = Number(todayRevenueAgg._sum.grandTotal ?? 0);
 
@@ -167,6 +214,43 @@ export default async function AdminDashboard() {
           <SecondaryStat label="Toplam Müşteri" value={String(totalCustomerCount)} />
         </div>
       </section>
+
+      <section className="mt-16">
+        <Eyebrow>— ciro trendi</Eyebrow>
+        <div className="mt-3">
+          <SalesChart points={chartPoints} />
+        </div>
+      </section>
+
+      {topProducts.length > 0 ? (
+        <section className="mt-16">
+          <Eyebrow>— en çok satan</Eyebrow>
+          <h2 className="display mt-3 text-2xl leading-none">Top 5 ürün (30 gün)</h2>
+          <ul className="mt-6">
+            {topProducts.map((p, i) => (
+              <li
+                key={p.productNameSnapshot}
+                className="flex items-center justify-between gap-4 border-t border-line py-4 last:border-b text-sm"
+              >
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <span className="display text-2xl tabular-nums text-mist">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="truncate">{p.productNameSnapshot}</span>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="tabular-nums">
+                    {p._sum.quantity ?? 0} adet
+                  </p>
+                  <p className="text-[11px] tabular-nums text-mist">
+                    {formatPrice(Number(p._sum.lineTotal ?? 0), "tr")}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2">
         <div>
