@@ -1,11 +1,13 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Phone, MapPin, Mail } from "lucide-react";
 import { getAllSettings } from "@/lib/settings";
 
 export async function Footer() {
-  const t = useTranslations("Footer");
-  const settings = await getAllSettings();
+  const [t, settings] = await Promise.all([
+    getTranslations("Footer"),
+    getAllSettings(),
+  ]);
 
   const socials = [
     { url: settings["social.instagram"], label: "Instagram" },
