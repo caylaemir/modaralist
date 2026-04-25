@@ -81,6 +81,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    // NOT: 'authorized' callback'i sadece next-auth middleware tarafindan
+    // cagrilir. Bu projede src/middleware.ts veya src/proxy.ts auth-aware
+    // degil — yetkilendirme app/admin/layout.tsx icindeki redirect() ile
+    // server-side yapiliyor (HTTP 307). Burada birakirsam ileride bir gun
+    // proxy.ts auth'a baglanırsa ek bir guard katmani olur — uzun vadeli
+    // belki, kisa vadede dead code.
     authorized({ auth, request }) {
       const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
       if (!isAdminRoute) return true;

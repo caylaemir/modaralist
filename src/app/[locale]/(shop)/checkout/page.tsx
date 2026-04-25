@@ -1,17 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useCart } from "@/stores/cart";
 import { formatPrice } from "@/lib/utils";
 import { Reveal } from "@/components/shop/reveal";
 import { toast } from "sonner";
+import { TR_CITIES } from "@/lib/tr-cities";
 
 type Step = "contact" | "address" | "payment";
 
-const CITIES = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Kayseri"];
+type Rates = { standard: number; express: number; freeOver: number };
+const DEFAULT_RATES: Rates = { standard: 0, express: 89, freeOver: 0 };
 
 export default function CheckoutPage() {
   const locale = useLocale() as "tr" | "en";
@@ -39,8 +41,31 @@ export default function CheckoutPage() {
     distanceSalesOk: false,
   });
 
-  const shippingCost = form.shippingMethod === "express" ? 89 : 0;
+  const [rates, setRates] = useState<Rates>(DEFAULT_RATES);
+  useEffect(() => {
+    fetch("/api/public-config")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.shop) {
+          setRates({
+            standard: d.shop.shippingStandard ?? 0,
+            express: d.shop.shippingExpress ?? 89,
+            freeOver: d.shop.freeShippingOver ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const sub = subtotal();
+  const baseShipping =
+    form.shippingMethod === "express" ? rates.express : rates.standard;
+  const shippingCost =
+    rates.freeOver > 0 &&
+    sub >= rates.freeOver &&
+    form.shippingMethod === "standard"
+      ? 0
+      : baseShipping;
   const total = sub + shippingCost;
 
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
@@ -238,7 +263,7 @@ export default function CheckoutPage() {
                     onChange={(e) => set("city", e.target.value)}
                     className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
                   >
-                    {CITIES.map((c) => (
+                    {TR_CITIES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
@@ -291,14 +316,19 @@ export default function CheckoutPage() {
                     {
                       k: "standard",
                       label: "Standart — 2-4 iş günü",
-                      price: 0,
-                      note: "Ücretsiz",
+                      price: rates.standard,
+                      note:
+                        rates.standard === 0
+                          ? "Ücretsiz"
+                          : rates.freeOver > 0 && sub >= rates.freeOver
+                            ? "Ücretsiz (eşik aşıldı)"
+                            : formatPrice(rates.standard, locale),
                     },
                     {
                       k: "express",
                       label: "Hızlı — ertesi iş günü",
-                      price: 89,
-                      note: formatPrice(89, locale),
+                      price: rates.express,
+                      note: formatPrice(rates.express, locale),
                     },
                   ].map((opt) => (
                     <label
