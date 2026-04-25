@@ -30,8 +30,17 @@ export function Header() {
   const links = [
     { href: "/shop", label: t("shop") },
     { href: "/drops", label: t("drops") },
-    { href: "/about", label: t("about") },
-    { href: "/contact", label: t("contact") },
+    { href: "/pages/about", label: t("about") },
+    { href: "/pages/contact", label: t("contact") },
+  ];
+
+  const categories = [
+    { slug: "tisort", label: "Tişört" },
+    { slug: "sweat", label: "Sweat" },
+    { slug: "oversize-sweatshirt", label: "Oversize Sweatshirt" },
+    { slug: "outdoor-polar", label: "Outdoor Polar" },
+    { slug: "esofman", label: "Eşofman" },
+    { slug: "sort", label: "Şort" },
   ];
 
   return (
@@ -52,7 +61,41 @@ export function Header() {
         </button>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
-          {links.map((l) => (
+          {/* Mağaza dropdown — kategori shortcut'ları */}
+          <div className="group relative">
+            <Link
+              href="/shop"
+              className="caps-wide flex items-center gap-1 text-xs text-ink transition-opacity hover:opacity-60"
+            >
+              {t("shop")}
+            </Link>
+            <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              <div className="min-w-[220px] border border-line bg-paper py-3 shadow-sm">
+                <ul className="flex flex-col">
+                  {categories.map((c) => (
+                    <li key={c.slug}>
+                      <Link
+                        href={`/shop/${c.slug}`}
+                        className="block px-5 py-2 text-[13px] text-ink hover:bg-bone"
+                      >
+                        {c.label}
+                      </Link>
+                    </li>
+                  ))}
+                  <li className="mt-1 border-t border-line pt-1">
+                    <Link
+                      href="/shop"
+                      className="block px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-mist hover:text-ink"
+                    >
+                      Tüm Mağaza →
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {links.slice(1).map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -125,6 +168,21 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
+            <div className="mt-8 border-t border-line pt-8">
+              <p className="caps-wide text-[10px] text-mist">Kategoriler</p>
+              <ul className="mt-4 flex flex-col gap-3">
+                {categories.map((c) => (
+                  <li key={c.slug}>
+                    <Link
+                      href={`/shop/${c.slug}`}
+                      className="text-base"
+                    >
+                      {c.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <Link href="/account" className="caps-wide mt-10 text-xs">
               {t("account")}
             </Link>

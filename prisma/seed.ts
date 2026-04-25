@@ -45,13 +45,22 @@ async function main() {
     )
   );
 
-  // Categories
+  // Categories — Marmara odaklı SEO için Türkçe slug
   const categoriesData = [
+    { slug: "tisort", nameTr: "Tişört", nameEn: "T-Shirt" },
+    { slug: "sweat", nameTr: "Sweat", nameEn: "Sweat" },
+    {
+      slug: "oversize-sweatshirt",
+      nameTr: "Oversize Sweatshirt",
+      nameEn: "Oversize Sweatshirt",
+    },
+    { slug: "outdoor-polar", nameTr: "Outdoor Polar", nameEn: "Outdoor Fleece" },
+    { slug: "esofman", nameTr: "Eşofman", nameEn: "Sweatpants" },
+    { slug: "sort", nameTr: "Şort", nameEn: "Shorts" },
+    // Eski genel kategoriler (varsa korumak için)
     { slug: "tops", nameTr: "Üst Giyim", nameEn: "Tops" },
     { slug: "bottoms", nameTr: "Alt Giyim", nameEn: "Bottoms" },
-    { slug: "dresses", nameTr: "Elbise", nameEn: "Dresses" },
     { slug: "outerwear", nameTr: "Dış Giyim", nameEn: "Outerwear" },
-    { slug: "knitwear", nameTr: "Triko", nameEn: "Knitwear" },
   ];
   const categoryMap = new Map<string, string>();
   for (const c of categoriesData) {

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Phone, MapPin, Mail } from "lucide-react";
 import { getAllSettings } from "@/lib/settings";
+import { CATEGORY_SEO_TR } from "@/lib/category-seo";
 
 export async function Footer() {
   const [t, settings] = await Promise.all([
@@ -32,6 +33,31 @@ export async function Footer() {
         </div>
 
         <div>
+          <p className="eyebrow mb-5 text-mist">Kategoriler</p>
+          <ul className="space-y-3 text-sm">
+            {Object.values(CATEGORY_SEO_TR).map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/shop/${c.slug}`}
+                  className="hover:opacity-60"
+                  title={`${c.name} modelleri — Marmara'ya hızlı kargo`}
+                >
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                href="/shop"
+                className="text-mist underline-offset-4 hover:text-ink hover:underline"
+              >
+                Tüm Mağaza
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
           <p className="eyebrow mb-5 text-mist">{t("drops")}</p>
           <ul className="space-y-3 text-sm">
             <li>
@@ -40,13 +66,13 @@ export async function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/shop" className="hover:opacity-60">
-                Mağaza
+              <Link href="/track" className="hover:opacity-60">
+                Sipariş Takibi
               </Link>
             </li>
             <li>
-              <Link href="/track" className="hover:opacity-60">
-                Sipariş Takibi
+              <Link href="/search" className="hover:opacity-60">
+                Ara
               </Link>
             </li>
           </ul>

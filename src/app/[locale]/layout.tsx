@@ -95,21 +95,54 @@ export default async function LocaleLayout({
 
   const orgJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "OnlineStore"],
     name: settings?.["site.title"] || "Modaralist",
     url: base,
     logo: `${base}/logo.svg`,
     sameAs,
+    description:
+      "Marmara bölgesinde tişört, sweat, oversize sweatshirt, outdoor polar, eşofman ve şort modelleri. Numaralı koleksiyonlar, sınırlı üretim.",
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: "Marmara Bölgesi, Türkiye",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "İstanbul",
+      addressCountry: "TR",
+      ...(settings?.["contact.address"]
+        ? { streetAddress: settings["contact.address"] }
+        : {}),
+    },
     contactPoint: settings?.["contact.email"]
       ? {
           "@type": "ContactPoint",
           email: settings["contact.email"],
           contactType: "customer support",
+          areaServed: "TR",
+          availableLanguage: ["Turkish", "English"],
           ...(settings["contact.phone"]
             ? { telephone: settings["contact.phone"] }
             : {}),
         }
       : undefined,
+  };
+
+  // WebSite + SearchAction (sitelinks search box için)
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Modaralist",
+    url: base,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${base}/${locale}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+    inLanguage: locale === "en" ? "en-US" : "tr-TR",
   };
 
   return (
@@ -122,6 +155,10 @@ export default async function LocaleLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <Providers>
