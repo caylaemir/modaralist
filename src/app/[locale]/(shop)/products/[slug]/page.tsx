@@ -9,6 +9,7 @@ import { TrackView } from "@/components/shop/track-view";
 import { ReviewForm } from "@/components/shop/review-form";
 import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getProduct, getRelatedProducts } from "@/lib/shop";
 
 export async function generateMetadata({
@@ -48,6 +49,20 @@ export default async function ProductPage({
 
   if (!product) notFound();
   const isLoggedIn = !!session?.user?.id;
+
+  // Onaylı yorumlar
+  const approvedReviews = await db.review
+    .findMany({
+      where: { productId: product.id, status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: { user: { select: { name: true } } },
+    })
+    .catch(() => []);
+  const avgRating =
+    approvedReviews.length > 0
+      ? approvedReviews.reduce((s, r) => s + r.rating, 0) / approvedReviews.length
+      : 0;
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
   const productJsonLd = {
@@ -132,6 +147,44 @@ export default async function ProductPage({
       </section>
 
       <section className="mx-auto mt-32 max-w-3xl px-5 md:px-10">
+        {approvedReviews.length > 0 ? (
+          <div className="border-t border-line pt-10">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — yorumlar
+                </p>
+                <h3 className="display mt-3 text-3xl">
+                  {avgRating.toFixed(1)} / 5
+                </h3>
+              </div>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-mist">
+                {approvedReviews.length} yorum
+              </p>
+            </div>
+            <ul className="mt-10 space-y-8">
+              {approvedReviews.map((r) => (
+                <li key={r.id} className="border-b border-line pb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="tabular-nums">
+                      {"★".repeat(r.rating)}
+                      <span className="text-mist">{"★".repeat(5 - r.rating)}</span>
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] text-mist">
+                      {r.user.name ?? "Misafir"}
+                    </span>
+                  </div>
+                  {r.title ? <p className="mt-3 font-medium">{r.title}</p> : null}
+                  {r.body ? (
+                    <p className="mt-2 text-sm leading-relaxed text-mist">
+                      {r.body}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <ReviewForm productSlug={product.slug} isLoggedIn={isLoggedIn} />
       </section>
 

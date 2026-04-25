@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { initiateThreeDSPayment } from "@/lib/payment/iyzico";
 import { restoreStockForOrder } from "@/lib/stock";
+import { getAllSettings } from "@/lib/settings";
 
 const schema = z.object({
   lines: z
@@ -57,8 +58,14 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
+  // Kargo + ücretsiz kargo eşiği Settings'ten okunur — admin panelden değiştirilebilir
+  const settings = await getAllSettings();
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
-  const shippingCost = shippingMethod === "express" ? 89 : 0;
+  const standardCost = Number(settings["shop.shippingStandard"] ?? 0) || 0;
+  const expressCost = Number(settings["shop.shippingExpress"] ?? 89) || 89;
+  const freeOver = Number(settings["shop.freeShippingOver"] ?? 0) || 0;
+  const baseShipping = shippingMethod === "express" ? expressCost : standardCost;
+  const shippingCost = freeOver > 0 && subtotal >= freeOver && shippingMethod === "standard" ? 0 : baseShipping;
   const grandTotal = subtotal + shippingCost;
 
   const orderNumber = `MDR-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`;
