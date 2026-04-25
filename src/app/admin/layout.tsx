@@ -16,6 +16,7 @@ import {
   Star,
   Home,
 } from "lucide-react";
+import { SidebarToggle } from "./_components/sidebar-toggle";
 import "../globals.css";
 
 const sans = Inter({
@@ -85,11 +86,28 @@ export default async function AdminLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-bone text-ink antialiased">
+        {/* Mobile topbar */}
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-paper px-4 md:hidden">
+          <SidebarToggle />
+          <div className="flex items-center gap-2">
+            <span className="display text-xl leading-none">modaralist</span>
+            <span className="inline-flex h-4 items-center rounded-sm bg-ink px-1.5 text-[8px] font-medium uppercase tracking-[0.25em] text-paper">
+              admin
+            </span>
+          </div>
+        </header>
+
         <div className="flex min-h-screen">
-          <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-line bg-paper">
-            <div className="flex h-20 items-center gap-3 border-b border-line px-7">
+          <aside className="admin-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-paper md:translate-x-0">
+            <div className="hidden h-20 items-center gap-3 border-b border-line px-7 md:flex">
               <span className="display text-2xl leading-none">modaralist</span>
               <span className="inline-flex h-5 items-center rounded-sm bg-ink px-2 text-[9px] font-medium uppercase tracking-[0.25em] text-paper">
+                admin
+              </span>
+            </div>
+            <div className="flex h-14 items-center gap-3 border-b border-line px-6 md:hidden">
+              <span className="display text-xl leading-none">modaralist</span>
+              <span className="inline-flex h-4 items-center rounded-sm bg-ink px-1.5 text-[8px] font-medium uppercase tracking-[0.25em] text-paper">
                 admin
               </span>
             </div>
@@ -123,7 +141,9 @@ export default async function AdminLayout({
             </div>
           </aside>
 
-          <main className="ml-64 flex-1 px-10 py-10">{children}</main>
+          <main className="flex-1 px-5 py-6 md:ml-64 md:px-10 md:py-10">
+            {children}
+          </main>
         </div>
         <Toaster position="bottom-right" richColors />
       </body>
