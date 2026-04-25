@@ -7,6 +7,10 @@ import { AnnouncementBanner } from "@/components/shop/announcement-banner";
 import { MaintenanceGate } from "@/components/shop/maintenance-gate";
 import { setRequestLocale } from "next-intl/server";
 
+// Settings/auth/db sorgulari layout'ta — tum shop sayfalari dinamik
+// (statik prerender 'Expected a suspended thenable' hatasi veriyordu)
+export const dynamic = "force-dynamic";
+
 export default async function ShopLayout({
   children,
   params,
