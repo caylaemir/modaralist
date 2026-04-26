@@ -5,6 +5,7 @@ import { SmoothScroll } from "@/components/shop/smooth-scroll";
 import { CookieBanner } from "@/components/shop/cookie-banner";
 import { AnnouncementBanner } from "@/components/shop/announcement-banner";
 import { MaintenanceGate } from "@/components/shop/maintenance-gate";
+import { NewsletterPopup } from "@/components/shop/newsletter-popup";
 import { setRequestLocale } from "next-intl/server";
 
 // Settings/auth/db sorgulari layout'ta — tum shop sayfalari dinamik
@@ -30,6 +31,7 @@ export default async function ShopLayout({
       <Footer />
       <CartDrawer locale={locale as "tr" | "en"} />
       <CookieBanner />
+      <NewsletterPopup />
     </MaintenanceGate>
   );
 }

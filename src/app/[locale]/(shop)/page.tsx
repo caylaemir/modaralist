@@ -11,6 +11,7 @@ import { ArrowUpRight } from "lucide-react";
 import { getFeaturedProducts } from "@/lib/shop";
 import { getActiveHomepageBlocks } from "@/lib/homepage";
 import { DynamicBlocks } from "@/components/shop/blocks/dynamic-blocks";
+import { ActiveDropBanner } from "@/components/shop/active-drop-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -126,6 +127,7 @@ export default async function Home({
     <>
       <Splash />
       <Hero />
+      <ActiveDropBanner locale={lang} />
 
       <Marquee
         items={[
