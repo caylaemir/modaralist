@@ -30,32 +30,33 @@ const MARMARA_CITIES = [
 ];
 
 export const CATEGORY_SEO_TR: Record<string, CategorySeo> = {
-  tisort: {
-    slug: "tisort",
-    name: "Tişört",
-    h1: "Tişört Modelleri — Marmara Bölgesi'ne Hızlı Kargo",
-    metaTitle:
-      "Tişört Modelleri | Erkek & Kadın Tişört | Modaralist Marmara",
+  tshirt: {
+    slug: "tshirt",
+    name: "Tshirt",
+    h1: "Tshirt Modelleri — Marmara Bölgesi'ne Hızlı Kargo",
+    metaTitle: "Tshirt Modelleri | Erkek & Kadın Tshirt | Modaralist Marmara",
     metaDescription:
-      "Marmara bölgesinde en yeni tişört modelleri Modaralist'te. İstanbul, Bursa, Kocaeli'ne aynı gün kargo. %100 pamuk basic, oversize ve baskılı tişört seçenekleri.",
+      "Marmara bölgesinde en yeni tshirt modelleri Modaralist'te. İstanbul, Bursa, Kocaeli'ne aynı gün kargo. %100 pamuk basic, oversize ve baskılı tshirt seçenekleri.",
     intro:
-      "Marmara'nın her köşesine ulaşan basic, oversize ve baskılı tişört koleksiyonumuz. %100 pamuk, sezonun parçaları, sınırlı üretim.",
+      "Marmara'nın her köşesine ulaşan basic, oversize ve baskılı tshirt koleksiyonumuz. %100 pamuk, sezonun parçaları, sınırlı üretim.",
     longDescription:
-      "Modaralist tişört koleksiyonu Marmara bölgesinde modaya yön verenler için tasarlandı. " +
+      "Modaralist tshirt koleksiyonu Marmara bölgesinde modaya yön verenler için tasarlandı. " +
       "Premium pamuk dokular, modern kesimler ve şehirli silüetler. İstanbul, Bursa, Kocaeli, " +
       "Tekirdağ, Sakarya, Yalova, Balıkesir, Çanakkale ve diğer Marmara şehirlerine 1-2 iş günü içinde " +
-      "kargolanır. Erkek ve kadın için basic tişört, oversize tişört, baskılı tişört modelleri. " +
+      "kargolanır. Erkek ve kadın için basic tshirt, oversize tshirt, baskılı tshirt modelleri. " +
       "Yıkamaya dayanıklı kumaş, solmayan baskı, sezonsuz silüet — drop'lar bittiğinde bir daha basılmaz.",
     keywords: [
+      "tshirt",
+      "t-shirt",
       "tişört",
-      "marmara tişört",
-      "istanbul tişört",
-      "oversize tişört",
-      "basic tişört",
-      "pamuk tişört",
-      "kadın tişört",
-      "erkek tişört",
-      "online tişört",
+      "marmara tshirt",
+      "istanbul tshirt",
+      "oversize tshirt",
+      "basic tshirt",
+      "pamuk tshirt",
+      "kadın tshirt",
+      "erkek tshirt",
+      "online tshirt",
     ],
   },
   sweatshirt: {

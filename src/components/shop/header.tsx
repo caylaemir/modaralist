@@ -35,7 +35,7 @@ export function Header() {
   ];
 
   const categories = [
-    { slug: "tisort", label: "Tişört" },
+    { slug: "tshirt", label: "Tshirt" },
     { slug: "sweatshirt", label: "Sweatshirt" },
     { slug: "oversize", label: "Oversize" },
     { slug: "outdoor", label: "Outdoor" },

@@ -47,7 +47,7 @@ async function main() {
 
   // Categories — Marmara odaklı SEO için Türkçe slug
   const categoriesData = [
-    { slug: "tisort", nameTr: "Tişört", nameEn: "T-Shirt" },
+    { slug: "tshirt", nameTr: "Tshirt", nameEn: "Tshirt" },
     { slug: "sweatshirt", nameTr: "Sweatshirt", nameEn: "Sweatshirt" },
     { slug: "oversize", nameTr: "Oversize", nameEn: "Oversize" },
     { slug: "outdoor", nameTr: "Outdoor", nameEn: "Outdoor" },
