@@ -64,6 +64,18 @@ export const SETTING_DEFAULTS = {
     "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
   "popup.ctaLabel": "İndirim Kodumu Gönder",
   "popup.discountCode": "",
+
+  // WhatsApp destek butonu (sag-alt float)
+  "whatsapp.enabled": "false",
+  "whatsapp.number": "",
+  "whatsapp.message": "Merhaba, Modaralist sitesinden yazıyorum.",
+
+  // Guvenlik — admin 2FA toggle (placeholder, gerek olunca implement)
+  "security.adminTwoFactorEnabled": "false",
+
+  // Free shipping A/B test (true ise alternatif esik kullanilir)
+  "shop.freeShippingAB": "false",
+  "shop.freeShippingOverB": "1000",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
@@ -291,6 +303,60 @@ export const SETTING_SECTIONS: Array<{
         label: "3+ ürün indirimi (%)",
         type: "number",
         hint: "Sepette 3 veya daha fazla ürün varken en ucuz olanına uygulanan yüzde.",
+      },
+    ],
+  },
+  {
+    id: "whatsapp",
+    title: "WhatsApp Destek",
+    eyebrow: "— canlı destek",
+    description:
+      "Sağ-alt köşede beliren WhatsApp butonu. Müşteri tıklayınca direkt WhatsApp uygulamasına yönlenir, hazır mesaj gelir. Numarayı uluslararası formatta gir (905XXXXXXXXX).",
+    fields: [
+      { key: "whatsapp.enabled", label: "Buton aktif", type: "boolean" },
+      {
+        key: "whatsapp.number",
+        label: "WhatsApp numarası",
+        type: "text",
+        placeholder: "905551112233",
+        hint: "Sadece rakam, + işareti ve boşluk olmadan. Türkiye için 90 ile başla.",
+      },
+      {
+        key: "whatsapp.message",
+        label: "Hazır mesaj",
+        type: "text",
+        placeholder: "Merhaba, Modaralist sitesinden yazıyorum.",
+      },
+    ],
+  },
+  {
+    id: "security",
+    title: "Güvenlik",
+    eyebrow: "— admin",
+    description:
+      "Admin paneline ek koruma. 2FA (Google Authenticator) ileride aktif edilince login sırasında 6 haneli kod istenir.",
+    fields: [
+      {
+        key: "security.adminTwoFactorEnabled",
+        label: "Admin 2FA zorunlu",
+        type: "boolean",
+        hint: "(Henüz implement edilmedi — toggle açıldığında uyarı verilir, gerek duyduğunda söyle eklerim.)",
+      },
+    ],
+  },
+  {
+    id: "ab",
+    title: "Free Shipping A/B Test",
+    eyebrow: "— deney",
+    description:
+      "Aktifken kullanıcının rastgele yarısı 'B' eşiğini görür. Hangi eşik daha çok satışa dönüşüyor karşılaştırılır. (Settings'ten manuel okunan basit deney — istatistik için Cookie ile sticky.)",
+    fields: [
+      { key: "shop.freeShippingAB", label: "A/B testi aktif", type: "boolean" },
+      {
+        key: "shop.freeShippingOverB",
+        label: "B varyantı eşiği (₺)",
+        type: "number",
+        hint: "A varyantı yukardaki standart eşik. B yarısı bu eşiği görür.",
       },
     ],
   },

@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import DOMPurify from "isomorphic-dompurify";
 import { Reveal } from "@/components/shop/reveal";
+import { FaqAccordion } from "@/components/shop/faq-accordion";
 import { db } from "@/lib/db";
+import { FAQS_TR, FAQS_EN, faqJsonLd } from "@/lib/faq";
 import type { Locale } from "@prisma/client";
 
 // Statik sayfalar nadiren degisir — 1 saat cache.
@@ -60,8 +62,18 @@ export default async function StaticPage({
   }
   if (!tr) notFound();
 
+  // SSS sayfasinda accordion + FAQPage JSON-LD ek olarak basilir
+  const isFaq = slug === "faq" || slug === "sss";
+  const faqs = isFaq ? (lang === "en" ? FAQS_EN : FAQS_TR) : [];
+
   return (
     <main className="mx-auto max-w-3xl px-5 pt-24 pb-32 md:px-10 md:pt-40">
+      {isFaq && faqs.length > 0 ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      ) : null}
       <Reveal>
         <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
           — {page.slug}
@@ -93,6 +105,12 @@ export default async function StaticPage({
           }}
         />
       </Reveal>
+
+      {isFaq && faqs.length > 0 ? (
+        <Reveal delay={0.4}>
+          <FaqAccordion items={faqs} />
+        </Reveal>
+      ) : null}
     </main>
   );
 }

@@ -16,13 +16,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.product
       .findMany({
         where: { status: "PUBLISHED" },
-        select: { slug: true, updatedAt: true },
+        select: {
+          slug: true,
+          updatedAt: true,
+          // Image sitemap icin urunun ilk 3 gorseli (Google Image Search)
+          images: {
+            orderBy: { sortOrder: "asc" },
+            take: 3,
+            select: { url: true },
+          },
+        },
       })
       .catch(() => []),
     db.collection
       .findMany({
         where: { status: { in: ["LIVE", "UPCOMING"] } },
-        select: { slug: true, createdAt: true },
+        select: { slug: true, createdAt: true, heroImageUrl: true },
       })
       .catch(() => []),
     db.page
@@ -60,6 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: p.updatedAt,
         changeFrequency: "weekly",
         priority: 0.8,
+        images: p.images.map((i) => i.url).filter(Boolean),
       });
     }
     for (const c of collections) {
@@ -68,6 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: c.createdAt,
         changeFrequency: "daily",
         priority: 0.9,
+        images: c.heroImageUrl ? [c.heroImageUrl] : undefined,
       });
     }
     // Dinamik /pages/[slug] — Page modelinde yayindaki tum kayitlar
