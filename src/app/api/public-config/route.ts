@@ -17,6 +17,21 @@ export async function GET() {
         shippingExpress: Number(s["shop.shippingExpress"]) || 89,
         freeShippingOver: Number(s["shop.freeShippingOver"]) || 0,
       },
+      bundle: {
+        enabled: s["bundle.enabled"] === "true",
+        minSubtotal: Number(s["bundle.minSubtotal"]) || 0,
+        tier2Discount: Number(s["bundle.tier2Discount"]) || 0,
+        tier3Discount: Number(s["bundle.tier3Discount"]) || 0,
+      },
+      popup: {
+        enabled: s["popup.enabled"] === "true",
+        delaySeconds: Number(s["popup.delaySeconds"]) || 15,
+        eyebrow: s["popup.eyebrow"] || "",
+        title: s["popup.title"] || "",
+        subtitle: s["popup.subtitle"] || "",
+        ctaLabel: s["popup.ctaLabel"] || "Gönder",
+        discountCode: s["popup.discountCode"] || "",
+      },
     },
     {
       headers: {

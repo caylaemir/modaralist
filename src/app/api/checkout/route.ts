@@ -7,6 +7,7 @@ import { initiateThreeDSPayment } from "@/lib/payment/iyzico";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { calculateBundleDiscount, parseBundleConfig } from "@/lib/cart-bundle";
 
 const schema = z.object({
   lines: z
@@ -76,7 +77,25 @@ export async function POST(req: NextRequest) {
   const freeOver = Number(settings["shop.freeShippingOver"] ?? 0) || 0;
   const baseShipping = shippingMethod === "express" ? expressCost : standardCost;
   const shippingCost = freeOver > 0 && subtotal >= freeOver && shippingMethod === "standard" ? 0 : baseShipping;
-  const grandTotal = subtotal + shippingCost;
+
+  // Bundle indirimi (sepet 2+ ürün, min tutarı geçmiş, en ucuz parçaya)
+  const bundleConfig = parseBundleConfig({
+    "bundle.enabled": settings["bundle.enabled"],
+    "bundle.minSubtotal": settings["bundle.minSubtotal"],
+    "bundle.tier2Discount": settings["bundle.tier2Discount"],
+    "bundle.tier3Discount": settings["bundle.tier3Discount"],
+  });
+  const bundle = calculateBundleDiscount(
+    lines.map((l) => ({
+      variantId: l.variantId,
+      unitPrice: l.unitPrice,
+      quantity: l.quantity,
+    })),
+    subtotal,
+    bundleConfig
+  );
+  const bundleDiscount = bundle.applied ? bundle.discountAmount : 0;
+  const grandTotal = Math.max(0, subtotal + shippingCost - bundleDiscount);
 
   const orderNumber = `MDR-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`;
   const [name, ...rest] = customer.fullName.trim().split(" ");
@@ -110,6 +129,7 @@ export async function POST(req: NextRequest) {
           phone: customer.phone,
           subtotal,
           shippingCost,
+          discountTotal: bundleDiscount,
           grandTotal,
           status: "PENDING",
           paymentStatus: "PENDING",

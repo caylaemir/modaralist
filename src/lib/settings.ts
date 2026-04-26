@@ -45,6 +45,25 @@ export const SETTING_DEFAULTS = {
   "legal.taxOffice": "",
   "legal.taxNumber": "",
   "legal.mersisNumber": "",
+
+  // Sepet paket indirimi (bundle discount)
+  // Sepete 2.+3. urun ekleyince en ucuz parcaya indirim uygulanir.
+  // 'En ucuz'a verilir cunku uyanik kullanici 1 pahali + 1 ucuz koyup
+  // pahaliya indirim almasin.
+  "bundle.enabled": "false",
+  "bundle.minSubtotal": "800",
+  "bundle.tier2Discount": "15",
+  "bundle.tier3Discount": "40",
+
+  // Newsletter popup (15sn sonra ilk ziyarette)
+  "popup.enabled": "true",
+  "popup.delaySeconds": "15",
+  "popup.eyebrow": "— ilk siparişine özel",
+  "popup.title": "%10 indirim hemen senin.",
+  "popup.subtitle":
+    "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
+  "popup.ctaLabel": "İndirim Kodumu Gönder",
+  "popup.discountCode": "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
@@ -240,6 +259,88 @@ export const SETTING_SECTIONS: Array<{
       { key: "legal.taxOffice", label: "Vergi dairesi", type: "text" },
       { key: "legal.taxNumber", label: "Vergi no", type: "text" },
       { key: "legal.mersisNumber", label: "MERSİS no", type: "text" },
+    ],
+  },
+  {
+    id: "bundle",
+    title: "Sepet Paket İndirimi",
+    eyebrow: "— upsell",
+    description:
+      "Sepete 2. ürün eklenince en ucuz parçaya %X, 3. ürün eklenince %Y indirim uygulanır. İndirim her zaman EN UCUZ ürüne uygulanır (uyanık kullanıcıyı engellemek için). Min sepet tutarı altında çalışmaz.",
+    fields: [
+      {
+        key: "bundle.enabled",
+        label: "Bundle indirimi aktif",
+        type: "boolean",
+        hint: "Aktif değilken hiçbir indirim uygulanmaz, sepet drawer'ında da gösterilmez.",
+      },
+      {
+        key: "bundle.minSubtotal",
+        label: "Min sepet tutarı (₺)",
+        type: "number",
+        hint: "Sepet bu tutarın altındaysa bundle indirimi uygulanmaz. 0 yazarsan her tutarda aktif.",
+      },
+      {
+        key: "bundle.tier2Discount",
+        label: "2. ürün indirimi (%)",
+        type: "number",
+        hint: "Sepette tam 2 ürün varken en ucuz olanına uygulanan yüzde.",
+      },
+      {
+        key: "bundle.tier3Discount",
+        label: "3+ ürün indirimi (%)",
+        type: "number",
+        hint: "Sepette 3 veya daha fazla ürün varken en ucuz olanına uygulanan yüzde.",
+      },
+    ],
+  },
+  {
+    id: "popup",
+    title: "Newsletter Popup",
+    eyebrow: "— popup",
+    description:
+      "Site'ye ilk geldiğinde gösterilecek email toplama modal'ı. Kullanıcı kapatırsa bir daha gösterilmez (localStorage). İndirim kodunu otomatik yollamak için bir kupon oluşturup kodu buraya yaz.",
+    fields: [
+      {
+        key: "popup.enabled",
+        label: "Popup aktif",
+        type: "boolean",
+      },
+      {
+        key: "popup.delaySeconds",
+        label: "Gösterme gecikmesi (saniye)",
+        type: "number",
+        hint: "Sayfa yüklendikten kaç saniye sonra modal açılsın.",
+      },
+      {
+        key: "popup.eyebrow",
+        label: "Üst label",
+        type: "text",
+        placeholder: "— ilk siparişine özel",
+      },
+      {
+        key: "popup.title",
+        label: "Başlık",
+        type: "text",
+        placeholder: "%10 indirim hemen senin.",
+      },
+      {
+        key: "popup.subtitle",
+        label: "Alt metin",
+        type: "textarea",
+      },
+      {
+        key: "popup.ctaLabel",
+        label: "Buton metni",
+        type: "text",
+        placeholder: "İndirim Kodumu Gönder",
+      },
+      {
+        key: "popup.discountCode",
+        label: "Kupon kodu (opsiyonel)",
+        type: "text",
+        hint: "Kayıt olunca müşteriye gösterilen kod (sonra Resend ile mail atılacak).",
+      },
     ],
   },
 ];

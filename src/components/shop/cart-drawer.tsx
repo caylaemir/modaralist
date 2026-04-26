@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { Minus, Plus, X } from "lucide-react";
 import { FreeShippingBar } from "./free-shipping-bar";
+import { BundleDiscount } from "./bundle-discount";
 
 export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
   const t = useTranslations("Cart");
@@ -53,6 +54,15 @@ export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
             ) : (
               <>
                 <FreeShippingBar subtotal={subtotal()} locale={locale} />
+                <BundleDiscount
+                  lines={lines.map((l) => ({
+                    variantId: l.variantId,
+                    unitPrice: l.unitPrice,
+                    quantity: l.quantity,
+                  }))}
+                  subtotal={subtotal()}
+                  locale={locale}
+                />
                 <div className="flex-1 overflow-y-auto px-6 py-6">
                   <ul className="space-y-6">
                     {lines.map((l) => (
