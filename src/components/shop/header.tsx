@@ -38,7 +38,8 @@ export function Header() {
     { slug: "tisort", label: "Tişört" },
     { slug: "sweatshirt", label: "Sweatshirt" },
     { slug: "oversize", label: "Oversize" },
-    { slug: "outdoor-polar", label: "Outdoor Polar" },
+    { slug: "outdoor", label: "Outdoor" },
+    { slug: "polar", label: "Polar" },
     { slug: "esofman", label: "Eşofman" },
     { slug: "sort", label: "Şort" },
   ];
