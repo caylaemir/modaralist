@@ -34,10 +34,25 @@ export async function bulkUpdateProductsAction(
   const status = ACTION_TO_STATUS[action];
   if (!status) return { ok: false, error: "Geçersiz aksiyon" };
 
-  await db.product.updateMany({
-    where: { id: { in: ids } },
-    data: { status, publishedAt: status === "PUBLISHED" ? new Date() : null },
-  });
+  // publishedAt: yalnızca İLK publish'te set et — sonraki publish'lerde
+  // history korunsun. draft/archive'a alınca null'a çekme — eski tarih kalsın.
+  if (status === "PUBLISHED") {
+    // Sadece daha önce yayınlanmamış (publishedAt null) olanları güncelle
+    await db.product.updateMany({
+      where: { id: { in: ids }, publishedAt: null },
+      data: { status, publishedAt: new Date() },
+    });
+    // Daha önce yayınlanmış olanların publishedAt'sini DOKUNMA
+    await db.product.updateMany({
+      where: { id: { in: ids }, publishedAt: { not: null } },
+      data: { status },
+    });
+  } else {
+    await db.product.updateMany({
+      where: { id: { in: ids } },
+      data: { status },
+    });
+  }
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
   return { ok: true };

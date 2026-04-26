@@ -25,13 +25,38 @@ const display = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "Modaralist",
+    default: "Modaralist — Marmara'da Tshirt, Sweatshirt, Eşofman, Şort",
     template: "%s · Modaralist",
   },
   description:
-    "Modaralist — modern siluetler, numaralı koleksiyonlar, sınırlı üretim.",
+    "Modaralist — Marmara bölgesinde tshirt, sweatshirt, oversize, outdoor, polar, eşofman ve şort modelleri. İstanbul, Bursa, Kocaeli'ne hızlı kargo. Numaralı koleksiyonlar, sınırlı üretim.",
+  keywords: [
+    "tshirt",
+    "t-shirt",
+    "tişört",
+    "sweatshirt",
+    "oversize",
+    "outdoor",
+    "polar",
+    "eşofman",
+    "şort",
+    "marmara",
+    "istanbul",
+    "bursa",
+    "kocaeli",
+    "online giyim",
+    "streetwear",
+  ],
   metadataBase: new URL("https://modaralist.shop"),
   applicationName: "Modaralist",
+  alternates: {
+    canonical: "/",
+    languages: {
+      tr: "/tr",
+      en: "/en",
+      "x-default": "/tr",
+    },
+  },
   appleWebApp: {
     capable: true,
     title: "Modaralist",
@@ -40,9 +65,17 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "Modaralist",
     type: "website",
+    locale: "tr_TR",
+    alternateLocale: "en_US",
   },
   formatDetection: {
     telephone: false,
+  },
+  other: {
+    "geo.region": "TR-34",
+    "geo.placename": "İstanbul, Marmara Bölgesi",
+    "geo.position": "41.0082;28.9784",
+    ICBM: "41.0082, 28.9784",
   },
 };
 
@@ -101,7 +134,7 @@ export default async function LocaleLayout({
     logo: `${base}/logo.svg`,
     sameAs,
     description:
-      "Marmara bölgesinde tişört, sweat, oversize sweatshirt, outdoor polar, eşofman ve şort modelleri. Numaralı koleksiyonlar, sınırlı üretim.",
+      "Marmara bölgesinde tshirt, sweatshirt, oversize, outdoor, polar, eşofman ve şort modelleri. Numaralı koleksiyonlar, sınırlı üretim.",
     areaServed: {
       "@type": "AdministrativeArea",
       name: "Marmara Bölgesi, Türkiye",

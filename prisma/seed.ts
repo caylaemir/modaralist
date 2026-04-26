@@ -124,7 +124,7 @@ async function main() {
       descriptionEn:
         "Asymmetric shoulder line, natural drape. Lightweight but not sheer viscose.",
       basePrice: 2490,
-      category: "tops",
+      category: "tshirt",
       images: [
         "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=1400&q=85",
         "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?auto=format&fit=crop&w=1400&q=85",
@@ -139,7 +139,7 @@ async function main() {
       descriptionTr: "Yüksek bel, geniş kesim, %100 keten.",
       descriptionEn: "High waist, wide leg, 100% linen.",
       basePrice: 1890,
-      category: "bottoms",
+      category: "esofman",
       images: [
         "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?auto=format&fit=crop&w=1400&q=85",
       ],
@@ -153,7 +153,7 @@ async function main() {
       descriptionTr: "Bias kesim pamuklu slip. Spagetti askılar, hafif midi boy.",
       descriptionEn: "Bias-cut cotton slip. Spaghetti straps, midi length.",
       basePrice: 2190,
-      category: "dresses",
+      category: "oversize",
       images: [
         "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1400&q=85",
       ],
@@ -167,7 +167,7 @@ async function main() {
       descriptionTr: "Dikişsiz, ham kesim yakalar. Yünlü-viskon karışımı kumaş.",
       descriptionEn: "Seamless raw edges. Wool-viscose blend.",
       basePrice: 3290,
-      category: "outerwear",
+      category: "outdoor",
       images: [
         "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1400&q=85",
       ],
@@ -181,7 +181,7 @@ async function main() {
       descriptionTr: "Yumuşak merino örgü, yüksek boyun, uzun kesim.",
       descriptionEn: "Soft merino knit, high neck, column silhouette.",
       basePrice: 2790,
-      category: "knitwear",
+      category: "sweatshirt",
       images: [
         "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1400&q=85",
       ],
@@ -195,7 +195,7 @@ async function main() {
       descriptionTr: "Uzun yün palto, double-breasted. Drop'un statement parçası.",
       descriptionEn: "Long wool overcoat, double-breasted. The statement piece.",
       basePrice: 4890,
-      category: "outerwear",
+      category: "polar",
       images: [
         "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1400&q=85",
       ],

@@ -65,7 +65,9 @@ export async function GET(req: NextRequest) {
     { products },
     {
       headers: {
-        "Cache-Control": "public, max-age=60, s-maxage=60",
+        // Per-user kisisel liste (recently viewed) — CDN'de PAYLASILAMAZ.
+        // private = sadece tarayici cache'leyebilir, edge proxy paylasmaz
+        "Cache-Control": "private, max-age=60",
       },
     }
   );

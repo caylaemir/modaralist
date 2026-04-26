@@ -15,18 +15,38 @@ export async function generateMetadata({
 }: {
   params: Promise<{ category: string; locale: string }>;
 }) {
-  const { category } = await params;
+  const { category, locale } = await params;
   const seo = CATEGORY_SEO_TR[category];
   if (!seo) return { title: "Kategori bulunamadı" };
 
+  // Locale-aware metaTitle/Description — TR'yi bizler doldurduk, EN icin
+  // basit otomatik cevirme: kategori adi degismez (Tshirt, Sweatshirt vs.)
+  const isEn = locale === "en";
+  const metaTitle = isEn
+    ? `${seo.name} | Marmara Online Store | Modaralist`
+    : seo.metaTitle;
+  const metaDescription = isEn
+    ? `${seo.name} models in Marmara region — Modaralist. Fast shipping to Istanbul, Bursa, Kocaeli. Limited drops, premium fabric.`
+    : seo.metaDescription;
+
   return {
-    title: seo.metaTitle,
-    description: seo.metaDescription,
+    title: metaTitle,
+    description: metaDescription,
     keywords: seo.keywords.join(", "),
+    alternates: {
+      canonical: `/${locale}/shop/${category}`,
+      languages: {
+        tr: `/tr/shop/${category}`,
+        en: `/en/shop/${category}`,
+        "x-default": `/tr/shop/${category}`,
+      },
+    },
     openGraph: {
-      title: seo.metaTitle,
-      description: seo.metaDescription,
+      title: metaTitle,
+      description: metaDescription,
       type: "website",
+      locale: isEn ? "en_US" : "tr_TR",
+      alternateLocale: isEn ? "tr_TR" : "en_US",
     },
     other: {
       "geo.region": MARMARA_REGION.geo.region,

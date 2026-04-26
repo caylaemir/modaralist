@@ -66,7 +66,7 @@ export default async function ProductPage({
       : 0;
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
-  const productJsonLd = {
+  const productJsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
@@ -84,6 +84,28 @@ export default async function ProductPage({
         : "https://schema.org/InStock",
     },
   };
+
+  // AggregateRating + Review — Google rich result icin
+  if (approvedReviews.length > 0) {
+    productJsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: approvedReviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    };
+    productJsonLd.review = approvedReviews.slice(0, 5).map((r) => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: 5,
+      },
+      author: { "@type": "Person", name: r.user.name ?? "Misafir" },
+      reviewBody: r.body ?? "",
+      ...(r.title ? { name: r.title } : {}),
+    }));
+  }
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -167,9 +189,17 @@ export default async function ProductPage({
               {approvedReviews.map((r) => (
                 <li key={r.id} className="border-b border-line pb-6">
                   <div className="flex items-center gap-3">
-                    <span className="tabular-nums">
-                      {"★".repeat(r.rating)}
-                      <span className="text-mist">{"★".repeat(5 - r.rating)}</span>
+                    <span
+                      className="tabular-nums"
+                      role="img"
+                      aria-label={`${r.rating} / 5 yıldız`}
+                    >
+                      <span aria-hidden="true">
+                        {"★".repeat(r.rating)}
+                        <span className="text-mist">
+                          {"★".repeat(5 - r.rating)}
+                        </span>
+                      </span>
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.25em] text-mist">
                       {r.user.name ?? "Misafir"}
