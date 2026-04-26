@@ -48,13 +48,10 @@ async function main() {
   // Categories — Marmara odaklı SEO için Türkçe slug
   const categoriesData = [
     { slug: "tisort", nameTr: "Tişört", nameEn: "T-Shirt" },
-    { slug: "sweat", nameTr: "Sweat", nameEn: "Sweat" },
-    {
-      slug: "oversize-sweatshirt",
-      nameTr: "Oversize Sweatshirt",
-      nameEn: "Oversize Sweatshirt",
-    },
-    { slug: "outdoor-polar", nameTr: "Outdoor Polar", nameEn: "Outdoor Fleece" },
+    { slug: "sweatshirt", nameTr: "Sweatshirt", nameEn: "Sweatshirt" },
+    { slug: "oversize", nameTr: "Oversize", nameEn: "Oversize" },
+    { slug: "outdoor", nameTr: "Outdoor", nameEn: "Outdoor" },
+    { slug: "polar", nameTr: "Polar", nameEn: "Fleece" },
     { slug: "esofman", nameTr: "Eşofman", nameEn: "Sweatpants" },
     { slug: "sort", nameTr: "Şort", nameEn: "Shorts" },
     // Eski genel kategoriler (varsa korumak için)

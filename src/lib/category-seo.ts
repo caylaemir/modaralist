@@ -58,91 +58,127 @@ export const CATEGORY_SEO_TR: Record<string, CategorySeo> = {
       "online tişört",
     ],
   },
-  sweat: {
-    slug: "sweat",
-    name: "Sweat",
-    h1: "Sweat Modelleri — Modaralist Sweat Koleksiyonu",
-    metaTitle: "Sweat Modelleri | Kapüşonlu & Bisiklet Yaka | Modaralist",
+  sweatshirt: {
+    slug: "sweatshirt",
+    name: "Sweatshirt",
+    h1: "Sweatshirt Modelleri — Modaralist Sweatshirt Koleksiyonu",
+    metaTitle: "Sweatshirt Modelleri | Kapüşonlu & Bisiklet Yaka | Modaralist",
     metaDescription:
-      "Marmara bölgesinde sweat modelleri, kapüşonlu sweat ve bisiklet yaka sweatshirt seçenekleri. İstanbul, Bursa, Kocaeli'ne hızlı kargo. Pamuklu, kalın dokulu, oversize.",
+      "Marmara bölgesinde sweatshirt modelleri, kapüşonlu sweatshirt ve bisiklet yaka seçenekleri. İstanbul, Bursa, Kocaeli'ne hızlı kargo. Pamuklu, kalın dokulu.",
     intro:
-      "Sezonun yumuşak başlangıcı: kapüşonlu sweat, bisiklet yaka sweat ve kanguru cep modelleri.",
+      "Sezonun yumuşak başlangıcı: kapüşonlu sweatshirt, bisiklet yaka sweatshirt ve kanguru cep modelleri.",
     longDescription:
-      "Modaralist sweat koleksiyonu Marmara bölgesinin değişken iklimi için ideal. " +
+      "Modaralist sweatshirt koleksiyonu Marmara bölgesinin değişken iklimi için ideal. " +
       "Kalın dokulu pamuk-polyester karışımı, içi şardonlu dokumalar, sıcak ama nefes alan kumaşlar. " +
-      "Kapüşonlu sweat, bisiklet yaka sweatshirt, kanguru cepli ve fermuarlı modeller. " +
+      "Kapüşonlu sweatshirt, bisiklet yaka sweatshirt, kanguru cepli ve fermuarlı modeller. " +
       "İstanbul'un nemli kışında, Bursa'nın karlı sokaklarında, Kocaeli'nin rüzgarlı limanında — her yere uygun. " +
       "Hızlı kargo ile Marmara'nın her şehrine 1-2 günde teslim.",
     keywords: [
-      "sweat",
       "sweatshirt",
-      "kapüşonlu sweat",
-      "bisiklet yaka sweat",
-      "marmara sweat",
+      "kapüşonlu sweatshirt",
+      "bisiklet yaka sweatshirt",
+      "marmara sweatshirt",
       "istanbul sweatshirt",
-      "kalın sweat",
-      "pamuklu sweat",
-      "kadın sweat",
-      "erkek sweat",
+      "kalın sweatshirt",
+      "pamuklu sweatshirt",
+      "kadın sweatshirt",
+      "erkek sweatshirt",
+      "fermuarlı sweatshirt",
     ],
   },
-  "oversize-sweatshirt": {
-    slug: "oversize-sweatshirt",
-    name: "Oversize Sweatshirt",
-    h1: "Oversize Sweatshirt — Modaralist Streetwear",
-    metaTitle:
-      "Oversize Sweatshirt | Geniş Kesim Sweat Modelleri | Modaralist",
+  oversize: {
+    slug: "oversize",
+    name: "Oversize",
+    h1: "Oversize Modelleri — Modaralist Streetwear Geniş Kesim",
+    metaTitle: "Oversize Giyim | Geniş Kesim Tişört, Sweatshirt | Modaralist",
     metaDescription:
-      "Oversize sweatshirt modelleri Marmara bölgesinde Modaralist'te. Streetwear modaya uygun geniş kesim, kalın doku. İstanbul, Bursa'ya aynı gün kargo.",
+      "Oversize tişört, oversize sweatshirt, geniş kesim modeller Marmara bölgesinde Modaralist'te. Streetwear estetiği, vintage washed. İstanbul, Bursa'ya aynı gün kargo.",
     intro:
-      "Geniş omuz, düşük kol, oversize silüet. Streetwear estetiğinin merkezindeki parça.",
+      "Geniş omuz, düşük kol, oversize silüet. Streetwear estetiğinin merkezindeki parça — tişört, sweatshirt, hoodie.",
     longDescription:
-      "Oversize sweatshirt — Modaralist'in imza streetwear silüeti. Klasik kesim sweatshirt'lerden " +
+      "Oversize — Modaralist'in imza streetwear silüeti. Klasik kesim parçalardan " +
       "farklı olarak omuz hattı düşürülmüş, kollar geniş, beden olduğundan iri görünür. " +
       "Marmara bölgesinde modaya uyak tutmak isteyenler için: İstanbul'un Karaköy ve Cihangir " +
       "sokaklarından, Bursa'nın FSM bulvarına, Kocaeli marinasından Tekirdağ sahiline kadar. " +
-      "Premium pamuk, ağır gramajlı (350+ gr) kumaş, içi şardon, vintage washed renkler. " +
+      "Oversize tişört, oversize sweatshirt, oversize hoodie, oversize gömlek modelleri. " +
+      "Premium pamuk, ağır gramajlı (250-400 gr) kumaşlar, vintage washed renkler. " +
       "Erkek ve kadın için unisex kalıp, S-XL beden aralığı.",
     keywords: [
+      "oversize",
+      "oversize tişört",
       "oversize sweatshirt",
-      "oversize sweat",
-      "geniş kesim sweat",
-      "streetwear sweatshirt",
+      "oversize hoodie",
+      "oversize gömlek",
+      "geniş kesim",
+      "streetwear",
       "marmara streetwear",
       "istanbul oversize",
-      "vintage sweatshirt",
-      "350gr sweatshirt",
-      "unisex sweatshirt",
+      "vintage oversize",
+      "unisex oversize",
     ],
   },
-  "outdoor-polar": {
-    slug: "outdoor-polar",
-    name: "Outdoor Polar",
-    h1: "Outdoor Polar — Doğa Sporları için Modaralist Koleksiyonu",
-    metaTitle: "Outdoor Polar | Doğa Sporu Polar Modelleri | Modaralist",
+  outdoor: {
+    slug: "outdoor",
+    name: "Outdoor",
+    h1: "Outdoor Giyim — Doğa Sporları için Modaralist Koleksiyonu",
+    metaTitle: "Outdoor Giyim | Trekking, Kamp, Hiking | Modaralist Marmara",
     metaDescription:
-      "Outdoor polar modelleri Marmara bölgesinde Modaralist'te. Trekking, kamp, hiking için sıcak tutan polar. İstanbul, Bursa, Sakarya'ya hızlı kargo.",
+      "Outdoor giyim Marmara bölgesinde Modaralist'te. Trekking, kamp, hiking, dağcılık için fonksiyonel parçalar. İstanbul, Bursa, Sakarya'ya hızlı kargo.",
     intro:
-      "Doğa sporları, kamp, trekking için tasarlanmış outdoor polar koleksiyonumuz. Hafif, sıcak, hızlı kuruyan.",
+      "Doğa sporları, kamp, trekking, hiking ve dağcılık için tasarlanmış fonksiyonel outdoor parçalar.",
     longDescription:
-      "Modaralist outdoor polar koleksiyonu Marmara'nın doğa rotalarını sevenler için. " +
+      "Modaralist outdoor koleksiyonu Marmara'nın doğa rotalarını sevenler için. " +
       "Uludağ kayak merkezi, Kazdağları trekking parkurları, Yalova termal yürüyüş yolları, " +
-      "Belgrad ormanı, Sapanca gölü çevresi — Marmara'nın her doğa noktasında işine yarar. " +
-      "Microfleece teknolojisi, fermuarlı ön cep, yarım fermuar boğazlı veya tam fermuar açma kapama. " +
-      "Hızlı kuruyan, hafif, ısı tutan, nefes alan polyester polar kumaş. " +
+      "Belgrad ormanı, Sapanca gölü çevresi, Iğneada longoz ormanları, Sakarya kanyon turları — " +
+      "Marmara'nın her doğa noktasında işine yarar. Su ve rüzgar geçirmez ceket, fonksiyonel pantolon, " +
+      "kargo şort, taktik tişört, çıkarılabilir kapüşonlu mont, yansıtıcı detaylı yelek modelleri. " +
       "Erkek ve kadın için fonksiyonel kesim, S-XXL beden seçenekleri. Aynı gün kargolama.",
     keywords: [
-      "outdoor polar",
-      "polar",
-      "trekking polar",
-      "doğa sporu polar",
+      "outdoor",
+      "outdoor giyim",
+      "trekking giyim",
+      "doğa sporu giyim",
+      "kamp giyim",
+      "hiking",
+      "dağcılık",
       "marmara outdoor",
-      "uludağ polar",
-      "kamp polar",
-      "hiking polar",
+      "uludağ outdoor",
+      "kadın outdoor",
+      "erkek outdoor",
+      "su geçirmez",
+      "rüzgar geçirmez",
+    ],
+  },
+  polar: {
+    slug: "polar",
+    name: "Polar",
+    h1: "Polar Modelleri — Modaralist Polar Koleksiyonu",
+    metaTitle: "Polar Modelleri | Kışlık & Outdoor Polar | Modaralist Marmara",
+    metaDescription:
+      "Polar modelleri Marmara bölgesinde Modaralist'te. Microfleece, kışlık polar, fermuarlı polar. İstanbul, Bursa, Kocaeli'ne hızlı kargo.",
+    intro:
+      "Hafif, sıcak, hızlı kuruyan polar modelleri. Microfleece teknolojisi ile günlük ve doğa için.",
+    longDescription:
+      "Modaralist polar koleksiyonu Marmara'nın soğuk aylarına hazır. " +
+      "İstanbul'un nemli kışında ısıtan, Uludağ'da hafif kalan, Sapanca gölü kıyısında nefes alan polar. " +
+      "Microfleece teknolojisi, fermuarlı ön cep, yarım fermuar boğazlı veya tam fermuar açma kapama. " +
+      "Hızlı kuruyan, hafif, ısı tutan, nefes alan polyester polar kumaş. " +
+      "Kışlık polar, outdoor polar, çocuk polar ve kadın/erkek günlük polar modelleri. " +
+      "S-XXL beden seçenekleri. Marmara'ya 1-2 iş günü kargo.",
+    keywords: [
+      "polar",
+      "polar bere",
+      "polar mont",
+      "polar yelek",
       "microfleece",
+      "kışlık polar",
+      "outdoor polar",
+      "trekking polar",
+      "marmara polar",
+      "istanbul polar",
       "kadın polar",
       "erkek polar",
+      "fermuarlı polar",
     ],
   },
   esofman: {
