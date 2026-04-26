@@ -40,6 +40,9 @@ export async function saveSettingsAction(
     "shop.announcementActive",
     "bundle.enabled",
     "popup.enabled",
+    "whatsapp.enabled",
+    "security.adminTwoFactorEnabled",
+    "shop.freeShippingAB",
   ] as const) {
     const val = entries[key];
     entries[key] = val === "on" || val === "true" ? "true" : "false";

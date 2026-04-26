@@ -86,13 +86,16 @@ export default async function AdminDashboard() {
     db.order.count({
       where: { status: { in: pendingShipmentStatuses } },
     }),
-    db.productVariant.count({
-      where: {
-        stock: { lt: 5 },
-        isActive: true,
-        product: { status: "PUBLISHED" },
-      },
-    }),
+    // Dusuk stok = variant.stock < product.lowStockLimit
+    // Prisma where icinde direkt karsilastirma yok — raw SQL ile sayiyoruz
+    db.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM "ProductVariant" v
+      JOIN "Product" p ON p.id = v."productId"
+      WHERE v."isActive" = true
+        AND p.status = 'PUBLISHED'
+        AND v.stock < p."lowStockLimit"
+    `.then((r) => Number(r[0]?.count ?? 0)),
     db.product.count({ where: { status: "PUBLISHED" } }),
     db.collection.count({
       where: { status: { in: ["UPCOMING", "LIVE"] } },
@@ -138,6 +141,40 @@ export default async function AdminDashboard() {
       take: 5,
     }),
   ]);
+
+  // Dusuk stok ureunler (variant -> product), top 8 widget icin
+  const lowStockVariants = await db.$queryRaw<
+    {
+      variantId: string;
+      productId: string;
+      productSlug: string;
+      productName: string;
+      sizeCode: string | null;
+      colorName: string | null;
+      stock: number;
+      lowStockLimit: number;
+    }[]
+  >`
+    SELECT
+      v.id AS "variantId",
+      p.id AS "productId",
+      p.slug AS "productSlug",
+      COALESCE(pt.name, p.slug) AS "productName",
+      s.code AS "sizeCode",
+      c."nameTr" AS "colorName",
+      v.stock,
+      p."lowStockLimit"
+    FROM "ProductVariant" v
+    JOIN "Product" p ON p.id = v."productId"
+    LEFT JOIN "ProductTranslation" pt ON pt."productId" = p.id AND pt.locale = 'tr'::"Locale"
+    LEFT JOIN "Size" s ON s.id = v."sizeId"
+    LEFT JOIN "Color" c ON c.id = v."colorId"
+    WHERE v."isActive" = true
+      AND p.status = 'PUBLISHED'
+      AND v.stock < p."lowStockLimit"
+    ORDER BY v.stock ASC, p."updatedAt" DESC
+    LIMIT 8
+  `;
 
   // Daily aggregation for chart
   const dailyMap = new Map<string, { revenue: number; orders: number }>();
@@ -200,7 +237,7 @@ export default async function AdminDashboard() {
           <StatCell
             label="Düşük Stok"
             value={String(lowStockCount)}
-            hint="Varyant bazında, stok < 5"
+            hint="Variant.stock < Product.lowStockLimit"
             tone={lowStockCount > 0 ? "warn" : "default"}
           />
         </div>
@@ -221,6 +258,61 @@ export default async function AdminDashboard() {
           <SalesChart points={chartPoints} />
         </div>
       </section>
+
+      {lowStockVariants.length > 0 ? (
+        <section className="mt-16">
+          <div className="flex items-end justify-between border-t border-line pt-5">
+            <div>
+              <Eyebrow>— stok azalan</Eyebrow>
+              <h2 className="display mt-3 text-2xl leading-none">
+                Düşük stok varyantları
+              </h2>
+              <p className="mt-2 text-[11px] text-mist">
+                Variant stok eşik altında — yeniden üretim/satın alma kararı için.
+              </p>
+            </div>
+            <Link
+              href="/admin/products"
+              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-ink hover:text-mist"
+            >
+              Ürünleri yönet
+              <ArrowUpRight className="size-3.5" strokeWidth={1.5} />
+            </Link>
+          </div>
+          <ul className="mt-6">
+            {lowStockVariants.map((v) => (
+              <li
+                key={v.variantId}
+                className="border-t border-line last:border-b"
+              >
+                <Link
+                  href={`/admin/products/${v.productId}`}
+                  className="flex items-center justify-between gap-4 py-4 transition-colors hover:bg-bone/60"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm">{v.productName}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-mist">
+                      {[v.sizeCode, v.colorName].filter(Boolean).join(" · ") || "—"}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p
+                      className={`tabular-nums text-sm ${
+                        v.stock === 0 ? "text-red-600" : "text-amber-600"
+                      }`}
+                    >
+                      {v.stock} adet
+                    </p>
+                    <p className="text-[11px] tabular-nums text-mist">
+                      eşik: {v.lowStockLimit}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {topProducts.length > 0 ? (
         <section className="mt-16">
