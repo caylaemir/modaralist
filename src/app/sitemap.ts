@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { CATEGORY_SEO_TR } from "@/lib/category-seo";
+import { MARMARA_CITY_SLUGS } from "@/lib/marmara-cities";
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
 const LOCALES = ["tr", "en"] as const;
@@ -89,6 +90,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly",
         priority: 0.4,
       });
+    }
+    // Lokal SEO landing'leri (sehir + sehir x kategori)
+    for (const city of MARMARA_CITY_SLUGS) {
+      urls.push({
+        url: `${BASE}/${locale}/sehir/${city}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+      for (const cat of CATEGORY_SLUGS) {
+        urls.push({
+          url: `${BASE}/${locale}/sehir/${city}/${cat}`,
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.6,
+        });
+      }
     }
   }
 
