@@ -69,9 +69,50 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
+  // GUVENLIK: client'tan gelen unitPrice'a guvenmek YASAK — kullanici
+  // sahte fiyat gondererek indirim alabilir. Server DB'den gercek fiyati
+  // (discountPrice ?? basePrice) cekip dogrular ve hesaplari onunla yapar.
+  const variantIds = [...new Set(lines.map((l) => l.variantId))];
+  const dbVariants = await db.productVariant.findMany({
+    where: { id: { in: variantIds }, isActive: true },
+    include: {
+      product: { select: { basePrice: true, discountPrice: true } },
+    },
+  });
+  if (dbVariants.length !== variantIds.length) {
+    return NextResponse.json(
+      { error: "Sepetteki bir ürün artık mevcut değil." },
+      { status: 400 }
+    );
+  }
+  const priceByVariantId = new Map(
+    dbVariants.map((v) => [
+      v.id,
+      Number(v.product.discountPrice ?? v.product.basePrice),
+    ])
+  );
+
+  // Kanonik line'lar (server-trusted)
+  const safeLines = lines.map((l) => {
+    const realPrice = priceByVariantId.get(l.variantId);
+    if (realPrice === undefined) {
+      throw new Error("PRICE_NOT_FOUND");
+    }
+    return {
+      variantId: l.variantId,
+      name: l.name,
+      size: l.size,
+      color: l.color,
+      image: l.image,
+      quantity: l.quantity,
+      unitPrice: realPrice,
+      lineTotal: realPrice * l.quantity,
+    };
+  });
+
   // Kargo + ücretsiz kargo eşiği Settings'ten okunur — admin panelden değiştirilebilir
   const settings = await getAllSettings();
-  const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+  const subtotal = safeLines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
   const standardCost = Number(settings["shop.shippingStandard"] ?? 0) || 0;
   const expressCost = Number(settings["shop.shippingExpress"] ?? 89) || 89;
   const freeOver = Number(settings["shop.freeShippingOver"] ?? 0) || 0;
@@ -86,7 +127,7 @@ export async function POST(req: NextRequest) {
     "bundle.tier3Discount": settings["bundle.tier3Discount"],
   });
   const bundle = calculateBundleDiscount(
-    lines.map((l) => ({
+    safeLines.map((l) => ({
       variantId: l.variantId,
       unitPrice: l.unitPrice,
       quantity: l.quantity,
@@ -134,13 +175,13 @@ export async function POST(req: NextRequest) {
           status: "PENDING",
           paymentStatus: "PENDING",
           items: {
-            create: lines.map((l) => ({
+            create: safeLines.map((l) => ({
               variantId: l.variantId,
               productNameSnapshot: l.name,
               variantSnapshot: [l.size, l.color].filter(Boolean).join(" · "),
               unitPrice: l.unitPrice,
               quantity: l.quantity,
-              lineTotal: l.unitPrice * l.quantity,
+              lineTotal: l.lineTotal,
             })),
           },
           addresses: {
@@ -256,7 +297,7 @@ export async function POST(req: NextRequest) {
         address: address.street,
         zip: address.zip,
       },
-      items: lines.map((l) => ({
+      items: safeLines.map((l) => ({
         id: l.variantId,
         name: l.name,
         category: "Fashion",

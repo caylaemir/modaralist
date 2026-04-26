@@ -104,17 +104,24 @@ export function calculateBundleDiscount(
   };
 }
 
-/** Settings string'den BundleConfig parse */
+/** Settings string'den BundleConfig parse — clamp ile guvenli bounds */
 export function parseBundleConfig(s: {
   "bundle.enabled"?: string;
   "bundle.minSubtotal"?: string;
   "bundle.tier2Discount"?: string;
   "bundle.tier3Discount"?: string;
 }): BundleConfig {
+  // Indirim 0-80% arasinda kalsin — admin yanlislikla 150 girerse %150
+  // indirim olmasin (hatali raporlama, negatif kar marji riski).
+  const clampPercent = (n: number) =>
+    Math.max(0, Math.min(80, Number.isFinite(n) ? n : 0));
+  const safeMinSubtotal = (n: number) =>
+    Math.max(0, Number.isFinite(n) ? n : 0);
+
   return {
     enabled: s["bundle.enabled"] === "true",
-    minSubtotal: Number(s["bundle.minSubtotal"]) || 0,
-    tier2Discount: Number(s["bundle.tier2Discount"]) || 0,
-    tier3Discount: Number(s["bundle.tier3Discount"]) || 0,
+    minSubtotal: safeMinSubtotal(Number(s["bundle.minSubtotal"])),
+    tier2Discount: clampPercent(Number(s["bundle.tier2Discount"])),
+    tier3Discount: clampPercent(Number(s["bundle.tier3Discount"])),
   };
 }

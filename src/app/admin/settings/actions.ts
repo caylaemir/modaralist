@@ -33,9 +33,13 @@ export async function saveSettingsAction(
   }
 
   // Checkbox'lar formData'da "on" döner, "true"ya normalize.
+  // YENI checkbox eklerken bu listeyi guncelle, yoksa "on" raw kaydedilir
+  // ve === "true" check'leri her yerde false dondurur (silent dead toggle).
   for (const key of [
     "shop.maintenanceMode",
     "shop.announcementActive",
+    "bundle.enabled",
+    "popup.enabled",
   ] as const) {
     const val = entries[key];
     entries[key] = val === "on" || val === "true" ? "true" : "false";

@@ -52,8 +52,11 @@ export function NewsletterPopup() {
     if (typeof window === "undefined") return;
     if (window.localStorage.getItem(STORAGE_KEY)) return;
 
-    const delay = Math.max(1, config.delaySeconds) * 1000;
-    const t = setTimeout(() => setOpen(true), delay);
+    // NaN/negatif/0'a karsi guvenli — fallback 15s
+    const safeDelay = Number.isFinite(config.delaySeconds) && config.delaySeconds > 0
+      ? config.delaySeconds
+      : 15;
+    const t = setTimeout(() => setOpen(true), safeDelay * 1000);
     return () => clearTimeout(t);
   }, [config]);
 
@@ -71,11 +74,19 @@ export function NewsletterPopup() {
     if (!email) return;
     setPending(true);
     try {
-      await fetch("/api/newsletter/subscribe", {
+      const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source: "popup" }),
-      }).catch(() => null);
+      });
+      if (res.status === 429) {
+        toast.error("Çok fazla deneme. Birkaç dakika sonra tekrar dene.");
+        return;
+      }
+      if (!res.ok) {
+        toast.error("Kaydedilemedi. Lütfen tekrar dene.");
+        return;
+      }
       setDone(true);
       try {
         window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -83,6 +94,8 @@ export function NewsletterPopup() {
         /* ignore */
       }
       toast.success("Listedesin. İndirim kodu kısa sürede e-postanda.");
+    } catch {
+      toast.error("Bağlantı hatası. Tekrar dene.");
     } finally {
       setPending(false);
     }

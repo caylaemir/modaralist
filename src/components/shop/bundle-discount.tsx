@@ -73,15 +73,26 @@ export function BundleDiscount({
   }
 
   if (result.status === "need-more") {
-    const discount =
-      result.itemsToNextTier === 1
-        ? config.tier2Discount
-        : config.tier2Discount;
+    // Subtotal min'in altındaysa "ürün ekle" mesajı yanıltıcı —
+    // önce tutar yetersiz uyarısı önemli
+    if (subtotal < config.minSubtotal) {
+      return (
+        <div className="border-b border-line bg-bone/60 px-6 py-3">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-mist">
+            Bundle indirimi için min{" "}
+            <span className="text-ink">
+              {formatPrice(config.minSubtotal, locale)}
+            </span>{" "}
+            sepet tutarı + 2 ürün gerekli
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="border-b border-line bg-bone/60 px-6 py-3">
         <p className="text-[11px] uppercase tracking-[0.25em] text-mist">
           Bundle: {result.itemsToNextTier} ürün daha ekle, en ucuza %
-          {discount} indirim
+          {config.tier2Discount} indirim
         </p>
       </div>
     );

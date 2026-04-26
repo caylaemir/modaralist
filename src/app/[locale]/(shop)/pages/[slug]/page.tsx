@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import DOMPurify from "isomorphic-dompurify";
 import { Reveal } from "@/components/shop/reveal";
 import { db } from "@/lib/db";
 import type { Locale } from "@prisma/client";
@@ -74,7 +75,22 @@ export default async function StaticPage({
       <Reveal delay={0.3}>
         <article
           className="prose-modaralist mt-12 text-base leading-relaxed text-ink"
-          dangerouslySetInnerHTML={{ __html: tr.bodyHtml }}
+          dangerouslySetInnerHTML={{
+            // STAFF/ADMIN icerikci script enjekte etmesin diye sanitize.
+            // <script>, <iframe>, on*, javascript:* yasak.
+            __html: DOMPurify.sanitize(tr.bodyHtml, {
+              USE_PROFILES: { html: true },
+              FORBID_TAGS: ["script", "iframe", "object", "embed", "form"],
+              FORBID_ATTR: [
+                "onerror",
+                "onload",
+                "onclick",
+                "onmouseover",
+                "onfocus",
+                "onblur",
+              ],
+            }),
+          }}
         />
       </Reveal>
     </main>
