@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sendEmail, dropNotifyHtml } from "@/lib/email";
 
 const translationSchema = z.object({
   locale: z.enum(["tr", "en"]),
@@ -195,11 +196,77 @@ export async function updateCollectionStatus(
   await guard();
   const parsed = statusSchema.parse(status);
 
+  // Onceki status -> LIVE gecisi varsa drop notify maillerini gonder.
+  // Idempotent degil — admin yanlislikla LIVE -> UPCOMING -> LIVE yaparsa
+  // tekrar mail atar. Bu nadir bir aksiyon, kabul edilebilir.
+  const before = await db.collection.findUnique({
+    where: { id },
+    include: {
+      translations: true,
+      notifies: { select: { email: true, locale: true } },
+    },
+  });
+  if (!before) throw new Error("Koleksiyon bulunamadı.");
+
   await db.collection.update({
     where: { id },
     data: { status: parsed },
   });
 
+  if (parsed === "LIVE" && before.status !== "LIVE") {
+    // Subscriber'lara mail at — async, hata bastirilir (admin akisini bozma)
+    void sendDropNotifyEmails(before).catch((err) => {
+      console.error("[drop-notify] hata", err);
+    });
+  }
+
   revalidate();
   return { ok: true };
+}
+
+type CollectionForNotify = {
+  slug: string;
+  heroImageUrl: string | null;
+  translations: { locale: string; name: string }[];
+  notifies: { email: string; locale: string }[];
+};
+
+async function sendDropNotifyEmails(collection: CollectionForNotify) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+  const trName =
+    collection.translations.find((t) => t.locale === "tr")?.name ??
+    collection.slug;
+
+  // Aboneleri benzersizle (ayni email iki kez kayitli olabilir)
+  const seen = new Set<string>();
+  const unique = collection.notifies.filter((n) => {
+    const key = n.email.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // 50'lik batch'lerde gonder — Resend rate limit (10 req/s)
+  for (let i = 0; i < unique.length; i += 50) {
+    const batch = unique.slice(i, i + 50);
+    await Promise.allSettled(
+      batch.map((n) =>
+        sendEmail({
+          to: n.email,
+          subject: `${trName} açıldı — Modaralist`,
+          html: dropNotifyHtml({
+            collectionName: trName,
+            collectionSlug: collection.slug,
+            heroImageUrl: collection.heroImageUrl ?? undefined,
+            baseUrl: `${baseUrl}/${n.locale === "en" ? "en" : "tr"}`,
+          }),
+        })
+      )
+    );
+    // 1 sn bekle batch'ler arasi
+    if (i + 50 < unique.length) {
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
 }
