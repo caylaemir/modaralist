@@ -50,6 +50,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    // Eski kategori slug'larini yeniye 301 redirect (SEO link juice korunur,
+    // Google eski URL'leri yeniye geciser). Yeni rename'lerde buraya ekle.
+    return [
+      { source: "/shop/tisort", destination: "/shop/tshirt", permanent: true },
+      { source: "/tr/shop/tisort", destination: "/tr/shop/tshirt", permanent: true },
+      { source: "/en/shop/tisort", destination: "/en/shop/tshirt", permanent: true },
+      { source: "/shop/sweat", destination: "/shop/sweatshirt", permanent: true },
+      { source: "/tr/shop/sweat", destination: "/tr/shop/sweatshirt", permanent: true },
+      { source: "/en/shop/sweat", destination: "/en/shop/sweatshirt", permanent: true },
+      { source: "/shop/oversize-sweatshirt", destination: "/shop/oversize", permanent: true },
+      { source: "/tr/shop/oversize-sweatshirt", destination: "/tr/shop/oversize", permanent: true },
+      { source: "/en/shop/oversize-sweatshirt", destination: "/en/shop/oversize", permanent: true },
+      { source: "/shop/outdoor-polar", destination: "/shop/outdoor", permanent: true },
+      { source: "/tr/shop/outdoor-polar", destination: "/tr/shop/outdoor", permanent: true },
+      { source: "/en/shop/outdoor-polar", destination: "/en/shop/outdoor", permanent: true },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);
