@@ -30,7 +30,7 @@ export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-paper"
+            className="fixed inset-y-0 right-0 z-50 flex h-[100dvh] w-full max-w-md flex-col bg-paper"
           >
             <div className="flex items-center justify-between border-b border-line px-6 py-5">
               <h2 className="caps-wide text-sm">{t("title")}</h2>
@@ -128,7 +128,7 @@ export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
                   </ul>
                 </div>
 
-                <div className="border-t border-line px-6 py-6">
+                <div className="border-t border-line px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                   <div className="mb-4 flex items-center justify-between text-sm">
                     <span>{t("subtotal")}</span>
                     <span className="tabular-nums">

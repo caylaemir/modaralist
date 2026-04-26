@@ -196,7 +196,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages} locale={locale}>
           <Providers>
             {children}
-            <Toaster position="bottom-right" richColors />
+            <Toaster position="bottom-center" richColors />
             <Analytics />
           </Providers>
         </NextIntlClientProvider>

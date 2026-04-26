@@ -188,6 +188,8 @@ export default function CheckoutPage() {
                 <input
                   type="email"
                   required
+                  autoComplete="email"
+                  inputMode="email"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                   className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -200,6 +202,8 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   required
+                  autoComplete="tel"
+                  inputMode="tel"
                   placeholder="+90 5xx xxx xx xx"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
@@ -231,6 +235,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="name"
                   value={form.fullName}
                   onChange={(e) => set("fullName", e.target.value)}
                   className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -244,6 +249,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="off"
                     maxLength={11}
                     minLength={11}
                     required
@@ -260,6 +266,7 @@ export default function CheckoutPage() {
                   </label>
                   <select
                     value={form.city}
+                    autoComplete="address-level1"
                     onChange={(e) => set("city", e.target.value)}
                     className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
                   >
@@ -277,6 +284,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     required
+                    autoComplete="address-level2"
                     value={form.district}
                     onChange={(e) => set("district", e.target.value)}
                     className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -288,6 +296,8 @@ export default function CheckoutPage() {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
                     value={form.zip}
                     onChange={(e) => set("zip", e.target.value)}
                     className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -301,6 +311,7 @@ export default function CheckoutPage() {
                 <textarea
                   required
                   rows={3}
+                  autoComplete="street-address"
                   value={form.street}
                   onChange={(e) => set("street", e.target.value)}
                   className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -393,6 +404,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="cc-name"
                   value={form.cardHolder}
                   onChange={(e) => set("cardHolder", e.target.value)}
                   className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
@@ -405,6 +417,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   inputMode="numeric"
+                  autoComplete="cc-number"
                   required
                   maxLength={19}
                   placeholder="0000 0000 0000 0000"
@@ -430,6 +443,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="cc-exp-month"
                     maxLength={2}
                     required
                     placeholder="MM"
@@ -447,6 +461,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="cc-exp-year"
                     maxLength={4}
                     required
                     placeholder="YYYY"
@@ -464,6 +479,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="cc-csc"
                     maxLength={4}
                     required
                     placeholder="***"

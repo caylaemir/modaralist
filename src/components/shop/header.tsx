@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
@@ -13,6 +13,8 @@ export function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
+  const shopDropdownRef = useRef<HTMLDivElement | null>(null);
   const { itemCount, open } = useCart();
   const count = itemCount();
 
@@ -25,7 +27,21 @@ export function Header() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setShopDropdownOpen(false);
   }, [pathname]);
+
+  // Dropdown disinda tiklanirsa kapat — touch + mouse ortak davranis
+  useEffect(() => {
+    if (!shopDropdownOpen) return;
+    function onPointerDown(e: PointerEvent) {
+      const node = shopDropdownRef.current;
+      if (node && !node.contains(e.target as Node)) {
+        setShopDropdownOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [shopDropdownOpen]);
 
   const links = [
     { href: "/shop", label: t("shop") },
@@ -55,28 +71,44 @@ export function Header() {
         <button
           type="button"
           onClick={() => setMenuOpen(true)}
-          className="md:hidden"
+          className="grid size-11 place-items-center md:hidden"
           aria-label="Menü"
         >
           <Menu className="size-5" />
         </button>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
-          {/* Mağaza dropdown — kategori shortcut'ları */}
-          <div className="group relative">
-            <Link
-              href="/shop"
+          {/* Mağaza dropdown — kategori shortcut'ları (click-toggle, touch uyumlu) */}
+          <div
+            ref={shopDropdownRef}
+            className="relative"
+            onMouseEnter={() => setShopDropdownOpen(true)}
+            onMouseLeave={() => setShopDropdownOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setShopDropdownOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={shopDropdownOpen}
               className="caps-wide flex items-center gap-1 text-xs text-ink transition-opacity hover:opacity-60"
             >
               {t("shop")}
-            </Link>
-            <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+            </button>
+            <div
+              className={cn(
+                "absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition-all duration-200",
+                shopDropdownOpen
+                  ? "visible opacity-100"
+                  : "invisible opacity-0"
+              )}
+            >
               <div className="min-w-[220px] border border-line bg-paper py-3 shadow-sm">
                 <ul className="flex flex-col">
                   {categories.map((c) => (
                     <li key={c.slug}>
                       <Link
                         href={`/shop/${c.slug}`}
+                        onClick={() => setShopDropdownOpen(false)}
                         className="block px-5 py-2 text-[13px] text-ink hover:bg-bone"
                       >
                         {c.label}
@@ -86,6 +118,7 @@ export function Header() {
                   <li className="mt-1 border-t border-line pt-1">
                     <Link
                       href="/shop"
+                      onClick={() => setShopDropdownOpen(false)}
                       className="block px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-mist hover:text-ink"
                     >
                       Tüm Mağaza →
@@ -115,18 +148,18 @@ export function Header() {
           modaralist
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 md:gap-2">
           <LocaleSwitcher />
-          <button
-            type="button"
-            className="hidden md:block"
+          <Link
+            href="/search"
+            className="hidden size-11 place-items-center md:grid"
             aria-label={t("search")}
           >
             <Search className="size-5" />
-          </button>
+          </Link>
           <Link
             href="/account"
-            className="hidden md:block"
+            className="hidden size-11 place-items-center md:grid"
             aria-label={t("account")}
           >
             <User className="size-5" />
@@ -134,12 +167,12 @@ export function Header() {
           <button
             type="button"
             onClick={open}
-            className="relative"
+            className="relative grid size-11 place-items-center"
             aria-label={t("cart")}
           >
             <ShoppingBag className="size-5" />
             {count > 0 && (
-              <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-ink text-[10px] font-medium text-paper">
+              <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-ink text-[10px] font-medium text-paper">
                 {count}
               </span>
             )}
@@ -148,7 +181,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-paper md:hidden">
+        <div className="fixed inset-0 z-50 h-[100dvh] overflow-y-auto bg-paper pb-[env(safe-area-inset-bottom)] md:hidden">
           <div className="flex h-16 items-center justify-between px-5">
             <span className="display text-2xl">modaralist</span>
             <button

@@ -53,8 +53,8 @@ export function ProductCard({
               alt=""
               aria-hidden
               fill
-              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+              sizes="(min-width: 1024px) 25vw, 50vw"
+              className="hidden object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100 md:block"
             />
           )}
           {product.soldOut && (
@@ -62,8 +62,9 @@ export function ProductCard({
               Sold Out
             </div>
           )}
-          <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between bg-paper/95 px-4 py-3 text-[10px] uppercase tracking-[0.25em] transition-transform duration-500 group-hover:translate-y-0">
-            <span>Incele</span>
+          {/* Mobilde her zaman gorunur (touch hover yok), desktopta hover'da slide-up */}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-paper/95 px-4 py-3 text-[10px] uppercase tracking-[0.25em] transition-transform duration-500 md:translate-y-full md:group-hover:translate-y-0">
+            <span>İncele</span>
             <span>→</span>
           </div>
         </div>

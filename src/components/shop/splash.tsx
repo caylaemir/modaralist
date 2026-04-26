@@ -17,7 +17,7 @@ export function Splash() {
       show_(false);
       sessionStorage.setItem("modaralist-splash", "1");
       document.body.style.overflow = "";
-    }, 2200);
+    }, 1400);
     return () => {
       clearTimeout(t);
       document.body.style.overflow = "";
@@ -31,8 +31,8 @@ export function Splash() {
       {show && (
         <motion.div
           exit={{ y: "-100%" }}
-          transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink"
+          transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink motion-reduce:!hidden"
         >
           <div className="flex overflow-hidden">
             {letters.map((l, i) => (
@@ -41,9 +41,9 @@ export function Splash() {
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
                 transition={{
-                  duration: 0.8,
+                  duration: 0.6,
                   ease: [0.22, 1, 0.36, 1],
-                  delay: 0.2 + i * 0.05,
+                  delay: 0.05 + i * 0.04,
                 }}
                 className="display text-[14vw] leading-none text-paper md:text-[9vw]"
               >
@@ -54,7 +54,7 @@ export function Splash() {
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.6 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.4em] text-paper/50"
           >
             SS26 — Drop 01

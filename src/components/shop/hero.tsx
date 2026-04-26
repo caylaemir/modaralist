@@ -61,7 +61,7 @@ export function Hero() {
           <motion.p
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="text-[10px] uppercase tracking-[0.35em] text-paper/80"
           >
             SS26 — Drop 01
@@ -70,7 +70,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 2.6 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
             className="flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-paper/80"
           >
             <span className="tabular-nums">
@@ -84,7 +84,7 @@ export function Hero() {
         </div>
 
         <div>
-          <h1 className="display max-w-5xl text-[14vw] leading-[0.92] text-paper md:text-[9vw]">
+          <h1 className="display max-w-5xl text-[clamp(3rem,14vw,9rem)] leading-[0.92] text-paper md:text-[clamp(4rem,9vw,11rem)]">
             <span className="block">
               {words.map((w, wi) => (
                 <span
@@ -96,9 +96,9 @@ export function Hero() {
                     initial={{ y: "110%" }}
                     animate={{ y: 0 }}
                     transition={{
-                      duration: 1,
+                      duration: 0.9,
                       ease: [0.22, 1, 0.36, 1],
-                      delay: 2.1 + wi * 0.08,
+                      delay: 0.2 + wi * 0.06,
                     }}
                     className="inline-block"
                   >
@@ -118,9 +118,9 @@ export function Hero() {
                     initial={{ y: "110%" }}
                     animate={{ y: 0 }}
                     transition={{
-                      duration: 1,
+                      duration: 0.9,
                       ease: [0.22, 1, 0.36, 1],
-                      delay: 2.4 + wi * 0.08,
+                      delay: 0.5 + wi * 0.06,
                     }}
                     className="inline-block"
                   >
@@ -134,7 +134,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10 flex flex-wrap items-end justify-between gap-6"
           >
             <Link

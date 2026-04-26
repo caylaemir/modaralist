@@ -10,7 +10,7 @@ export function Marquee({
     <div
       className={`relative flex overflow-hidden border-y border-line bg-paper py-8 ${className}`}
     >
-      <div className="animate-marquee flex shrink-0 items-center whitespace-nowrap">
+      <div className="animate-marquee flex shrink-0 items-center whitespace-nowrap motion-reduce:!animate-none">
         {doubled.map((item, i) => (
           <span
             key={i}
