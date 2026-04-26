@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -48,9 +49,16 @@ export function Hero() {
           transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
-          <div
-            className="size-full bg-cover bg-center"
-            style={{ backgroundImage: `url('${SLIDES[i].src}')` }}
+          {/* Next/Image: ilk slide priority + fetchPriority=high (LCP optimize),
+              digerleri lazy. sizes 100vw cunku tam ekran. */}
+          <Image
+            src={SLIDES[i].src}
+            alt={SLIDES[i].caption}
+            fill
+            sizes="100vw"
+            priority={i === 0}
+            fetchPriority={i === 0 ? "high" : "auto"}
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/60" />
         </motion.div>

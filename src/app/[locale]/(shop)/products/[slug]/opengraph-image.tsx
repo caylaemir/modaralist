@@ -10,10 +10,11 @@ export const contentType = "image/png";
 export default async function OgImage({
   params,
 }: {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const lang = (params.locale === "en" ? "en" : "tr") as "tr" | "en";
-  const product = await getProduct(params.slug, lang);
+  const { slug, locale } = await params;
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
+  const product = await getProduct(slug, lang);
 
   const title = product?.name ?? "Modaralist";
   const subtitle = product?.dropLabel ?? "Modaralist";

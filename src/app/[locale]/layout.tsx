@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { routing } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
 import { Analytics } from "@/components/analytics";
+import { WebVitals } from "@/components/web-vitals";
 import { getAllSettings } from "@/lib/settings";
 import "../globals.css";
 
@@ -198,6 +199,7 @@ export default async function LocaleLayout({
             {children}
             <Toaster position="bottom-center" richColors />
             <Analytics />
+            <WebVitals />
           </Providers>
         </NextIntlClientProvider>
       </body>
