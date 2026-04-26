@@ -8,10 +8,16 @@ import { Marquee } from "@/components/shop/marquee";
 import { SplitText } from "@/components/shop/split-text";
 import { Reveal } from "@/components/shop/reveal";
 import { ArrowUpRight } from "lucide-react";
-import { getFeaturedProducts } from "@/lib/shop";
+import {
+  getFeaturedProducts,
+  getBestSellingProducts,
+  getCategoriesWithCover,
+} from "@/lib/shop";
 import { getActiveHomepageBlocks } from "@/lib/homepage";
 import { DynamicBlocks } from "@/components/shop/blocks/dynamic-blocks";
 import { ActiveDropBanner } from "@/components/shop/active-drop-banner";
+import { CategoriesSection } from "@/components/shop/categories-section";
+import { BestSellers } from "@/components/shop/best-sellers";
 
 export const dynamic = "force-dynamic";
 
@@ -95,9 +101,11 @@ export default async function Home({
   const t = await getTranslations("Home");
   const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const [dbProducts, activeBlocks] = await Promise.all([
+  const [dbProducts, activeBlocks, categories, bestSellers] = await Promise.all([
     getFeaturedProducts(lang, 8),
     getActiveHomepageBlocks(),
+    getCategoriesWithCover(lang, 7),
+    getBestSellingProducts(lang, 8, 90),
   ]);
   const featured: ProductCardData[] =
     dbProducts.length > 0
@@ -111,6 +119,15 @@ export default async function Home({
           soldOut: p.soldOut,
         }))
       : FALLBACK_PRODUCTS;
+  const bestSellersCards: ProductCardData[] = bestSellers.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    dropLabel: p.dropLabel ?? "",
+    price: p.price,
+    image: p.images[0] ?? "",
+    hoverImage: p.hoverImage ?? undefined,
+    soldOut: p.soldOut,
+  }));
 
   // Admin'de aktif HomepageBlock varsa onları kullan, yoksa hardcoded fallback
   if (activeBlocks.length > 0) {
@@ -139,6 +156,10 @@ export default async function Home({
           "LIMITED EDITION",
         ]}
       />
+
+      <CategoriesSection categories={categories} locale={lang} />
+
+      <BestSellers products={bestSellersCards} locale={lang} />
 
       <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-40">
         <div className="mb-16 grid gap-10 md:grid-cols-12 md:items-end">

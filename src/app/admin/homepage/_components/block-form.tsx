@@ -57,6 +57,37 @@ const BLOCK_TYPES = [
     },
   },
   {
+    key: "categories-grid",
+    label: "Kategoriler Grid",
+    description:
+      "Aktif kategorileri animasyonlu kart grid'i olarak gösterir. Kapak otomatik (kategori banner'ı veya ilk ürünün görseli).",
+    example: {
+      eyebrow: "— kategoriler",
+      title: "ne arıyorsun?",
+      subtitle:
+        "Tişört, sweatshirt, oversize, outdoor — istediğin parçaya tek tıkla ulaş.",
+      ctaLabel: "Tüm mağaza",
+      ctaHref: "/shop",
+      limit: 7,
+    },
+  },
+  {
+    key: "best-sellers",
+    label: "Çok Satanlar",
+    description:
+      "Son N gündeki PAID siparişlerin satış toplamına göre en çok satan ürünler. Hiç satış yoksa fallback olarak en yeni ürünleri gösterir.",
+    example: {
+      eyebrow: "— en çok satanlar",
+      title: "herkesin tercihi.",
+      subtitle: "Müşterilerin en çok seçtiği parçalar.",
+      ctaLabel: "Tümünü gör",
+      ctaHref: "/shop",
+      badgeLabel: "Çok satan",
+      limit: 8,
+      withinDays: 90,
+    },
+  },
+  {
     key: "text",
     label: "Text Block",
     description: "Metin veya manifesto bloğu.",

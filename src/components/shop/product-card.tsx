@@ -14,6 +14,7 @@ export type ProductCardData = {
   image: string;
   hoverImage?: string;
   soldOut?: boolean;
+  badge?: string;
 };
 
 export function ProductCard({
@@ -38,6 +39,11 @@ export function ProductCard({
     >
       <div className="group relative">
         <WishlistHeart slug={product.slug} />
+        {product.badge ? (
+          <span className="absolute left-3 top-3 z-10 inline-flex items-center bg-ink px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.25em] text-paper">
+            {product.badge}
+          </span>
+        ) : null}
         <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
           <Image

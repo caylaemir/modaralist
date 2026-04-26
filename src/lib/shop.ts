@@ -215,6 +215,126 @@ export async function getFeaturedProducts(
   return products.map((p) => mapProduct(p as ProductWithRelations, locale));
 }
 
+/**
+ * Cok satan urunler — son N gunde PAID order'lardaki quantity toplamina gore.
+ * Hic siparis yoksa fallback olarak en yeni publish edilen urunleri doner
+ * (bos section gostermek yerine).
+ */
+export async function getBestSellingProducts(
+  locale: ShopLocale,
+  limit = 8,
+  withinDays = 90
+): Promise<ShopProduct[]> {
+  const since = new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000);
+
+  // OrderItem -> variantId -> sum(quantity), join Variant'a productId icin.
+  // CAPTURED = iyzico'da basariyla cekilen odeme (PaymentStatus enum).
+  const grouped = await db.orderItem.groupBy({
+    by: ["variantId"],
+    where: {
+      order: {
+        paymentStatus: "CAPTURED",
+        placedAt: { gte: since },
+      },
+    },
+    _sum: { quantity: true },
+    orderBy: { _sum: { quantity: "desc" } },
+    take: limit * 3, // ayni urunun farkli variant'lari icin pay ver
+  });
+
+  if (grouped.length === 0) {
+    // Hic satis yoksa featured fallback — anasayfa bos kalmasin
+    return getFeaturedProducts(locale, limit);
+  }
+
+  const variantIds = grouped.map((g) => g.variantId);
+  const variants = await db.productVariant.findMany({
+    where: { id: { in: variantIds } },
+    select: { id: true, productId: true },
+  });
+  const variantToProduct = new Map(variants.map((v) => [v.id, v.productId]));
+
+  // Variant satislarini product seviyesine topla, en cok satilanlar onde
+  const productScores = new Map<string, number>();
+  for (const g of grouped) {
+    const productId = variantToProduct.get(g.variantId);
+    if (!productId) continue;
+    productScores.set(
+      productId,
+      (productScores.get(productId) ?? 0) + (g._sum.quantity ?? 0)
+    );
+  }
+
+  const topProductIds = [...productScores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([id]) => id);
+
+  if (topProductIds.length === 0) {
+    return getFeaturedProducts(locale, limit);
+  }
+
+  const products = await db.product.findMany({
+    where: { id: { in: topProductIds }, status: "PUBLISHED" },
+    include: productInclude,
+  });
+
+  // DB sirasini kullanma — bizim score sirasini koru
+  const byId = new Map(products.map((p) => [p.id, p]));
+  return topProductIds
+    .map((id) => byId.get(id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p))
+    .map((p) => mapProduct(p as ProductWithRelations, locale));
+}
+
+export type CategoryWithCover = {
+  slug: string;
+  name: string;
+  productCount: number;
+  coverImage: string | null;
+};
+
+/**
+ * Kategoriler + her birinin kapak gorseli (bannerUrl > ilk publish urunun ilk gorseli).
+ * Anasayfa kategori gridi icin tasarlandi — sadece urunu olan kategoriler doner.
+ */
+export async function getCategoriesWithCover(
+  locale: ShopLocale,
+  limit = 12
+): Promise<CategoryWithCover[]> {
+  const cats = await db.category.findMany({
+    where: { isActive: true, parentId: null },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    take: limit,
+    include: {
+      translations: { where: { locale } },
+      _count: { select: { products: true } },
+      products: {
+        where: { status: "PUBLISHED" },
+        take: 1,
+        orderBy: { createdAt: "desc" },
+        select: {
+          images: {
+            where: { isHover: false },
+            orderBy: { sortOrder: "asc" },
+            take: 1,
+            select: { url: true },
+          },
+        },
+      },
+    },
+  });
+
+  return cats
+    .filter((c) => c._count.products > 0)
+    .map((c) => ({
+      slug: c.slug,
+      name: c.translations[0]?.name ?? c.slug,
+      productCount: c._count.products,
+      coverImage: c.bannerUrl ?? c.products[0]?.images[0]?.url ?? null,
+    }));
+}
+
 export async function getCollectionsList(
   locale: ShopLocale
 ): Promise<ShopCollection[]> {

@@ -4,7 +4,13 @@ import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
 import { Marquee } from "@/components/shop/marquee";
 import { ProductCard } from "@/components/shop/product-card";
-import { getProduct } from "@/lib/shop";
+import { CategoriesSection } from "@/components/shop/categories-section";
+import { BestSellers } from "@/components/shop/best-sellers";
+import {
+  getProduct,
+  getBestSellingProducts,
+  getCategoriesWithCover,
+} from "@/lib/shop";
 import type { HomepageBlockData } from "@/lib/homepage";
 
 type Props = {
@@ -32,6 +38,22 @@ export async function DynamicBlocks({ blocks, locale }: Props) {
               );
             case "collection-card":
               return <CollectionCardBlock key={b.id} config={b.config} />;
+            case "categories-grid":
+              return (
+                <CategoriesGridBlock
+                  key={b.id}
+                  config={b.config}
+                  locale={locale}
+                />
+              );
+            case "best-sellers":
+              return (
+                <BestSellersBlock
+                  key={b.id}
+                  config={b.config}
+                  locale={locale}
+                />
+              );
             case "text":
               return <TextBlock key={b.id} config={b.config} />;
             default:
@@ -242,6 +264,65 @@ function CollectionCardBlock({ config }: { config: Record<string, unknown> }) {
         </Reveal>
       </div>
     </section>
+  );
+}
+
+async function CategoriesGridBlock({
+  config,
+  locale,
+}: {
+  config: Record<string, unknown>;
+  locale: "tr" | "en";
+}) {
+  const limit = typeof config.limit === "number" ? config.limit : 7;
+  const categories = await getCategoriesWithCover(locale, limit);
+  if (categories.length === 0) return null;
+
+  return (
+    <CategoriesSection
+      categories={categories}
+      locale={locale}
+      eyebrow={config.eyebrow as string | undefined}
+      title={config.title as string | undefined}
+      subtitle={config.subtitle as string | undefined}
+      ctaLabel={config.ctaLabel as string | undefined}
+      ctaHref={(config.ctaHref as string | undefined) ?? "/shop"}
+    />
+  );
+}
+
+async function BestSellersBlock({
+  config,
+  locale,
+}: {
+  config: Record<string, unknown>;
+  locale: "tr" | "en";
+}) {
+  const limit = typeof config.limit === "number" ? config.limit : 8;
+  const withinDays =
+    typeof config.withinDays === "number" ? config.withinDays : 90;
+  const products = await getBestSellingProducts(locale, limit, withinDays);
+  if (products.length === 0) return null;
+
+  return (
+    <BestSellers
+      locale={locale}
+      eyebrow={config.eyebrow as string | undefined}
+      title={config.title as string | undefined}
+      subtitle={config.subtitle as string | undefined}
+      ctaLabel={config.ctaLabel as string | undefined}
+      ctaHref={(config.ctaHref as string | undefined) ?? "/shop"}
+      badgeLabel={config.badgeLabel as string | undefined}
+      products={products.map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        dropLabel: p.dropLabel ?? "",
+        price: p.price,
+        image: p.images[0] ?? "",
+        hoverImage: p.hoverImage ?? undefined,
+        soldOut: p.soldOut,
+      }))}
+    />
   );
 }
 
