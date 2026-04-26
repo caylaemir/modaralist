@@ -36,8 +36,8 @@ export function Header() {
 
   const categories = [
     { slug: "tisort", label: "Tişört" },
-    { slug: "sweat", label: "Sweat" },
-    { slug: "oversize-sweatshirt", label: "Oversize Sweatshirt" },
+    { slug: "sweatshirt", label: "Sweatshirt" },
+    { slug: "oversize", label: "Oversize" },
     { slug: "outdoor-polar", label: "Outdoor Polar" },
     { slug: "esofman", label: "Eşofman" },
     { slug: "sort", label: "Şort" },
