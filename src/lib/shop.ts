@@ -36,6 +36,7 @@ export type ShopProduct = {
   variants: ShopVariant[];
   categorySlug: string | null;
   tags: string[];
+  tagCodes: string[];
   soldOut: boolean;
   comingSoon: boolean;
 };
@@ -129,6 +130,7 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
     })),
     categorySlug: p.category?.slug ?? null,
     tags: p.tags.map((t) => (locale === "tr" ? t.labelTr : t.labelEn)),
+    tagCodes: p.tags.map((t) => t.code),
     soldOut: p.status === "PUBLISHED" && totalStock === 0,
     comingSoon: p.status === "COMING_SOON",
   };
