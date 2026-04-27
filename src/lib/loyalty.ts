@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { SettingsMap } from "@/lib/settings";
 
@@ -40,32 +41,39 @@ export async function awardOrderPoints(
   if (!order || !order.userId) return null;
   if (order.status === "CANCELLED" || order.status === "REFUNDED") return null;
 
-  // Idempotency check
-  const existing = await db.loyaltyTransaction.findFirst({
-    where: { orderId, type: "EARN" },
-    select: { id: true },
-  });
-  if (existing) return null;
-
   const subtotalNum = Number(order.subtotal);
   const points = Math.floor(subtotalNum * config.earnPerTL);
   if (points <= 0) return null;
 
-  await db.$transaction([
-    db.user.update({
-      where: { id: order.userId },
-      data: { loyaltyPoints: { increment: points } },
-    }),
-    db.loyaltyTransaction.create({
-      data: {
-        userId: order.userId,
-        orderId,
-        type: "EARN",
-        points,
-        reason: `Sipariş ${orderId.slice(0, 8)}`,
-      },
-    }),
-  ]);
+  // Idempotency: DB unique constraint @@unique([orderId, type]) sayesinde
+  // concurrent callback iki kez ayni EARN insertinde P2002 hatasi alir.
+  // findFirst + create race condition'a aciktiran old check'i replace eder.
+  try {
+    await db.$transaction([
+      db.user.update({
+        where: { id: order.userId },
+        data: { loyaltyPoints: { increment: points } },
+      }),
+      db.loyaltyTransaction.create({
+        data: {
+          userId: order.userId,
+          orderId,
+          type: "EARN",
+          points,
+          reason: `Sipariş ${orderId.slice(0, 8)}`,
+        },
+      }),
+    ]);
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      // Bu order icin EARN zaten var — idempotent, sessizce skip
+      return null;
+    }
+    throw err;
+  }
 
   return { awarded: points };
 }
@@ -85,29 +93,44 @@ export async function redeemPoints(
   if (!config.enabled) return null;
   if (pointsToRedeem < config.minRedeem) return null;
 
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: { loyaltyPoints: true },
-  });
-  if (!user || user.loyaltyPoints < pointsToRedeem) return null;
-
   const discountTL = Math.round(pointsToRedeem * config.redeemValue * 100) / 100;
 
-  await db.$transaction([
-    db.user.update({
-      where: { id: userId },
-      data: { loyaltyPoints: { decrement: pointsToRedeem } },
-    }),
-    db.loyaltyTransaction.create({
-      data: {
-        userId,
-        orderId,
-        type: "REDEEM",
-        points: -pointsToRedeem,
-        reason: `Sipariş ${orderId.slice(0, 8)} indirim`,
-      },
-    }),
-  ]);
+  // ATOMIC decrement: updateMany WHERE loyaltyPoints >= N — yetersiz bakiye
+  // varsa updated=0 doner, transaction rollback yapariz. Concurrent iki
+  // checkout coklu redeem yapsa ikincisi WHERE clause'undan dolayi gecmez.
+  // unique([orderId, type]) ayrica ayni order'a iki redeem yazilmasini engeller.
+  try {
+    await db.$transaction(async (tx) => {
+      const updated = await tx.user.updateMany({
+        where: { id: userId, loyaltyPoints: { gte: pointsToRedeem } },
+        data: { loyaltyPoints: { decrement: pointsToRedeem } },
+      });
+      if (updated.count === 0) {
+        throw new Error("INSUFFICIENT_BALANCE");
+      }
+      await tx.loyaltyTransaction.create({
+        data: {
+          userId,
+          orderId,
+          type: "REDEEM",
+          points: -pointsToRedeem,
+          reason: `Sipariş ${orderId.slice(0, 8)} indirim`,
+        },
+      });
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "INSUFFICIENT_BALANCE") {
+      return null;
+    }
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      // Bu order icin REDEEM zaten var — idempotent skip
+      return null;
+    }
+    throw err;
+  }
 
   return { discountTL };
 }

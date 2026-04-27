@@ -31,6 +31,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // IDEMPOTENCY (H4): iyzico callback'i bazen 2 kez gelir (network retry).
+  // paymentStatus zaten CAPTURED ise tum is bitmistir — direkt success'e
+  // yonlendir, mail/loyalty/order update yeniden tetiklenmesin.
+  if (order.paymentStatus === "CAPTURED") {
+    return NextResponse.redirect(
+      new URL(`/tr/checkout/success?order=${orderNumber}`, req.url)
+    );
+  }
+
   if (status !== "success" || mdStatus !== "1") {
     if (order.status === "PENDING") {
       await db.$transaction(async (tx) => {

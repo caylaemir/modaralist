@@ -20,8 +20,9 @@ const requestSchema = z.object({
  * Each message max 2000 char (spam koruma)
  */
 export async function POST(req: NextRequest) {
-  // Rate limit
-  const rl = rateLimit(`seloo:${getClientIp(req)}`, 30, 60 * 60_000);
+  // Rate limit (cost koruma): 10 mesaj/IP/saat
+  // gpt-4o-mini ucuz ama distributed spam yine de bedel cikarir
+  const rl = rateLimit(`seloo:${getClientIp(req)}`, 10, 60 * 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       {

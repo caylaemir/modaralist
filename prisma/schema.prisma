@@ -104,6 +104,10 @@ model User {
 // Puan kazanma/harcama log'u — audit trail icin
 // type: EARN (siparisten), REDEEM (checkout'ta indirim),
 //       ADJUST (admin manuel), EXPIRE (zaman asimi)
+//
+// @@unique([orderId, type]): ayni order icin ayni type ikinci kez insert
+// edilemez. Concurrent payment callback'i veya race condition double-spend
+// olusturmak isterse DB seviyesinde P2002 atilir, kod yakalayip skip eder.
 model LoyaltyTransaction {
   id          String   @id @default(cuid())
   userId      String
@@ -115,6 +119,7 @@ model LoyaltyTransaction {
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([orderId, type])
   @@index([userId, createdAt])
 }
 

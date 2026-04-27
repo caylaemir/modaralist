@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendEmail, abandonedCartHtml } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 /**
  * GET /api/cron/abandoned-cart
@@ -19,9 +20,7 @@ import { formatPrice } from "@/lib/utils";
  *   0 * * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.shop/api/cron/abandoned-cart
  */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!verifyCronAuth(req.headers.get("authorization"))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -108,10 +107,8 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    candidates: candidates.length,
-    sent,
-    skipped,
-  });
+  console.log(
+    `[cron/abandoned-cart] candidates=${candidates.length} sent=${sent} skipped=${skipped}`
+  );
+  return NextResponse.json({ ok: true });
 }

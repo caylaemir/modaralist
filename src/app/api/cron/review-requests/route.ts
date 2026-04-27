@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendEmail, reviewRequestHtml } from "@/lib/email";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 /**
  * GET /api/cron/review-requests
@@ -20,9 +21,7 @@ import { sendEmail, reviewRequestHtml } from "@/lib/email";
  *   0 10 * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.shop/api/cron/review-requests
  */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!verifyCronAuth(req.headers.get("authorization"))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -122,10 +121,9 @@ export async function GET(req: Request) {
     else skipped++;
   }
 
-  return NextResponse.json({
-    ok: true,
-    candidates: deliveredOrders.length,
-    sent,
-    skipped,
-  });
+  // Minimal response (M1): caller'a istatistik vermiyoruz, sadece logla
+  console.log(
+    `[cron/review-requests] candidates=${deliveredOrders.length} sent=${sent} skipped=${skipped}`
+  );
+  return NextResponse.json({ ok: true });
 }

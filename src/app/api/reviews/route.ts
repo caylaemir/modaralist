@@ -20,11 +20,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const rl = rateLimit(
-    `review:${getClientIp(req)}`,
-    5,
-    60 * 60_000
-  );
+  // IP-bazli rate limit (genel spam koruma)
+  const rl = rateLimit(`review:${getClientIp(req)}`, 5, 60 * 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Çok fazla yorum gönderdin. Birazdan tekrar dene." },
@@ -36,6 +33,20 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+  }
+
+  // Per-user-per-product rate limit (H1): proxy/VPN kullanip ayni urune
+  // farkli IP'lerden yigma yorum koruma. Saatte max 3 deneme/urun/kullanici.
+  const perProductRl = rateLimit(
+    `review:user:${session.user.id}:${parsed.data.productSlug}`,
+    3,
+    60 * 60_000
+  );
+  if (!perProductRl.allowed) {
+    return NextResponse.json(
+      { error: "Bu ürün için çok fazla deneme. Sonra tekrar dene." },
+      { status: 429 }
+    );
   }
 
   const product = await db.product.findUnique({

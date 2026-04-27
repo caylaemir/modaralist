@@ -1,8 +1,37 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import DOMPurify from "isomorphic-dompurify";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+
+// CSV'den gelen text alanlarini sanitize eder. Stored XSS koruma:
+// kullanici sonradan urun aciklamasini HTML render eden bir yere koyarsa
+// (rich text editor, blog excerpt vs.), <script>/<iframe>/on* enjekte
+// edilemez. CSV formula injection icin: =/+/-/@ ile baslayan hucreyi
+// nötrleyici tek tirnakla başlat.
+function sanitize(s: string): string {
+  if (!s) return s;
+  // CSV formula prefix neutralization (Excel injection koruma)
+  const trimmed = s.trim();
+  const formulaPrefix = trimmed.length > 0 && /^[=+\-@\t\r]/.test(trimmed);
+  const safe = formulaPrefix ? `'${trimmed}` : trimmed;
+  // HTML tag/attribute strip — sadece duz metin/temel inline format kalir
+  return DOMPurify.sanitize(safe, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "style"],
+    FORBID_ATTR: [
+      "onerror",
+      "onload",
+      "onclick",
+      "onmouseover",
+      "onfocus",
+      "onblur",
+      "onchange",
+      "onsubmit",
+    ],
+  });
+}
 
 /**
  * CSV satirlarini parse edip db'ye yazar — toplu urun import.
@@ -192,19 +221,19 @@ export async function importProductsAction(
             create: [
               {
                 locale: "tr",
-                name: row.trName || row.slug,
+                name: sanitize(row.trName) || row.slug,
                 slug: row.slug,
-                description: row.trDescription || null,
-                material: row.trMaterial || null,
-                care: row.trCare || null,
+                description: row.trDescription ? sanitize(row.trDescription) : null,
+                material: row.trMaterial ? sanitize(row.trMaterial) : null,
+                care: row.trCare ? sanitize(row.trCare) : null,
               },
               {
                 locale: "en",
-                name: row.enName || row.trName || row.slug,
+                name: sanitize(row.enName) || sanitize(row.trName) || row.slug,
                 slug: row.slug,
-                description: row.enDescription || null,
-                material: row.enMaterial || null,
-                care: row.enCare || null,
+                description: row.enDescription ? sanitize(row.enDescription) : null,
+                material: row.enMaterial ? sanitize(row.enMaterial) : null,
+                care: row.enCare ? sanitize(row.enCare) : null,
               },
             ],
           },
