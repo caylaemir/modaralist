@@ -8,6 +8,7 @@ import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { calculateBundleDiscount, parseBundleConfig } from "@/lib/cart-bundle";
+import { validateCoupon, recordCouponUsage } from "@/lib/coupon";
 
 const schema = z.object({
   lines: z
@@ -44,6 +45,9 @@ const schema = z.object({
     expireYear: z.string().min(2).max(4),
     cvc: z.string().min(3).max(4),
   }),
+  // Opsiyonel kupon kodu — server-side recompute (client'in dedigi tutar
+  // kullanilmaz, validate edilir ve burada hesaplanir)
+  couponCode: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -144,7 +148,36 @@ export async function POST(req: NextRequest) {
     bundleConfig
   );
   const bundleDiscount = bundle.applied ? bundle.discountAmount : 0;
-  const grandTotal = Math.max(0, subtotal + shippingCost - bundleDiscount);
+
+  // Kupon kontrolu — server-side recompute (client'in dedigi tutara guvenmeyiz)
+  let couponDiscount = 0;
+  let couponShippingFree = false;
+  let appliedCouponId: string | null = null;
+  let appliedCouponCode: string | null = null;
+  if (parsed.data.couponCode && parsed.data.couponCode.trim().length > 0) {
+    const result = await validateCoupon({
+      code: parsed.data.couponCode,
+      subtotal,
+      userId,
+    });
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: `Kupon: ${result.error}` },
+        { status: 400 }
+      );
+    }
+    couponDiscount = result.discountAmount;
+    couponShippingFree = result.freeShipping;
+    appliedCouponId = result.coupon.id;
+    appliedCouponCode = result.coupon.code;
+  }
+
+  // Final shipping (FREE_SHIPPING kuponu varsa kargo bedava)
+  const finalShipping = couponShippingFree ? 0 : shippingCost;
+
+  // Toplam indirim = bundle + kupon (subtotal'dan dusulur)
+  const totalDiscount = bundleDiscount + couponDiscount;
+  const grandTotal = Math.max(0, subtotal + finalShipping - totalDiscount);
 
   const orderNumber = `MDR-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`;
   const [name, ...rest] = customer.fullName.trim().split(" ");
@@ -177,11 +210,12 @@ export async function POST(req: NextRequest) {
           email: customer.email,
           phone: customer.phone,
           subtotal,
-          shippingCost,
-          discountTotal: bundleDiscount,
+          shippingCost: finalShipping,
+          discountTotal: totalDiscount,
           grandTotal,
           status: "PENDING",
           paymentStatus: "PENDING",
+          couponCode: appliedCouponCode,
           items: {
             create: safeLines.map((l) => ({
               variantId: l.variantId,
@@ -234,6 +268,21 @@ export async function POST(req: NextRequest) {
       { error: "Sipariş oluşturulamadı. Tekrar dene." },
       { status: 500 }
     );
+  }
+
+  // Kupon kullanim kaydi (order create basarili oldu)
+  if (appliedCouponId) {
+    try {
+      await recordCouponUsage({
+        couponId: appliedCouponId,
+        orderId: order.id,
+        userId,
+        discountAmount: couponDiscount,
+      });
+    } catch (err) {
+      console.error("[checkout] coupon usage record failed", err);
+      // Order zaten yaratildi, akisi durdurma
+    }
   }
 
   const ip =

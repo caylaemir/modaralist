@@ -22,6 +22,16 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("contact");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Kupon state
+  const [couponInput, setCouponInput] = useState("");
+  const [couponPending, setCouponPending] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+    freeShipping: boolean;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
   const [form, setForm] = useState({
     email: "",
     phone: "",
@@ -70,13 +80,54 @@ export default function CheckoutPage() {
   const sub = subtotal();
   const baseShipping =
     form.shippingMethod === "express" ? rates.express : rates.standard;
-  const shippingCost =
+  const thresholdShipping =
     rates.freeOver > 0 &&
     sub >= rates.freeOver &&
     form.shippingMethod === "standard"
       ? 0
       : baseShipping;
-  const total = sub + shippingCost;
+  // Kupon FREE_SHIPPING ise kargo bedava
+  const shippingCost = appliedCoupon?.freeShipping ? 0 : thresholdShipping;
+  const couponDiscount = appliedCoupon?.discountAmount ?? 0;
+  const total = Math.max(0, sub + shippingCost - couponDiscount);
+
+  async function applyCoupon() {
+    setCouponError(null);
+    if (!couponInput.trim()) {
+      setCouponError("Kod giriniz");
+      return;
+    }
+    setCouponPending(true);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput.trim(), subtotal: sub }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setCouponError(data?.error ?? "Kod geçersiz");
+        return;
+      }
+      setAppliedCoupon({
+        code: data.coupon.code,
+        discountAmount: data.discountAmount,
+        freeShipping: data.freeShipping,
+      });
+      setCouponInput("");
+      toast.success(`Kupon uygulandı: ${data.coupon.code}`);
+    } catch {
+      setCouponError("Bağlantı hatası");
+    } finally {
+      setCouponPending(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  }
 
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -139,6 +190,7 @@ export default function CheckoutPage() {
             expireYear: form.expireYear,
             cvc: form.cvc,
           },
+          couponCode: appliedCoupon?.code,
         }),
       });
       const data = await res.json();
@@ -618,7 +670,63 @@ export default function CheckoutPage() {
                 </li>
               ))}
             </ul>
-            <dl className="mt-8 space-y-3 border-t border-line pt-6 text-sm">
+            {/* Kupon kodu */}
+            <div className="mt-6 border-t border-line pt-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
+                İndirim Kodu
+              </p>
+              {appliedCoupon ? (
+                <div className="mt-3 flex items-center justify-between border border-ink bg-paper px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[12px]">{appliedCoupon.code}</p>
+                    <p className="mt-0.5 text-[10px] text-mist">
+                      {appliedCoupon.freeShipping
+                        ? "Ücretsiz kargo"
+                        : `-${formatPrice(appliedCoupon.discountAmount, locale)}`}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    className="text-[10px] uppercase tracking-[0.25em] text-mist hover:text-red-600"
+                  >
+                    Kaldır
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void applyCoupon();
+                        }
+                      }}
+                      placeholder="KOD GİR"
+                      maxLength={40}
+                      className="flex-1 border border-line bg-paper px-3 py-2 text-sm font-mono uppercase outline-none focus:border-ink"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void applyCoupon()}
+                      disabled={couponPending || !couponInput.trim()}
+                      className="bg-ink px-4 text-[11px] uppercase tracking-[0.3em] text-paper disabled:opacity-50"
+                    >
+                      {couponPending ? "..." : "Uygula"}
+                    </button>
+                  </div>
+                  {couponError ? (
+                    <p className="mt-2 text-[11px] text-red-600">{couponError}</p>
+                  ) : null}
+                </div>
+              )}
+            </div>
+
+            <dl className="mt-6 space-y-3 border-t border-line pt-6 text-sm">
               <div className="flex justify-between">
                 <dt>Ara Toplam</dt>
                 <dd className="tabular-nums">{formatPrice(sub, locale)}</dd>
@@ -629,6 +737,14 @@ export default function CheckoutPage() {
                   {shippingCost === 0 ? "Ücretsiz" : formatPrice(shippingCost, locale)}
                 </dd>
               </div>
+              {couponDiscount > 0 ? (
+                <div className="flex justify-between text-emerald-700">
+                  <dt>Kupon ({appliedCoupon?.code})</dt>
+                  <dd className="tabular-nums">
+                    -{formatPrice(couponDiscount, locale)}
+                  </dd>
+                </div>
+              ) : null}
               <div className="flex justify-between border-t border-line pt-3 text-base">
                 <dt className="uppercase tracking-[0.2em]">Toplam</dt>
                 <dd className="tabular-nums">{formatPrice(total, locale)}</dd>
