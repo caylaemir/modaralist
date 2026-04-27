@@ -639,10 +639,122 @@ export function ProductForm({
         </div>
       </section>
 
-      {/* --------- Tags --------- */}
+      {/* --------- Cinsiyet (özel selector — tag-based ama UI temiz) --------- */}
+      <section className="border border-line bg-paper p-6">
+        <h2 className="caps-wide text-sm">Cinsiyet</h2>
+        <p className="mt-1 text-xs text-mist">
+          Mağazadaki cinsiyet filtresi bunu kullanır. Tek seçim — istersen
+          unisex koy. Arka planda <span className="font-mono">kadin</span>/
+          <span className="font-mono">erkek</span>/
+          <span className="font-mono">unisex</span> etiketi otomatik atanır.
+        </p>
+
+        <Controller
+          control={control}
+          name="selectedTagIds"
+          render={({ field }) => {
+            const genderTags = {
+              kadin: tags.find((t) => t.code === "kadin"),
+              erkek: tags.find((t) => t.code === "erkek"),
+              unisex: tags.find((t) => t.code === "unisex"),
+            };
+            const current = field.value ?? [];
+            const activeGender = (
+              ["kadin", "erkek", "unisex"] as const
+            ).find((code) => {
+              const tag = genderTags[code];
+              return tag ? current.includes(tag.id) : false;
+            });
+
+            const options = [
+              { code: null as null, label: "Belirsiz" },
+              { code: "kadin" as const, label: "Kadın" },
+              { code: "erkek" as const, label: "Erkek" },
+              { code: "unisex" as const, label: "Unisex" },
+            ];
+
+            const allMissing = !genderTags.kadin && !genderTags.erkek && !genderTags.unisex;
+
+            return (
+              <div className="mt-4">
+                {allMissing ? (
+                  <div className="border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
+                    Cinsiyet seçimi için önce{" "}
+                    <a
+                      href="/admin/tags"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium underline"
+                    >
+                      Etiketler sayfasından
+                    </a>{" "}
+                    Kadın/Erkek/Unisex etiketlerini ekle (üstteki "Hızlı ekle"
+                    butonuyla 1 tıkla).
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {options.map((opt) => {
+                      const tag = opt.code ? genderTags[opt.code] : null;
+                      const exists = opt.code === null || !!tag;
+                      const isActive =
+                        opt.code === null
+                          ? !activeGender
+                          : activeGender === opt.code;
+                      return (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          disabled={!exists}
+                          onClick={() => {
+                            // Once tum cinsiyet tag'lerini cikar
+                            const otherTagIds = current.filter((id) => {
+                              return ![
+                                genderTags.kadin?.id,
+                                genderTags.erkek?.id,
+                                genderTags.unisex?.id,
+                              ]
+                                .filter(Boolean)
+                                .includes(id);
+                            });
+                            // Sonra secili olani ekle (Belirsiz ise hicbiri)
+                            if (opt.code && tag) {
+                              field.onChange([...otherTagIds, tag.id]);
+                            } else {
+                              field.onChange(otherTagIds);
+                            }
+                          }}
+                          className={`border px-5 py-2 text-sm transition-colors ${
+                            isActive
+                              ? "border-ink bg-ink text-paper"
+                              : exists
+                                ? "border-line text-ink hover:border-ink"
+                                : "border-line text-mist opacity-40 cursor-not-allowed"
+                          }`}
+                          title={
+                            exists
+                              ? undefined
+                              : `'${opt.code}' etiketi tanımlanmamış`
+                          }
+                        >
+                          {opt.label}
+                          {opt.code && !tag ? (
+                            <span className="ml-1 text-[10px]">⚠️</span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }}
+        />
+      </section>
+
+      {/* --------- Tags (digerleri: yeni, cok-satan, sale, limited vs.) --------- */}
       <section className="border border-line bg-paper p-6">
         <div className="flex items-center justify-between">
-          <h2 className="caps-wide text-sm">Etiketler</h2>
+          <h2 className="caps-wide text-sm">Diğer Etiketler</h2>
           <a
             href="/admin/tags"
             target="_blank"
@@ -653,59 +765,63 @@ export function ProductForm({
           </a>
         </div>
         <p className="mt-1 text-xs text-mist">
-          Cinsiyet filtresi için <span className="font-mono text-ink">kadin</span>,{" "}
-          <span className="font-mono text-ink">erkek</span>,{" "}
-          <span className="font-mono text-ink">unisex</span> etiketleri eklemeyi unutma.
-          Birden fazla seçilebilir.
+          Yeni, çok satan, indirim, limited gibi ek etiketler. Birden fazla seçilebilir.
+          (Cinsiyet etiketleri yukarıdan yönetilir.)
         </p>
         <Controller
           control={control}
           name="selectedTagIds"
-          render={({ field }) => (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {tags.length === 0 ? (
-                <p className="text-xs text-mist italic">
-                  Henüz etiket yok.{" "}
-                  <a
-                    href="/admin/tags"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-ink underline"
-                  >
-                    Etiket ekle
-                  </a>
-                </p>
-              ) : (
-                tags.map((t) => {
-                  const checked = field.value?.includes(t.id) ?? false;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        const current = field.value ?? [];
-                        field.onChange(
-                          checked
-                            ? current.filter((x) => x !== t.id)
-                            : [...current, t.id]
-                        );
-                      }}
-                      className={`border px-3 py-1.5 text-[12px] transition-colors ${
-                        checked
-                          ? "border-ink bg-ink text-paper"
-                          : "border-line text-mist hover:border-ink hover:text-ink"
-                      }`}
+          render={({ field }) => {
+            // Cinsiyet tag'leri yukarida gosteriliyor — burada onlari gizle
+            const nonGenderTags = tags.filter(
+              (t) => !["kadin", "erkek", "unisex"].includes(t.code)
+            );
+            return (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {nonGenderTags.length === 0 ? (
+                  <p className="text-xs text-mist italic">
+                    Henüz başka etiket yok.{" "}
+                    <a
+                      href="/admin/tags"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-ink underline"
                     >
-                      {t.labelTr}
-                      <span className="ml-1.5 font-mono text-[10px] opacity-60">
-                        {t.code}
-                      </span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          )}
+                      Etiket ekle
+                    </a>
+                  </p>
+                ) : (
+                  nonGenderTags.map((t) => {
+                    const checked = field.value?.includes(t.id) ?? false;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          const current = field.value ?? [];
+                          field.onChange(
+                            checked
+                              ? current.filter((x) => x !== t.id)
+                              : [...current, t.id]
+                          );
+                        }}
+                        className={`border px-3 py-1.5 text-[12px] transition-colors ${
+                          checked
+                            ? "border-ink bg-ink text-paper"
+                            : "border-line text-mist hover:border-ink hover:text-ink"
+                        }`}
+                      >
+                        {t.labelTr}
+                        <span className="ml-1.5 font-mono text-[10px] opacity-60">
+                          {t.code}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            );
+          }}
         />
       </section>
 
