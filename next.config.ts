@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -70,4 +71,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// Sentry sadece SENTRY_DSN var ise wrap eder; aksi halde no-op cikar
+// (build-time noise olmasin diye DSN kontrolu env'den)
+const baseConfig = withNextIntl(nextConfig);
+
+export default process.env.SENTRY_DSN
+  ? withSentryConfig(baseConfig, {
+      // Sentry CLI auth token (source map upload icin) — yoksa skip
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      // Build log'lari sessiz, hatalari yine basar
+      silent: !process.env.CI,
+      // Source map upload sadece auth token varsa
+      widenClientFileUpload: true,
+      // Tunnel route — adblock'larin Sentry'yi engellemesini bypass eder
+      tunnelRoute: "/monitoring",
+      disableLogger: true,
+    })
+  : baseConfig;

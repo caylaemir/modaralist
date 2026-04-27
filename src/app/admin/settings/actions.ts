@@ -43,6 +43,7 @@ export async function saveSettingsAction(
     "whatsapp.enabled",
     "security.adminTwoFactorEnabled",
     "shop.freeShippingAB",
+    "loyalty.enabled",
   ] as const) {
     const val = entries[key];
     entries[key] = val === "on" || val === "true" ? "true" : "false";

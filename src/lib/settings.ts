@@ -76,6 +76,15 @@ export const SETTING_DEFAULTS = {
   // Free shipping A/B test (true ise alternatif esik kullanilir)
   "shop.freeShippingAB": "false",
   "shop.freeShippingOverB": "1000",
+
+  // Loyalty / puan sistemi
+  // earnPerTL: her 1 TL siparis -> kac puan (varsayilan 1 TL = 1 puan)
+  // redeemValue: 1 puan kac TL (varsayilan 100 puan = 5 TL = 0.05 TL/puan)
+  // minRedeem: minimum kullanim puani (cok kucuk bakiye spam'i engelle)
+  "loyalty.enabled": "false",
+  "loyalty.earnPerTL": "1",
+  "loyalty.redeemValue": "0.05",
+  "loyalty.minRedeem": "100",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
@@ -357,6 +366,34 @@ export const SETTING_SECTIONS: Array<{
         label: "B varyantı eşiği (₺)",
         type: "number",
         hint: "A varyantı yukardaki standart eşik. B yarısı bu eşiği görür.",
+      },
+    ],
+  },
+  {
+    id: "loyalty",
+    title: "Sadakat Puanı",
+    eyebrow: "— loyalty",
+    description:
+      "Müşteri her siparişinden puan kazanır, sonraki alışverişte kullanır. Repeat customer rate'i artırır. Earn rate düşük (1:1), redeem değer makul (100 puan = 5 TL = %5'e benzer indirim).",
+    fields: [
+      { key: "loyalty.enabled", label: "Sadakat puanı aktif", type: "boolean" },
+      {
+        key: "loyalty.earnPerTL",
+        label: "1 TL = kaç puan",
+        type: "number",
+        hint: "Varsayılan 1. Sipariş tutarı x bu değer = kazanılan puan.",
+      },
+      {
+        key: "loyalty.redeemValue",
+        label: "1 puanın TL değeri",
+        type: "number",
+        hint: "Varsayılan 0.05. 100 puan = 5 TL indirim.",
+      },
+      {
+        key: "loyalty.minRedeem",
+        label: "Minimum kullanım (puan)",
+        type: "number",
+        hint: "Bu puanın altında redeem edilemez (varsayılan 100).",
       },
     ],
   },

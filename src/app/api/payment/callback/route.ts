@@ -4,6 +4,8 @@ import { finalizeThreeDSPayment } from "@/lib/payment/iyzico";
 import { sendEmail, orderConfirmationHtml } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
 import { restoreStockForOrder } from "@/lib/stock";
+import { getAllSettings } from "@/lib/settings";
+import { awardOrderPoints, parseLoyaltyConfig } from "@/lib/loyalty";
 
 // iyzico 3DS sonunda buraya POST atar.
 // Body: application/x-www-form-urlencoded
@@ -81,6 +83,17 @@ export async function POST(req: NextRequest) {
         data: { status: "CAPTURED", providerTxnId: final.paymentId },
       }),
     ]);
+
+    // Loyalty puan ekle (siparis CAPTURED oldu) — hata olsa akisi durdurma
+    try {
+      const settings = await getAllSettings();
+      const cfg = parseLoyaltyConfig(settings);
+      if (cfg.enabled) {
+        await awardOrderPoints(order.id, cfg);
+      }
+    } catch (err) {
+      console.error("[payment-callback] loyalty error", err);
+    }
 
     // Sipariş onay e-postası (async, hata olsa da akışı durdurma)
     try {

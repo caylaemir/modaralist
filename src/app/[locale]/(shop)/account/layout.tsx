@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { Link } from "@/i18n/navigation";
 import { Reveal } from "@/components/shop/reveal";
-import { User, Package, MapPin, Heart, LogOut } from "lucide-react";
+import { User, Package, MapPin, Heart, LogOut, Shield } from "lucide-react";
 
 const NAV = [
   { href: "/account", label: "Panel", icon: User, exact: true },
@@ -10,6 +10,7 @@ const NAV = [
   { href: "/account/addresses", label: "Adreslerim", icon: MapPin },
   { href: "/account/wishlist", label: "Favorilerim", icon: Heart },
   { href: "/account/profile", label: "Profilim", icon: User },
+  { href: "/account/privacy", label: "Gizlilik / KVKK", icon: Shield },
 ];
 
 export default async function AccountLayout({

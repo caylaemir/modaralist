@@ -88,6 +88,7 @@ model User {
   image         String?
   locale        Locale    @default(tr)
   role          UserRole  @default(CUSTOMER)
+  loyaltyPoints Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -97,6 +98,24 @@ model User {
   orders        Order[]
   wishlist      WishlistItem[]
   reviews       Review[]
+  loyaltyLedger LoyaltyTransaction[]
+}
+
+// Puan kazanma/harcama log'u — audit trail icin
+// type: EARN (siparisten), REDEEM (checkout'ta indirim),
+//       ADJUST (admin manuel), EXPIRE (zaman asimi)
+model LoyaltyTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String?
+  type        String
+  points      Int      // pozitif veya negatif
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model Account {
