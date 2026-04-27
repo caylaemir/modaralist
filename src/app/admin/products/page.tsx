@@ -79,12 +79,20 @@ export default async function AdminProductsPage({
             {totalCount} ürün · {publishedCount} yayında · {draftCount} taslak
           </p>
         </div>
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center gap-3 bg-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-paper hover:opacity-90"
-        >
-          + Yeni Ürün
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/products/import"
+            className="inline-flex items-center gap-3 border border-line px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-mist hover:border-ink hover:text-ink"
+          >
+            CSV Import
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-3 bg-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-paper hover:opacity-90"
+          >
+            + Yeni Ürün
+          </Link>
+        </div>
       </header>
 
       <section className="mt-10">

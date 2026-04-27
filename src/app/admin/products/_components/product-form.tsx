@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { slugify } from "@/lib/utils";
 import { createProduct, updateProduct } from "@/server/actions/products";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 // ---------- Form schema (mirrors server schema but client-friendly) ----------
 
@@ -520,13 +521,21 @@ export function ProductForm({
             className="inline-flex items-center gap-1 border border-line bg-bone px-3 py-1.5 text-xs text-ink hover:bg-line"
           >
             <Plus className="size-3" />
-            Ekle
+            URL ekle
           </button>
         </div>
         <p className="mt-1 text-xs text-mist">
-          URL olarak ekleyin. İlk görsel ana, ikinci görsel hover olarak
-          kullanılır.
+          Cloudinary'ye dosya sürükle veya URL elden ekle. İlk görsel <strong>ana</strong>,
+          ikinci görsel <strong>hover</strong>.
         </p>
+
+        <div className="mt-4">
+          <ImageUploader
+            multiple
+            onUploaded={(url) => imagesField.append({ url })}
+          />
+        </div>
+
         <div className="mt-4 space-y-2">
           {imagesField.fields.length === 0 ? (
             <p className="text-sm text-mist">Henüz görsel yok.</p>
