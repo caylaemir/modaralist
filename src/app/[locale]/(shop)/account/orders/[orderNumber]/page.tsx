@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Reveal } from "@/components/shop/reveal";
+import { OrderReviewButton } from "@/components/shop/order-review-button";
 import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 
@@ -42,7 +43,13 @@ export default async function CustomerOrderDetail({
         userId: session.user.id,
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            variant: {
+              include: { product: { select: { id: true, slug: true } } },
+            },
+          },
+        },
         addresses: true,
         shipments: { orderBy: { createdAt: "desc" } },
         payments: { orderBy: { createdAt: "desc" } },
@@ -51,6 +58,26 @@ export default async function CustomerOrderDetail({
     .catch(() => null);
 
   if (!order) notFound();
+
+  // Yorum yazma uygunlugu: SHIPPED veya DELIVERED siparislerde mumkun.
+  // Her item icin: bu kullanicinin ayni urune yorumu var mi?
+  const isReviewable =
+    order.status === "DELIVERED" || order.status === "SHIPPED";
+  const productIds = Array.from(
+    new Set(
+      order.items
+        .map((it) => it.variant?.product?.id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const existingReviews =
+    isReviewable && productIds.length > 0
+      ? await db.review.findMany({
+          where: { userId: session.user.id, productId: { in: productIds } },
+          select: { productId: true },
+        })
+      : [];
+  const reviewedProductIds = new Set(existingReviews.map((r) => r.productId));
 
   const shipping = order.addresses.find((a) => a.type === "SHIPPING");
   const billing = order.addresses.find((a) => a.type === "BILLING");
@@ -114,24 +141,43 @@ export default async function CustomerOrderDetail({
         <section className="mt-12 border-t border-line pt-8">
           <p className="text-[10px] uppercase tracking-[0.4em] text-mist">— ürünler</p>
           <ul className="mt-4">
-            {order.items.map((it) => (
-              <li
-                key={it.id}
-                className="flex items-center justify-between gap-4 border-b border-line py-4 text-sm"
-              >
-                <div className="min-w-0 flex-1">
-                  <p>{it.productNameSnapshot}</p>
-                  {it.variantSnapshot ? (
-                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.25em] text-mist">
-                      {it.variantSnapshot} · {it.quantity} adet
-                    </p>
-                  ) : null}
-                </div>
-                <p className="shrink-0 tabular-nums">
-                  {formatPrice(Number(it.lineTotal))}
-                </p>
-              </li>
-            ))}
+            {order.items.map((it) => {
+              const slug = it.variant?.product?.slug;
+              const productId = it.variant?.product?.id;
+              const reviewState: "reviewable" | "reviewed" | "not-deliverable" =
+                !isReviewable || !slug
+                  ? "not-deliverable"
+                  : productId && reviewedProductIds.has(productId)
+                    ? "reviewed"
+                    : "reviewable";
+              return (
+                <li
+                  key={it.id}
+                  className="flex items-center justify-between gap-4 border-b border-line py-4 text-sm"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p>{it.productNameSnapshot}</p>
+                    {it.variantSnapshot ? (
+                      <p className="mt-0.5 text-[10px] uppercase tracking-[0.25em] text-mist">
+                        {it.variantSnapshot} · {it.quantity} adet
+                      </p>
+                    ) : null}
+                    {slug ? (
+                      <div className="mt-2">
+                        <OrderReviewButton
+                          productSlug={slug}
+                          productName={it.productNameSnapshot}
+                          state={reviewState}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                  <p className="shrink-0 tabular-nums">
+                    {formatPrice(Number(it.lineTotal))}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
 
           <dl className="mt-6 grid gap-2 text-sm">

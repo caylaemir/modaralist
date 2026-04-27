@@ -2,15 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Link } from "@/i18n/navigation";
+
+export type ReviewState =
+  | "can-review"
+  | "not-logged-in"
+  | "not-purchased"
+  | "already-reviewed";
 
 export function ReviewForm({
   productSlug,
-  isLoggedIn,
+  state,
 }: {
   productSlug: string;
-  isLoggedIn: boolean;
+  /** Server-side belirlenir: kullanici yorum yazabilir mi? */
+  state: ReviewState;
 }) {
   const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [done, setDone] = useState(false);
@@ -18,10 +27,7 @@ export function ReviewForm({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isLoggedIn) {
-      toast.error("Yorum bırakmak için giriş yapmalısın.");
-      return;
-    }
+    if (state !== "can-review") return;
     if (rating < 1) {
       toast.error("Yıldız ver.");
       return;
@@ -59,34 +65,62 @@ export function ReviewForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="border-t border-line py-10">
+    <div className="border-t border-line py-10">
       <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
         — değerlendirme
       </p>
       <h3 className="display mt-3 text-2xl">Bu ürün için yorum bırak</h3>
 
-      {!isLoggedIn ? (
-        <p className="mt-4 text-sm text-mist">
-          Yorum bırakmak için{" "}
-          <a
+      {state === "not-logged-in" ? (
+        <div className="mt-4 border border-line bg-bone/40 p-5">
+          <p className="text-sm text-ink">
+            Yorum yazmak için <strong>giriş yap</strong>. Yorumu sadece bu
+            ürünü satın aldıysan bırakabilirsin.
+          </p>
+          <Link
             href="/login"
-            className="text-ink underline underline-offset-4"
+            className="mt-4 inline-block border-b border-ink pb-1 text-[11px] uppercase tracking-[0.3em]"
           >
-            giriş yap
-          </a>
-          .
-        </p>
+            Giriş Yap →
+          </Link>
+        </div>
+      ) : state === "not-purchased" ? (
+        <div className="mt-4 border border-line bg-bone/40 p-5">
+          <p className="text-sm text-ink">
+            Yorum yazmak için bu ürünü <strong>satın almış olman gerekiyor</strong>.
+            Bu sayede yorumlar gerçek müşterilerden gelir.
+          </p>
+          <p className="mt-3 text-[12px] text-mist">
+            Bu ürünü daha önce sipariş ettiysen siparişlerin altından da yorum
+            bırakabilirsin.
+          </p>
+          <Link
+            href="/account/orders"
+            className="mt-4 inline-block border-b border-ink pb-1 text-[11px] uppercase tracking-[0.3em]"
+          >
+            Siparişlerim →
+          </Link>
+        </div>
+      ) : state === "already-reviewed" ? (
+        <div className="mt-4 border border-line bg-bone/40 p-5">
+          <p className="text-sm text-ink">
+            Bu ürün için zaten bir yorumun var. Aynı ürüne birden fazla yorum
+            yazılamaz.
+          </p>
+        </div>
       ) : (
-        <>
+        <form onSubmit={onSubmit}>
           <div className="mt-6 flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setRating(n)}
+                onMouseEnter={() => setHover(n)}
+                onMouseLeave={() => setHover(0)}
                 aria-label={`${n} yıldız`}
                 className={`text-3xl transition-colors ${
-                  n <= rating ? "text-ink" : "text-line"
+                  n <= (hover || rating) ? "text-ink" : "text-line"
                 }`}
               >
                 ★
@@ -129,8 +163,8 @@ export function ReviewForm({
           >
             {pending ? "Gönderiliyor..." : "Gönder"} <span>→</span>
           </button>
-        </>
+        </form>
       )}
-    </form>
+    </div>
   );
 }

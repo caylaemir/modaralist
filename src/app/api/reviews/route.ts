@@ -46,6 +46,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ürün bulunamadı." }, { status: 404 });
   }
 
+  // SATIN ALMA KONTROLU — sadece bu urunu DELIVERED ya da SHIPPED olarak
+  // alan kullanici yorum yazabilir. Spam/sahte review koruma.
+  const purchasedItem = await db.orderItem.findFirst({
+    where: {
+      order: {
+        userId: session.user.id,
+        status: { in: ["DELIVERED", "SHIPPED"] },
+      },
+      variant: { productId: product.id },
+    },
+    select: { id: true },
+  });
+  if (!purchasedItem) {
+    return NextResponse.json(
+      {
+        error:
+          "Bu ürünü satın almadığın için yorum yazamazsın. Hesabın altında geçmiş siparişlerini görebilirsin.",
+      },
+      { status: 403 }
+    );
+  }
+
+  // DUPLICATE KORUMA — ayni kullanici ayni urune birden fazla yorum yazmasin
+  const existing = await db.review.findFirst({
+    where: { productId: product.id, userId: session.user.id },
+    select: { id: true, status: true },
+  });
+  if (existing) {
+    const status =
+      existing.status === "PENDING"
+        ? "moderasyonda"
+        : existing.status === "APPROVED"
+          ? "yayında"
+          : "arşivde";
+    return NextResponse.json(
+      { error: `Bu ürün için zaten bir yorumun var (${status}).` },
+      { status: 409 }
+    );
+  }
+
   await db.review.create({
     data: {
       productId: product.id,

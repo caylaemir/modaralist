@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/shop/product-card";
 import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
 import { TrackView } from "@/components/shop/track-view";
-import { ReviewForm } from "@/components/shop/review-form";
+import { ReviewForm, type ReviewState } from "@/components/shop/review-form";
 import { RecentlyViewed } from "@/components/shop/recently-viewed";
 import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
@@ -49,7 +49,33 @@ export default async function ProductPage({
   ]);
 
   if (!product) notFound();
-  const isLoggedIn = !!session?.user?.id;
+  const userId = session?.user?.id;
+
+  // Yorum yazma durumu — sadece bu urunu satin alan kullanici yazabilir.
+  // not-logged-in -> login CTA, not-purchased -> siparislerine git CTA,
+  // already-reviewed -> bilgilendirme, can-review -> form
+  let reviewState: ReviewState = "not-logged-in";
+  if (userId) {
+    const [purchased, existingReview] = await Promise.all([
+      db.orderItem.findFirst({
+        where: {
+          order: {
+            userId,
+            status: { in: ["DELIVERED", "SHIPPED"] },
+          },
+          variant: { productId: product.id },
+        },
+        select: { id: true },
+      }),
+      db.review.findFirst({
+        where: { productId: product.id, userId },
+        select: { id: true },
+      }),
+    ]);
+    if (existingReview) reviewState = "already-reviewed";
+    else if (!purchased) reviewState = "not-purchased";
+    else reviewState = "can-review";
+  }
 
   // Onaylı yorumlar
   const approvedReviews = await db.review
@@ -216,7 +242,7 @@ export default async function ProductPage({
             </ul>
           </div>
         ) : null}
-        <ReviewForm productSlug={product.slug} isLoggedIn={isLoggedIn} />
+        <ReviewForm productSlug={product.slug} state={reviewState} />
       </section>
 
       {related.length > 0 && (
