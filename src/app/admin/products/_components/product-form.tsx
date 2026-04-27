@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, X } from "lucide-react";
+import { Plus, Sparkles, X, Loader2 } from "lucide-react";
 import { slugify } from "@/lib/utils";
 import { createProduct, updateProduct } from "@/server/actions/products";
 import { ImageUploader } from "@/components/admin/image-uploader";
@@ -196,6 +196,54 @@ export function ProductForm({
 
   function autoSlug() {
     if (trName) setValue("slug", slugify(trName), { shouldValidate: true });
+  }
+
+  const [aiPending, setAiPending] = useState(false);
+  async function aiFill() {
+    if (!trName || trName.trim().length < 2) {
+      toast.error("Önce TR ürün adını yaz");
+      return;
+    }
+    const categoryId = watch("categoryId");
+    const categoryName = categories.find((c) => c.id === categoryId)?.name;
+
+    setAiPending(true);
+    try {
+      const res = await fetch("/api/admin/ai/product-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productName: trName,
+          categoryName: categoryName ?? undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data?.error ?? "AI üretimi başarısız");
+        return;
+      }
+      // Bos olmayan alanlari koru — overwrite YAPMA, kullanici yazdiysa saygi
+      const fillIfEmpty = (key: keyof FormValues, value: string | undefined) => {
+        if (!value) return;
+        const current = (watch(key) as string | undefined) ?? "";
+        if (current.trim().length === 0) {
+          setValue(key, value as never, { shouldDirty: true });
+        }
+      };
+      fillIfEmpty("trDescription", data.trDescription);
+      fillIfEmpty("enDescription", data.enDescription);
+      fillIfEmpty("trMaterial", data.trMaterial);
+      fillIfEmpty("enMaterial", data.enMaterial);
+      fillIfEmpty("trCare", data.trCare);
+      fillIfEmpty("enCare", data.enCare);
+      // EN ad icin: TR adina cevirisini cikarmak yerine TR'yi kullaniciya bırak
+      // (urun adlari genelde marka/seri-spesifik, AI'nin yorumlamasi yanliyabilir)
+      toast.success("AI ile dolduruldu (boş alanlar)");
+    } catch {
+      toast.error("Bağlantı hatası");
+    } finally {
+      setAiPending(false);
+    }
   }
 
   function onSubmit(values: FormValues) {
@@ -411,11 +459,27 @@ export function ProductForm({
 
       {/* --------- TR --------- */}
       <section className="border border-line bg-paper p-6">
-        <div className="flex items-center gap-2">
-          <h2 className="caps-wide text-sm">Türkçe İçerik</h2>
-          <span className="border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-mist">
-            tr
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h2 className="caps-wide text-sm">Türkçe İçerik</h2>
+            <span className="border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-mist">
+              tr
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={aiFill}
+            disabled={aiPending}
+            title="TR + EN açıklama, materyal, bakım, SEO alanlarını AI ile doldurur (boş olanları)"
+            className="inline-flex items-center gap-2 border border-ink bg-bone px-3 py-1.5 text-xs hover:bg-ink hover:text-paper disabled:opacity-50"
+          >
+            {aiPending ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Sparkles className="size-3" />
+            )}
+            {aiPending ? "Üretiliyor..." : "AI ile Doldur"}
+          </button>
         </div>
         <div className="mt-4 space-y-4">
           <div>
