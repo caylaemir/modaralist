@@ -1,24 +1,23 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { zodResponseFormat } from "openai/helpers/zod";
 
 /**
- * Claude AI ile urun copy (TR/EN aciklama + materyal + bakim + SEO)
- * tek seferlik uretir. Admin "AI ile doldur" butonu cagirir.
+ * GPT-4o-mini ile urun copy uretir (TR/EN aciklama + materyal + bakim + SEO).
+ * Admin "AI ile doldur" butonu cagirir.
  *
- * Model: claude-opus-4-7 (en kaliteli copy)
- * Output: zodOutputFormat ile struktur garantili JSON (parse hatasi olmaz)
- * Thinking: disabled (kisa structured output icin overhead)
- * Effort: low (basit task, hiz + ucuzluk)
+ * Model: gpt-4o-mini ($0.15/$0.60 per 1M token — Claude Opus'tan ~30x ucuz)
+ * Output: structured outputs ile zod schema garantili
+ * "server-only" import: bu dosya client bundle'a SIZAMAZ
  */
 
-let _client: Anthropic | null = null;
+let _client: OpenAI | null = null;
 function getClient() {
   if (_client) return _client;
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
-  _client = new Anthropic({ apiKey: key });
+  _client = new OpenAI({ apiKey: key });
   return _client;
 }
 
@@ -35,20 +34,12 @@ const CopySchema = z.object({
   enCare: z.string().describe("English care instruction, single line"),
   trSeoTitle: z
     .string()
-    .max(70)
     .describe("Türkçe SEO başlığı, max 60 karakter, marka adı dahil"),
   trSeoDesc: z
     .string()
-    .max(160)
-    .describe("Türkçe SEO meta açıklama, max 155 karakter, satış cümlesi"),
-  enSeoTitle: z
-    .string()
-    .max(70)
-    .describe("English SEO title, max 60 chars, brand included"),
-  enSeoDesc: z
-    .string()
-    .max(160)
-    .describe("English SEO meta description, max 155 chars"),
+    .describe("Türkçe SEO meta açıklama, max 155 karakter"),
+  enSeoTitle: z.string().describe("English SEO title, max 60 chars"),
+  enSeoDesc: z.string().describe("English SEO meta description, max 155 chars"),
 });
 
 export type GeneratedProductCopy = z.infer<typeof CopySchema>;
@@ -60,7 +51,7 @@ export async function generateProductCopy(input: {
 }): Promise<GeneratedProductCopy | { error: string }> {
   const client = getClient();
   if (!client) {
-    return { error: "ANTHROPIC_API_KEY tanimli degil" };
+    return { error: "OPENAI_API_KEY tanimli degil" };
   }
 
   const systemPrompt = `Sen Modaralist adlı premium streetwear/casual giyim e-ticaret markası için ürün copy yazıyorsun. Marka tonu:
@@ -71,8 +62,7 @@ export async function generateProductCopy(input: {
 
 KURALLAR:
 - TR ve EN aynı bilgiyi vermeli ama her dilde doğal
-- Açıklamalar satış odaklı ama abartılı değil ("revolutionary", "best ever" yok)
-- Materyal/bakım gerçekçi (pamuk-polyester karışımı varsayım yapma; verilen ipuçlarına uy)
+- Açıklamalar satış odaklı ama abartılı değil
 - SEO başlık 60 karakter limit (marka adı + kategori + temel özellik)
 - SEO desc 155 karakter limit, fayda + CTA içersin
 - Türkçe karakterleri (ç, ğ, ı, ş, ö, ü) doğru kullan`;
@@ -86,28 +76,26 @@ KURALLAR:
     .join("\n");
 
   try {
-    const response = await client.messages.parse({
-      model: "claude-opus-4-7",
+    const completion = await client.chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: zodResponseFormat(CopySchema, "product_copy"),
       max_tokens: 2000,
-      thinking: { type: "disabled" },
-      output_config: {
-        effort: "low",
-        format: zodOutputFormat(CopySchema),
-      },
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
     });
 
-    const parsed = response.parsed_output;
+    const parsed = completion.choices[0]?.message.parsed;
     if (!parsed) {
       return { error: "Parse basarisiz" };
     }
     return parsed;
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) {
+    if (err instanceof OpenAI.RateLimitError) {
       return { error: "Rate limit — birazdan tekrar dene" };
     }
-    if (err instanceof Anthropic.APIError) {
+    if (err instanceof OpenAI.APIError) {
       console.error("[ai-copy] API error", err.status, err.message);
       return { error: `API hata (${err.status})` };
     }
