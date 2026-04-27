@@ -81,12 +81,20 @@ export function PageForm({ initial }: { initial: PageFormValues }) {
             <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
               Şablon
             </label>
-            <input
+            <select
               name="template"
-              defaultValue={initial.template}
-              className="mt-2 w-full border-b border-line bg-transparent py-2 font-mono text-sm outline-none focus:border-ink"
-              placeholder="default"
-            />
+              defaultValue={initial.template || "default"}
+              className="mt-2 w-full border-b border-line bg-transparent py-2 text-sm outline-none focus:border-ink"
+            >
+              <option value="default">Standart sayfa</option>
+              <option value="blog">Blog yazısı</option>
+              <option value="manifesto">Manifesto / uzun metin</option>
+            </select>
+            <p className="mt-1 text-[11px] text-mist">
+              <strong className="text-ink">Blog yazısı:</strong> /blog dizininde
+              gösterilir, journal index'e otomatik girer. Slug'ı{" "}
+              <span className="font-mono">blog-</span> ile başlayacak.
+            </p>
           </div>
           <label className="flex items-start gap-4 md:col-span-2">
             <input

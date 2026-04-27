@@ -36,9 +36,15 @@ const updateSchema = z.object({
 const createSchema = updateSchema;
 
 function readPayload(fd: FormData) {
-  const slug = String(fd.get("slug") ?? "").trim();
+  let slug = String(fd.get("slug") ?? "").trim();
   const template = String(fd.get("template") ?? "default").trim() || "default";
   const isPublished = fd.get("isPublished") === "on";
+
+  // Blog template: slug 'blog-' ile baslamak ZORUNDA — /blog/[slug] route'u
+  // Page.slug'tan 'blog-' prefix'i striperek arar. Yoksa cakisma + 404.
+  if (template === "blog" && slug && !slug.startsWith("blog-")) {
+    slug = `blog-${slug}`;
+  }
 
   const tr = {
     title: String(fd.get("tr.title") ?? "").trim(),

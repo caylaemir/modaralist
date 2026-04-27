@@ -75,6 +75,11 @@ export async function Footer() {
                 Ara
               </Link>
             </li>
+            <li>
+              <Link href="/blog" className="hover:opacity-60">
+                Journal
+              </Link>
+            </li>
           </ul>
         </div>
 

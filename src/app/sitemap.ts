@@ -7,7 +7,7 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
 const LOCALES = ["tr", "en"] as const;
 
 // Statik üst-seviye sayfalar (root'tan başlar)
-const TOP_PATHS = ["", "/shop", "/drops", "/track", "/search"];
+const TOP_PATHS = ["", "/shop", "/drops", "/track", "/search", "/blog"];
 
 // SEO odakli kategori slug'lari
 const CATEGORY_SLUGS = Object.keys(CATEGORY_SEO_TR);
@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.page
       .findMany({
         where: { isPublished: true },
-        select: { slug: true, updatedAt: true },
+        select: { slug: true, updatedAt: true, template: true },
       })
       .catch(() => []),
   ]);
@@ -82,14 +82,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         images: c.heroImageUrl ? [c.heroImageUrl] : undefined,
       });
     }
-    // Dinamik /pages/[slug] — Page modelinde yayindaki tum kayitlar
+    // Dinamik /pages/[slug] — Page modelinde yayindaki kayitlar
+    // Blog postlari ayri /blog/[slug]'a gider, /pages'e koymayalim
     for (const pg of pages) {
-      urls.push({
-        url: `${BASE}/${locale}/pages/${pg.slug}`,
-        lastModified: pg.updatedAt,
-        changeFrequency: "monthly",
-        priority: 0.4,
-      });
+      if (pg.template === "blog") {
+        urls.push({
+          url: `${BASE}/${locale}/blog/${pg.slug.replace(/^blog-/, "")}`,
+          lastModified: pg.updatedAt,
+          changeFrequency: "monthly",
+          priority: 0.6,
+        });
+      } else {
+        urls.push({
+          url: `${BASE}/${locale}/pages/${pg.slug}`,
+          lastModified: pg.updatedAt,
+          changeFrequency: "monthly",
+          priority: 0.4,
+        });
+      }
     }
     // Lokal SEO landing'leri (sehir + sehir x kategori)
     for (const city of MARMARA_CITY_SLUGS) {
