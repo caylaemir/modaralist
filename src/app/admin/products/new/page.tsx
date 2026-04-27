@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { ProductForm } from "../_components/product-form";
 
 export default async function NewProductPage() {
-  const [categories, colors, sizes] = await Promise.all([
+  const [categories, colors, sizes, tags] = await Promise.all([
     db.category.findMany({
       where: { isActive: true },
       include: { translations: { where: { locale: "tr" } } },
@@ -12,6 +12,7 @@ export default async function NewProductPage() {
     }),
     db.color.findMany({ orderBy: { code: "asc" } }),
     db.size.findMany({ orderBy: { sortOrder: "asc" } }),
+    db.productTag.findMany({ orderBy: { code: "asc" } }),
   ]);
 
   return (
@@ -43,6 +44,7 @@ export default async function NewProductPage() {
           nameTr: c.nameTr,
         }))}
         sizes={sizes.map((s) => ({ id: s.id, code: s.code }))}
+        tags={tags.map((t) => ({ id: t.id, code: t.code, labelTr: t.labelTr }))}
       />
     </div>
   );

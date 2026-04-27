@@ -14,7 +14,7 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
 
-  const [product, categories, colors, sizes] = await Promise.all([
+  const [product, categories, colors, sizes, tags] = await Promise.all([
     db.product
       .findUnique({
         where: { id },
@@ -27,6 +27,7 @@ export default async function EditProductPage({
           category: {
             include: { translations: { where: { locale: "tr" } } },
           },
+          tags: { select: { id: true } },
         },
       })
       .catch(() => null),
@@ -39,6 +40,7 @@ export default async function EditProductPage({
       .catch(() => []),
     db.color.findMany({ orderBy: { code: "asc" } }).catch(() => []),
     db.size.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    db.productTag.findMany({ orderBy: { code: "asc" } }).catch(() => []),
   ]);
 
   if (!product) {
@@ -87,6 +89,7 @@ export default async function EditProductPage({
           nameTr: c.nameTr,
         }))}
         sizes={sizes.map((s) => ({ id: s.id, code: s.code }))}
+        tags={tags.map((t) => ({ id: t.id, code: t.code, labelTr: t.labelTr }))}
         initial={{
           id: product.id,
           slug: product.slug,
@@ -117,6 +120,7 @@ export default async function EditProductPage({
             colorId: v.colorId,
             stock: v.stock,
           })),
+          tagIds: product.tags.map((t) => t.id),
         }}
       />
     </div>

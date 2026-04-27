@@ -63,6 +63,7 @@ export const productInputSchema = z.object({
   translations: z.array(translationSchema).min(1),
   images: z.array(imageSchema).default([]),
   variants: z.array(variantSchema).default([]),
+  tagIds: z.array(z.string()).default([]),
 });
 
 export type ProductInput = z.infer<typeof productInputSchema>;
@@ -127,6 +128,10 @@ export async function createProduct(rawInput: ProductInput) {
           isActive: v.isActive,
         })),
       },
+      tags:
+        input.tagIds.length > 0
+          ? { connect: input.tagIds.map((id) => ({ id })) }
+          : undefined,
     },
   });
 
@@ -232,6 +237,16 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
         })),
       });
     }
+
+    // 5. Replace tags (M:N — set butun array'i degistirir)
+    await tx.product.update({
+      where: { id },
+      data: {
+        tags: {
+          set: input.tagIds.map((tid) => ({ id: tid })),
+        },
+      },
+    });
   });
 
   revalidatePath("/admin/products");

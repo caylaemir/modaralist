@@ -16,6 +16,7 @@ import {
   Star,
   Home,
   Ruler,
+  Tag as TagIcon,
 } from "lucide-react";
 import { SidebarToggle } from "./_components/sidebar-toggle";
 import "../globals.css";
@@ -56,6 +57,7 @@ const NAV = [
   { href: "/admin/categories", label: "Kategoriler", icon: Tags },
   { href: "/admin/colors", label: "Renkler", icon: Palette },
   { href: "/admin/sizes", label: "Bedenler", icon: Ruler },
+  { href: "/admin/tags", label: "Etiketler", icon: TagIcon },
   { href: "/admin/collections", label: "Koleksiyonlar", icon: Box },
   { href: "/admin/orders", label: "Siparişler", icon: ShoppingCart },
   { href: "/admin/customers", label: "Müşteriler", icon: Users },

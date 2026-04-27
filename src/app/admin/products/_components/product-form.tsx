@@ -44,6 +44,7 @@ const formSchema = z.object({
     .default([]),
   selectedColorIds: z.array(z.string()).default([]),
   selectedSizeIds: z.array(z.string()).default([]),
+  selectedTagIds: z.array(z.string()).default([]),
   // stockMatrix: object keyed by `${colorId}:${sizeId}` — OR `nocolor:${sizeId}` / `${colorId}:nosize` / "nocolor:nosize"
   stockMatrix: z.record(z.string(), z.coerce.number().int().min(0)).default({}),
 });
@@ -68,6 +69,12 @@ export type ProductFormColor = {
 export type ProductFormSize = {
   id: string;
   code: string;
+};
+
+export type ProductFormTag = {
+  id: string;
+  code: string;
+  labelTr: string;
 };
 
 export type ProductFormInitial = {
@@ -97,6 +104,7 @@ export type ProductFormInitial = {
     colorId: string | null;
     stock: number;
   }[];
+  tagIds?: string[];
 };
 
 export function ProductForm({
@@ -105,6 +113,7 @@ export function ProductForm({
   categories,
   colors,
   sizes,
+  tags,
   initial,
 }: {
   mode: "create" | "edit";
@@ -112,6 +121,7 @@ export function ProductForm({
   categories: ProductFormCategory[];
   colors: ProductFormColor[];
   sizes: ProductFormSize[];
+  tags: ProductFormTag[];
   initial?: ProductFormInitial;
 }) {
   const router = useRouter();
@@ -157,6 +167,7 @@ export function ProductForm({
         images: initial?.images ?? [],
         selectedColorIds: defaultSelectedColors,
         selectedSizeIds: defaultSelectedSizes,
+        selectedTagIds: initial?.tagIds ?? [],
         stockMatrix: defaultStockMatrix,
       },
     });
@@ -323,6 +334,7 @@ export function ProductForm({
         isHover: i === 1,
       })),
       variants,
+      tagIds: parsed.selectedTagIds,
     };
 
     startTransition(async () => {
@@ -625,6 +637,76 @@ export function ProductForm({
             ))
           )}
         </div>
+      </section>
+
+      {/* --------- Tags --------- */}
+      <section className="border border-line bg-paper p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="caps-wide text-sm">Etiketler</h2>
+          <a
+            href="/admin/tags"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] uppercase tracking-[0.25em] text-mist hover:text-ink"
+          >
+            Etiketleri yönet →
+          </a>
+        </div>
+        <p className="mt-1 text-xs text-mist">
+          Cinsiyet filtresi için <span className="font-mono text-ink">kadin</span>,{" "}
+          <span className="font-mono text-ink">erkek</span>,{" "}
+          <span className="font-mono text-ink">unisex</span> etiketleri eklemeyi unutma.
+          Birden fazla seçilebilir.
+        </p>
+        <Controller
+          control={control}
+          name="selectedTagIds"
+          render={({ field }) => (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tags.length === 0 ? (
+                <p className="text-xs text-mist italic">
+                  Henüz etiket yok.{" "}
+                  <a
+                    href="/admin/tags"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-ink underline"
+                  >
+                    Etiket ekle
+                  </a>
+                </p>
+              ) : (
+                tags.map((t) => {
+                  const checked = field.value?.includes(t.id) ?? false;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        const current = field.value ?? [];
+                        field.onChange(
+                          checked
+                            ? current.filter((x) => x !== t.id)
+                            : [...current, t.id]
+                        );
+                      }}
+                      className={`border px-3 py-1.5 text-[12px] transition-colors ${
+                        checked
+                          ? "border-ink bg-ink text-paper"
+                          : "border-line text-mist hover:border-ink hover:text-ink"
+                      }`}
+                    >
+                      {t.labelTr}
+                      <span className="ml-1.5 font-mono text-[10px] opacity-60">
+                        {t.code}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+        />
       </section>
 
       {/* --------- Variants --------- */}
