@@ -343,16 +343,16 @@ export const SETTING_SECTIONS: Array<{
   },
   {
     id: "security",
-    title: "Güvenlik",
+    title: "Güvenlik (yakında)",
     eyebrow: "— admin",
     description:
-      "Admin paneline ek koruma. 2FA (Google Authenticator) ileride aktif edilince login sırasında 6 haneli kod istenir.",
+      "⚠️ NOT YET IMPLEMENTED — Bu toggle henüz hiçbir yerde kontrol edilmiyor. Açsanız bile login sırasında 2FA istenmez. İleride Google Authenticator (TOTP) ile entegre edilecek. Şimdilik admin şifresini güçlü tut + paylaşma.",
     fields: [
       {
         key: "security.adminTwoFactorEnabled",
-        label: "Admin 2FA zorunlu",
+        label: "Admin 2FA (PLACEHOLDER — çalışmıyor)",
         type: "boolean",
-        hint: "(Henüz implement edilmedi — toggle açıldığında uyarı verilir, gerek duyduğunda söyle eklerim.)",
+        hint: "Bu ayar şu an HİÇBİR ETKİ YAPMIYOR. Gerçek 2FA ileride eklenecek.",
       },
     ],
   },

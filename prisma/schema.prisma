@@ -101,6 +101,20 @@ model User {
   loyaltyLedger LoyaltyTransaction[]
 }
 
+// Admin yapilan kritik islemlerin log'u (bulk price, mass delete vs.)
+// kim, ne zaman, neye, ne uyguladi izlenir. Audit/rollback icin.
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  userId    String?  // admin user (silinmis olabilir)
+  email     String?  // snapshot — userId silinse bile iz kalir
+  action    String   // ornek: 'bulk-price', 'bulk-product-delete'
+  details   Json     // operasyon spesifik (filter, value, affected count vs.)
+  createdAt DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([userId, createdAt])
+}
+
 // Puan kazanma/harcama log'u — audit trail icin
 // type: EARN (siparisten), REDEEM (checkout'ta indirim),
 //       ADJUST (admin manuel), EXPIRE (zaman asimi)

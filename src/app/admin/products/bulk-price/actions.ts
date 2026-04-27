@@ -211,6 +211,41 @@ export async function bulkPriceAction(
     );
     await db.$transaction(ops);
     applied = updates.length;
+
+    // M6: audit log — kim, ne, nereye uyguladi (rollback icin)
+    try {
+      await db.adminAuditLog.create({
+        data: {
+          userId: session.user.id,
+          email: session.user.email ?? null,
+          action: "bulk-price",
+          details: {
+            operation: parsed.operation,
+            value: parsed.value,
+            field: parsed.field,
+            filters: parsed.filters,
+            affectedCount: updates.length,
+            sampleChanges: rows
+              .filter(
+                (r) =>
+                  r.oldBasePrice !== r.newBasePrice ||
+                  r.oldDiscountPrice !== r.newDiscountPrice
+              )
+              .slice(0, 5)
+              .map((r) => ({
+                slug: r.slug,
+                oldBase: r.oldBasePrice,
+                newBase: r.newBasePrice,
+                oldDisc: r.oldDiscountPrice,
+                newDisc: r.newDiscountPrice,
+              })),
+          },
+        },
+      });
+    } catch (err) {
+      console.error("[bulk-price audit log]", err);
+    }
+
     revalidatePath("/admin/products");
   }
 
