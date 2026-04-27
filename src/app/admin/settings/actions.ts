@@ -44,6 +44,7 @@ export async function saveSettingsAction(
     "security.adminTwoFactorEnabled",
     "shop.freeShippingAB",
     "loyalty.enabled",
+    "seloo.enabled",
   ] as const) {
     const val = entries[key];
     entries[key] = val === "on" || val === "true" ? "true" : "false";

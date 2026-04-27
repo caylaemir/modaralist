@@ -7,6 +7,7 @@ import { AnnouncementBanner } from "@/components/shop/announcement-banner";
 import { MaintenanceGate } from "@/components/shop/maintenance-gate";
 import { NewsletterPopup } from "@/components/shop/newsletter-popup";
 import { WhatsAppButton } from "@/components/shop/whatsapp-button";
+import { SelooAI } from "@/components/shop/seloo-ai";
 import { setRequestLocale } from "next-intl/server";
 
 // Settings/auth/db sorgulari layout'ta — tum shop sayfalari dinamik
@@ -34,6 +35,7 @@ export default async function ShopLayout({
       <CookieBanner />
       <NewsletterPopup />
       <WhatsAppButton />
+      <SelooAI />
     </MaintenanceGate>
   );
 }

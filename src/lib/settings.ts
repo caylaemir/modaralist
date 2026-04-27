@@ -77,6 +77,9 @@ export const SETTING_DEFAULTS = {
   "shop.freeShippingAB": "false",
   "shop.freeShippingOverB": "1000",
 
+  // SelooAI musteri asistani (sag-alt float chat)
+  "seloo.enabled": "true",
+
   // Loyalty / puan sistemi
   // earnPerTL: her 1 TL siparis -> kac puan (varsayilan 1 TL = 1 puan)
   // redeemValue: 1 puan kac TL (varsayilan 100 puan = 5 TL = 0.05 TL/puan)
@@ -366,6 +369,20 @@ export const SETTING_SECTIONS: Array<{
         label: "B varyantı eşiği (₺)",
         type: "number",
         hint: "A varyantı yukardaki standart eşik. B yarısı bu eşiği görür.",
+      },
+    ],
+  },
+  {
+    id: "seloo",
+    title: "SelooAI Asistan",
+    eyebrow: "— ai chatbot",
+    description:
+      "Sağ-altta beliren canlı müşteri asistanı (Modaralist'in ChatGPT'si). Ürün arama, beden/renk önerme, kargo/iade soruları cevaplar — DB'den canlı veri çeker. OPENAI_API_KEY env gerekli, rate limit 30 mesaj/IP/saat.",
+    fields: [
+      {
+        key: "seloo.enabled",
+        label: "SelooAI aktif",
+        type: "boolean",
       },
     ],
   },

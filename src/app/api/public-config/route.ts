@@ -27,6 +27,9 @@ export async function GET() {
         tier2Discount: Number(s["bundle.tier2Discount"]) || 0,
         tier3Discount: Number(s["bundle.tier3Discount"]) || 0,
       },
+      seloo: {
+        enabled: s["seloo.enabled"] === "true",
+      },
       popup: {
         enabled: s["popup.enabled"] === "true",
         delaySeconds: Number(s["popup.delaySeconds"]) || 15,
