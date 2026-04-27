@@ -15,6 +15,7 @@ import {
   Ticket,
   Star,
   Home,
+  Ruler,
 } from "lucide-react";
 import { SidebarToggle } from "./_components/sidebar-toggle";
 import "../globals.css";
@@ -53,6 +54,8 @@ const NAV = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard },
   { href: "/admin/products", label: "Ürünler", icon: Package },
   { href: "/admin/categories", label: "Kategoriler", icon: Tags },
+  { href: "/admin/colors", label: "Renkler", icon: Palette },
+  { href: "/admin/sizes", label: "Bedenler", icon: Ruler },
   { href: "/admin/collections", label: "Koleksiyonlar", icon: Box },
   { href: "/admin/orders", label: "Siparişler", icon: ShoppingCart },
   { href: "/admin/customers", label: "Müşteriler", icon: Users },
