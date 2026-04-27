@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { Phone, MapPin, Mail } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { getAllSettings } from "@/lib/settings";
 import { CATEGORY_SEO_TR } from "@/lib/category-seo";
 
@@ -189,6 +189,27 @@ export async function Footer() {
         </div>
       </div>
 
+      {/* Trust badges — guvenli odeme + iade + kargo */}
+      <div className="border-t border-line bg-bone/40">
+        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-5 py-8 md:grid-cols-3 md:px-10">
+          <TrustItem
+            icon={<ShieldCheck className="size-5" strokeWidth={1.5} />}
+            title="Güvenli Ödeme"
+            desc="iyzico altyapısı · Visa / Mastercard / Amex · 3D Secure"
+          />
+          <TrustItem
+            icon={<Undo2 className="size-5" strokeWidth={1.5} />}
+            title="14 Gün İade"
+            desc="Etiketleri sökülmemiş ürünler için koşulsuz iade"
+          />
+          <TrustItem
+            icon={<Truck className="size-5" strokeWidth={1.5} />}
+            title="Hızlı Kargo"
+            desc="Marmara'ya 1-2 iş günü · diğer iller 2-4 iş günü"
+          />
+        </div>
+      </div>
+
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-[1600px] flex-col items-start justify-between gap-3 px-5 py-6 text-xs text-mist md:flex-row md:items-center md:px-10">
           <p>
@@ -202,5 +223,27 @@ export async function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function TrustItem({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="grid size-10 shrink-0 place-items-center border border-ink/15 bg-paper text-ink">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-ink">{title}</p>
+        <p className="mt-1.5 text-[12px] leading-relaxed text-mist">{desc}</p>
+      </div>
+    </div>
   );
 }

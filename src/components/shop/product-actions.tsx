@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useCart } from "@/stores/cart";
@@ -26,6 +26,21 @@ export function ProductActions({
     () => product.variants.find((v) => v.color === color && v.size === size) ?? null,
     [product.variants, color, size]
   );
+
+  // Mobile sticky bar: ana 'Sepete Ekle' butonu ekrandan cikinca alta
+  // sabit kucuk bar gosterilir. IntersectionObserver ile takip edilir.
+  const mainBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [showSticky, setShowSticky] = useState(false);
+  useEffect(() => {
+    const el = mainBtnRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowSticky(!entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const sizesInStock = useMemo(() => {
     const map = new Map<string, number>();
@@ -148,6 +163,7 @@ export function ProductActions({
       </div>
 
       <button
+        ref={mainBtnRef}
         type="button"
         onClick={handleAdd}
         disabled={product.soldOut}
@@ -160,6 +176,48 @@ export function ProductActions({
           </span>
         )}
       </button>
+
+      {/* Mobile sticky add-to-cart bar — ana buton scroll ile cikinca gorunur */}
+      <AnimatePresence>
+        {showSticky && !product.soldOut ? (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur-md md:hidden"
+            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative size-12 shrink-0 overflow-hidden bg-bone">
+                {product.images[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={product.images[0]}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12px] leading-tight">
+                  {product.name}
+                </p>
+                <p className="mt-0.5 text-[13px] tabular-nums">
+                  {formatPrice(product.discountPrice ?? product.price, locale)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAdd}
+                className="grid h-11 shrink-0 place-items-center bg-ink px-5 text-[11px] uppercase tracking-[0.25em] text-paper"
+              >
+                {size ? "Sepete Ekle" : "Beden seç"}
+              </button>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div className="border-t border-line">
         {(
