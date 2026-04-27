@@ -39,7 +39,10 @@ const operationSchema = z.enum([
 
 const inputSchema = z.object({
   operation: operationSchema,
-  value: z.number().min(0).default(0),
+  // M10: yuzdelik islemlerde 100'u gecmesin (decrease-percent 100 = %100
+  // indirim = 0 TL; >100 = negatif fiyat). Sabit eklemede de astronomik
+  // sayi vermek istemeyiz: 1M TL ust limit.
+  value: z.number().min(0).max(1_000_000).default(0),
   field: z.enum(["basePrice", "discountPrice", "both"]).default("basePrice"),
   filters: z
     .object({
@@ -111,6 +114,17 @@ export async function bulkPriceAction(
   }
 
   const parsed = inputSchema.parse(input);
+
+  // M10: yuzdelik indirim 100'u gecerse mantiksiz (negatif fiyat)
+  if (parsed.operation === "decrease-percent" && parsed.value > 100) {
+    throw new Error("İndirim %100'ü geçemez");
+  }
+  if (
+    parsed.operation === "increase-percent" &&
+    parsed.value > 1000
+  ) {
+    throw new Error("Zam %1000'i geçemez (yanlışlık olabilir)");
+  }
 
   const products = await db.product.findMany({
     where: {

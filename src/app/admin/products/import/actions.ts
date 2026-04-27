@@ -183,7 +183,14 @@ export async function importProductsAction(
       if (!Number.isFinite(basePrice) || basePrice < 0) {
         result.errors.push({
           row: r + 1,
-          message: `Gecersiz fiyat: ${row.basePrice}`,
+          message: `[basePrice] Gecersiz fiyat: '${row.basePrice}' (slug=${row.slug})`,
+        });
+        continue;
+      }
+      if (basePrice > 1_000_000) {
+        result.errors.push({
+          row: r + 1,
+          message: `[basePrice] Fiyat cok yuksek: ${basePrice} (slug=${row.slug})`,
         });
         continue;
       }

@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const { lines, subtotal, clear } = useCart();
   const [step, setStep] = useState<Step>("contact");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     email: "",
     phone: "",
@@ -45,12 +46,21 @@ export default function CheckoutPage() {
   useEffect(() => {
     fetch("/api/public-config")
       .then((r) => r.json())
-      .then((d) => {
+      .then(async (d) => {
         if (d?.shop) {
+          // A/B test (H8): kullanici 'B' variant cookie'sine atanmissa
+          // freeShippingOverB esigini kullan (free-shipping-bar ile birebir
+          // ayni mantik). Boylece bardaki esik = checkout'taki esik.
+          let chosenFreeOver = d.shop.freeShippingOver ?? 0;
+          if (d.shop.freeShippingAB && (d.shop.freeShippingOverB ?? 0) > 0) {
+            const { getOrAssignVariant } = await import("@/lib/ab-test");
+            const variant = getOrAssignVariant("free-shipping");
+            if (variant === "B") chosenFreeOver = d.shop.freeShippingOverB;
+          }
           setRates({
             standard: d.shop.shippingStandard ?? 0,
             express: d.shop.shippingExpress ?? 89,
-            freeOver: d.shop.freeShippingOver ?? 0,
+            freeOver: chosenFreeOver,
           });
         }
       })
@@ -83,8 +93,23 @@ export default function CheckoutPage() {
 
   async function submitPayment(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(null);
     if (!form.kvkkOk || !form.distanceSalesOk) {
-      toast.error("Sözleşmeleri onaylaman gerekiyor.");
+      const msg = "KVKK ve Mesafeli Satış sözleşmelerini onaylaman gerekiyor.";
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (form.tcNo.length !== 11) {
+      const msg = "TC Kimlik No 11 hane olmalı.";
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (form.cardNumber.replace(/\s/g, "").length < 15) {
+      const msg = "Kart numarası eksik (15-16 hane).";
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
     setLoading(true);
@@ -118,7 +143,9 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "Ödeme başlatılamadı.");
+        const msg = data.error ?? "Ödeme başlatılamadı.";
+        setFormError(msg);
+        toast.error(msg);
         setLoading(false);
         return;
       }
@@ -522,6 +549,16 @@ export default function CheckoutPage() {
                   </span>
                 </label>
               </div>
+
+              {formError ? (
+                <div
+                  role="alert"
+                  className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800"
+                >
+                  <p className="font-medium">Ödeme tamamlanamadı</p>
+                  <p className="mt-1 text-[13px]">{formError}</p>
+                </div>
+              ) : null}
 
               <div className="flex items-center justify-between">
                 <button

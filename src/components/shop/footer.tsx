@@ -21,7 +21,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-32 border-t border-line bg-bone">
-      <div className="mx-auto grid max-w-[1600px] gap-12 px-5 py-20 sm:grid-cols-2 md:px-10 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mx-auto grid max-w-[1600px] gap-12 px-5 py-20 sm:grid-cols-2 md:grid-cols-3 md:px-10 lg:grid-cols-5">
         <div>
           <Link href="/" className="display text-3xl">
             {settings["site.title"] || "modaralist"}
