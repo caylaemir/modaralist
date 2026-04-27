@@ -16,8 +16,31 @@ export async function generateMetadata({
   params: Promise<{ category: string; locale: string }>;
 }) {
   const { category, locale } = await params;
-  const seo = CATEGORY_SEO_TR[category];
-  if (!seo) return { title: "Kategori bulunamadı" };
+  const lang = (locale === "en" ? "en" : "tr") as Locale;
+
+  // SEO content statik dosyada varsa onu kullan, yoksa DB'den uret
+  const seoStatic = CATEGORY_SEO_TR[category];
+  let seo = seoStatic;
+  if (!seo) {
+    const cat = await db.category
+      .findUnique({
+        where: { slug: category },
+        include: { translations: { where: { locale: lang } } },
+      })
+      .catch(() => null);
+    if (!cat || !cat.isActive) return { title: "Kategori bulunamadı" };
+    const tr = cat.translations[0];
+    seo = {
+      slug: cat.slug,
+      name: tr?.name ?? cat.slug,
+      h1: tr?.name ?? cat.slug,
+      metaTitle: tr?.seoTitle ?? `${tr?.name ?? cat.slug} | Modaralist`,
+      metaDescription: tr?.seoDesc ?? tr?.description ?? "",
+      intro: tr?.description ?? "",
+      longDescription: tr?.description ?? "",
+      keywords: [],
+    };
+  }
 
   // Locale-aware metaTitle/Description — TR'yi bizler doldurduk, EN icin
   // basit otomatik cevirme: kategori adi degismez (Tshirt, Sweatshirt vs.)
@@ -66,18 +89,58 @@ export default async function CategoryPage({
   setRequestLocale(locale);
   const lang = (locale === "en" ? "en" : "tr") as Locale;
 
-  const seo = CATEGORY_SEO_TR[category];
-  if (!seo) notFound();
-
+  // DB'den kategoriyi cek — isActive=false ise 404 (gizli)
   const cat = await db.category.findUnique({
     where: { slug: category },
-    include: { translations: { where: { locale: lang } } },
+    include: {
+      translations: { where: { locale: lang } },
+      children: {
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        include: {
+          translations: { where: { locale: lang } },
+          _count: { select: { products: { where: { status: "PUBLISHED" } } } },
+          products: {
+            where: { status: "PUBLISHED" },
+            take: 1,
+            orderBy: { createdAt: "desc" },
+            select: {
+              images: {
+                where: { isHover: false },
+                orderBy: { sortOrder: "asc" },
+                take: 1,
+                select: { url: true },
+              },
+            },
+          },
+        },
+      },
+    },
   });
-  if (!cat) notFound();
+  if (!cat || !cat.isActive) notFound();
 
+  // SEO icerigi varsa kullan, yoksa DB'den uret (alt kategoriler vs. icin fallback)
+  const seoStatic = CATEGORY_SEO_TR[category];
+  const trData = cat.translations[0];
+  const seo = seoStatic ?? {
+    slug: cat.slug,
+    name: trData?.name ?? cat.slug,
+    h1: trData?.name ?? cat.slug,
+    metaTitle: trData?.seoTitle ?? `${trData?.name ?? cat.slug} | Modaralist`,
+    metaDescription: trData?.seoDesc ?? trData?.description ?? "",
+    intro: trData?.description ?? "",
+    longDescription: trData?.description ?? "",
+    keywords: [],
+  };
+
+  // Urunleri parent + children kategorilerden topla (alt kategori varsa hepsi gelsin)
+  const childIds = cat.children.map((c) => c.id);
   const products = await db.product
     .findMany({
-      where: { status: "PUBLISHED", categoryId: cat.id },
+      where: {
+        status: "PUBLISHED",
+        categoryId: { in: [cat.id, ...childIds] },
+      },
       orderBy: { createdAt: "desc" },
       include: {
         translations: { where: { locale: lang } },
@@ -189,6 +252,54 @@ export default async function CategoryPage({
           </p>
         </Reveal>
       </section>
+
+      {cat.children.length > 0 ? (
+        <section className="mx-auto mt-20 max-w-[1600px] px-5 md:px-10">
+          <Reveal>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+              — alt kategoriler
+            </p>
+            <h2 className="display mt-4 text-2xl md:text-3xl">
+              {seo.name} altındakiler
+            </h2>
+          </Reveal>
+          <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+            {cat.children.map((child) => {
+              const childTr = child.translations[0];
+              const cover = child.products[0]?.images[0]?.url;
+              const name = childTr?.name ?? child.slug;
+              return (
+                <Link
+                  key={child.id}
+                  href={`/shop/${child.slug}`}
+                  className="group relative block aspect-[4/3] overflow-hidden bg-sand"
+                >
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={cover}
+                      alt={name}
+                      className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="size-full bg-gradient-to-br from-bone via-sand to-bone" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
+                    <div>
+                      <p className="display text-xl text-paper md:text-2xl">{name}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-paper/70">
+                        {child._count.products} parça
+                      </p>
+                    </div>
+                    <span aria-hidden className="text-paper">→</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto mt-20 max-w-[1600px] px-5 md:px-10">
         {products.length === 0 ? (

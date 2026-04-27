@@ -79,7 +79,13 @@ export default async function AdminProductsPage({
             {totalCount} ürün · {publishedCount} yayında · {draftCount} taslak
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin/products/bulk-price"
+            className="inline-flex items-center gap-3 border border-line px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-mist hover:border-ink hover:text-ink"
+          >
+            ₺ Toplu Fiyat
+          </Link>
           <Link
             href="/admin/products/import"
             className="inline-flex items-center gap-3 border border-line px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-mist hover:border-ink hover:text-ink"
