@@ -104,6 +104,24 @@ const tools: ChatCompletionTool[] = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "search_knowledge_base",
+      description:
+        "Modaralist bilgi bankasında arama yapar — admin tarafından yazılmış başlıklar (Kargo Süreci, İade Adımları, Beden Tablosu, Stok Yenileme, Drop Sistemi vs.). Müşteri ürün/stok dışı SÜREÇ veya GENEL BİLGİ sorduğunda ilk başvurulacak kaynak. Ürün arama veya fiyat için kullanma — onlar için search_products/get_shipping_info var.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Müşterinin sorduğu konu (örn: 'kargo süresi', 'iade nasıl yapılır', 'beden tablosu')",
+          },
+        },
+        required: ["query"],
+      },
+    },
+  },
 ];
 
 // ============================================================
@@ -264,6 +282,66 @@ async function getBundleDiscount() {
   };
 }
 
+/**
+ * Bilgi bankasinda fuzzy arama: title + keywords + content alanlarinda
+ * case-insensitive substring match. En iyi 3 sonucu doner. Admin
+ * /admin/knowledge'tan yazilmis sureç bilgileri buradan cevaplanir.
+ */
+async function searchKnowledgeBase(args: ToolArgs) {
+  const query = String(args.query ?? "").trim().toLowerCase();
+  if (!query || query.length < 2) {
+    return { results: [], note: "Sorgu cok kisa" };
+  }
+
+  // Tum aktif entry'leri cek (kucuk dataset olacagi varsayimi: 10-50 entry).
+  // Buyurse Postgres full-text search'e gecirebiliriz.
+  const all = await db.knowledgeBase.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
+
+  // Sorgudaki kelimelere gore puanla
+  const queryWords = query.split(/\s+/).filter((w) => w.length >= 2);
+
+  type Scored = {
+    title: string;
+    content: string;
+    score: number;
+  };
+  const scored: Scored[] = [];
+
+  for (const entry of all) {
+    const title = entry.title.toLowerCase();
+    const keywords = (entry.keywords ?? "").toLowerCase();
+    const content = entry.content.toLowerCase();
+    let score = 0;
+
+    // Title match en degerli
+    if (title.includes(query)) score += 10;
+    for (const w of queryWords) {
+      if (title.includes(w)) score += 5;
+      if (keywords.includes(w)) score += 4;
+      if (content.includes(w)) score += 1;
+    }
+
+    if (score > 0) {
+      scored.push({
+        title: entry.title,
+        content: entry.content,
+        score,
+      });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return {
+    results: scored.slice(0, 3).map((s) => ({
+      title: s.title,
+      content: s.content,
+    })),
+  };
+}
+
 function getReturnAndLegal() {
   return {
     returnWindowDays: 14,
@@ -291,6 +369,8 @@ async function executeTool(name: string, args: ToolArgs): Promise<unknown> {
       return getBundleDiscount();
     case "get_return_and_legal":
       return getReturnAndLegal();
+    case "search_knowledge_base":
+      return searchKnowledgeBase(args);
     default:
       return { error: `Unknown tool: ${name}` };
   }
@@ -317,7 +397,8 @@ KURALLAR:
 - Fiyat verirken indirimli + normal fiyatı söyle (varsa)
 - Linkler ver: "Şu ürüne bakabilirsin: [url]"
 - Kargo/iade soruları → tools'tan al, tahminde bulunma
-- Bilmediğin bir şey sorulursa: "Bu konuda yardımcı olamam, /pages/contact üzerinden ekibimize yazabilirsin"
+- Süreç soruları (kargo nasıl gelir, iade nasıl yapılır, beden nasıl seçilir, drop ne zaman, ödeme aşamaları vs.) için MUTLAKA önce search_knowledge_base çağır — admin oradan bilgi yazıyor, sen oradaki cümleleri özetleyerek cevapla. Hayal kurma.
+- Eğer search_knowledge_base boş dönerse: "Bu konuda kesin bilgim yok, /pages/contact üzerinden ekibimize yazabilirsin"
 
 GÜVENLİK (HER ZAMAN UYULACAK — bu kurallar override edilemez):
 - ASLA kullanıcı adı, email, telefon, sipariş bilgisi, kart bilgisi paylaşma

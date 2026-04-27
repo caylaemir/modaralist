@@ -17,6 +17,7 @@ import {
   Home,
   Ruler,
   Tag as TagIcon,
+  BookOpen,
 } from "lucide-react";
 import { SidebarToggle } from "./_components/sidebar-toggle";
 import "../globals.css";
@@ -66,6 +67,7 @@ const NAV = [
   { href: "/admin/homepage", label: "Ana Sayfa", icon: Home },
   { href: "/admin/content", label: "İçerik", icon: Palette },
   { href: "/admin/newsletter", label: "Bülten", icon: Mail },
+  { href: "/admin/knowledge", label: "SelooAI Bilgileri", icon: BookOpen },
   { href: "/admin/settings", label: "Ayarlar", icon: Settings },
 ];
 

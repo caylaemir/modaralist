@@ -101,6 +101,26 @@ model User {
   loyaltyLedger LoyaltyTransaction[]
 }
 
+// SelooAI'nin musteri sorularini cevaplarken kullandigi bilgi bankasi.
+// Admin /admin/knowledge'tan baslik + icerik ekler. AI 'search_knowledge_base'
+// tool'u ile sorgular, ilgili entry'leri dondurur, ozetleyerek cevaplar.
+// Ornek: "Kargo Sureci", "Iade Adimlari", "Olcu Tablosu", "Bedeni nasil
+// belirlerim", "Stok ne zaman gelir" gibi nuansli sorular.
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  // Virgülle ayrilmis arama anahtar kelimeleri (örn: "kargo,ucret,fiyat,bedel")
+  // Title + keywords + content uzerinden fuzzy match.
+  keywords  String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
 // Admin yapilan kritik islemlerin log'u (bulk price, mass delete vs.)
 // kim, ne zaman, neye, ne uyguladi izlenir. Audit/rollback icin.
 model AdminAuditLog {
