@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/utils";
+import { getOrAssignVariant } from "@/lib/ab-test";
 
 /**
  * Sepette ücretsiz kargo eşiğine kalan tutarı gösterir.
  * Settings'ten freeShippingOver değerini /api/public-config'tan çeker.
  * Eşik 0 ise hiç render etmez.
+ *
+ * A/B test: shop.freeShippingAB === true ise yariya 'A' (varsayilan esik),
+ * yariya 'B' (freeShippingOverB) gosterir. Cookie ile sticky.
  */
 export function FreeShippingBar({
   subtotal,
@@ -21,8 +25,15 @@ export function FreeShippingBar({
     fetch("/api/public-config")
       .then((r) => r.json())
       .then((d) => {
-        const v = d?.shop?.freeShippingOver ?? 0;
-        if (v > 0) setThreshold(v);
+        const a = d?.shop?.freeShippingOver ?? 0;
+        const ab = d?.shop?.freeShippingAB === true;
+        const b = d?.shop?.freeShippingOverB ?? 0;
+        let chosen = a;
+        if (ab && b > 0) {
+          const variant = getOrAssignVariant("free-shipping");
+          chosen = variant === "B" ? b : a;
+        }
+        if (chosen > 0) setThreshold(chosen);
       })
       .catch(() => {});
   }, []);

@@ -115,7 +115,15 @@ export async function POST(req: NextRequest) {
   const subtotal = safeLines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
   const standardCost = Number(settings["shop.shippingStandard"] ?? 0) || 0;
   const expressCost = Number(settings["shop.shippingExpress"] ?? 89) || 89;
-  const freeOver = Number(settings["shop.freeShippingOver"] ?? 0) || 0;
+
+  // Free shipping A/B: cookie'de mdr-ab-free-shipping=B ise B esigini kullan
+  // (FreeShippingBar ile tutarli — kullanici bardaki esikten farkli odemez)
+  const abActive = settings["shop.freeShippingAB"] === "true";
+  const overA = Number(settings["shop.freeShippingOver"] ?? 0) || 0;
+  const overB = Number(settings["shop.freeShippingOverB"] ?? 0) || 0;
+  const variantCookie = req.cookies.get("mdr-ab-free-shipping")?.value;
+  const freeOver = abActive && overB > 0 && variantCookie === "B" ? overB : overA;
+
   const baseShipping = shippingMethod === "express" ? expressCost : standardCost;
   const shippingCost = freeOver > 0 && subtotal >= freeOver && shippingMethod === "standard" ? 0 : baseShipping;
 

@@ -16,6 +16,10 @@ export async function GET() {
         shippingStandard: Number(s["shop.shippingStandard"]) || 0,
         shippingExpress: Number(s["shop.shippingExpress"]) || 89,
         freeShippingOver: Number(s["shop.freeShippingOver"]) || 0,
+        // Free shipping A/B: aktifse client mdr-ab cookie'sine gore
+        // freeShippingOver veya freeShippingOverB'yi secer
+        freeShippingAB: s["shop.freeShippingAB"] === "true",
+        freeShippingOverB: Number(s["shop.freeShippingOverB"]) || 0,
       },
       bundle: {
         enabled: s["bundle.enabled"] === "true",
