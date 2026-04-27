@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Loader2, ArrowUp } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 
 /**
  * SelooAI — Modaralist musteri asistani widget (v2)
@@ -52,6 +53,16 @@ export function SelooAI() {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 350);
     }
+  }, [open]);
+
+  // ESC ile kapat (C6) — keyboard accessibility
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
   async function sendMessage(text: string) {
@@ -157,7 +168,8 @@ export function SelooAI() {
           {!open ? (
             <span className="absolute bottom-0.5 right-0.5 size-3.5 rounded-full border-2 border-ink bg-emerald-400">
               <motion.span
-                className="absolute inset-0 rounded-full bg-emerald-400"
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-emerald-400 motion-reduce:hidden"
                 animate={{ scale: [1, 1.6], opacity: [0.7, 0] }}
                 transition={{ duration: 1.6, repeat: Infinity }}
               />
@@ -170,6 +182,9 @@ export function SelooAI() {
       <AnimatePresence>
         {open ? (
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="SelooAI sohbet penceresi"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -384,20 +399,41 @@ function Bubble({
 }
 
 function FormattedText({ text }: { text: string }) {
-  const urlRegex = /(https?:\/\/[^\s)]+)/g;
-  const html = text
+  // 1) Once tum HTML/URL ozel karakterleri escape — boylece AI hostile cikti
+  //    versin, raw HTML render olmaz.
+  const escaped = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(urlRegex, (url) => {
-      const trail = url.match(/[.,;:!?]+$/)?.[0] ?? "";
-      const clean = trail ? url.slice(0, -trail.length) : url;
-      return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 break-words">${clean}</a>${trail}`;
-    })
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+  // 2) URL'leri tikkanabilir yap — encodeURI ile href'i sertlestir
+  //    (URL icinde quote/onclick injection imkansizlasir)
+  const urlRegex = /(https?:\/\/[^\s)]+)/g;
+  const withLinks = escaped.replace(urlRegex, (url) => {
+    const trail = url.match(/[.,;:!?]+$/)?.[0] ?? "";
+    const clean = trail ? url.slice(0, -trail.length) : url;
+    // Sadece http/https'e izin ver (javascript:, data: vs. reddet)
+    if (!/^https?:\/\//i.test(clean)) return url;
+    const safe = encodeURI(clean);
+    return `<a href="${safe}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 break-words">${clean}</a>${trail}`;
+  });
+
+  // 3) **bold** + newline destegi
+  const formatted = withLinks
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\n/g, "<br/>");
 
-  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+  // 4) FINAL: DOMPurify ile sadece <a><strong><br> izinli, tum geri kalan strip
+  //    Defense-in-depth: bir sekilde injection olsa bile burada elenir
+  const safe = DOMPurify.sanitize(formatted, {
+    ALLOWED_TAGS: ["a", "strong", "br"],
+    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+    ALLOWED_URI_REGEXP: /^https?:\/\//i,
+  });
+
+  return <span dangerouslySetInnerHTML={{ __html: safe }} />;
 }
 
 function TypingDots() {

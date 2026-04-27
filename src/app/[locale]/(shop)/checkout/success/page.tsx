@@ -14,30 +14,34 @@ export default async function CheckoutSuccess({
 }) {
   const { order: orderNumber } = await searchParams;
 
-  // Sipariş detayini cek (kullanici giris yapmissa kendi siparisi olmali)
+  // Sipariş detayini cek — guest checkout'ta userId null olur, login user
+  // icinse kendi siparisi olmali. Her iki durumda da PENDING/PAID donme
+  // sansi var (callback timing'e bagli), gosterimi yine yapariz.
   const session = await auth();
-  const order =
-    orderNumber && session?.user?.id
-      ? await db.order
-          .findFirst({
-            where: {
-              orderNumber: orderNumber.toUpperCase(),
-              userId: session.user.id,
-            },
-            include: {
-              items: {
-                include: {
-                  variant: {
-                    include: {
-                      product: {
-                        select: {
-                          id: true,
-                          slug: true,
-                          images: {
-                            orderBy: { sortOrder: "asc" },
-                            take: 1,
-                            select: { url: true },
-                          },
+  const order = orderNumber
+    ? await db.order
+        .findFirst({
+          where: {
+            orderNumber: orderNumber.toUpperCase(),
+            // Login ise kendi siparisi olmali, anonim ise userId NULL olmali
+            // (guest checkout). Boylece baska kullanici linki spoof edemez.
+            ...(session?.user?.id
+              ? { userId: session.user.id }
+              : { userId: null }),
+          },
+          include: {
+            items: {
+              include: {
+                variant: {
+                  include: {
+                    product: {
+                      select: {
+                        id: true,
+                        slug: true,
+                        images: {
+                          orderBy: { sortOrder: "asc" },
+                          take: 1,
+                          select: { url: true },
                         },
                       },
                     },
@@ -45,9 +49,10 @@ export default async function CheckoutSuccess({
                 },
               },
             },
-          })
-          .catch(() => null)
-      : null;
+          },
+        })
+        .catch(() => null)
+    : null;
 
   // Yorum durumu — sadece SHIPPED/DELIVERED'da reviewable. Yeni PAID
   // siparis genelde reviewable olmaz, ama nadiren API gecikmeli olabilir.

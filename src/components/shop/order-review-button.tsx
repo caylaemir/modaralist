@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Star, X, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +28,16 @@ export function OrderReviewButton({ productSlug, productName, state }: Props) {
   const [body, setBody] = useState("");
   const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  // ESC ile kapat (pending degilse) — keyboard accessibility
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !pending) setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, pending]);
 
   if (state === "not-deliverable") return null;
 
@@ -73,12 +83,18 @@ export function OrderReviewButton({ productSlug, productName, state }: Props) {
       <AnimatePresence>
         {open ? (
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${productName} için yorum yaz`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm"
             onClick={(e) => {
-              if (e.target === e.currentTarget && !pending) setOpen(false);
+              // Pending iken backdrop'a tiklama hicbir sey yapmasin
+              // (gonder bastiktan sonra yanlislikla kapanmasin, race olmasin)
+              if (pending) return;
+              if (e.target === e.currentTarget) setOpen(false);
             }}
           >
             <motion.div
