@@ -86,7 +86,7 @@ export default async function OgImage({
           }}
         >
           <span>numaralı · sınırlı üretim</span>
-          <span>modaralist.shop</span>
+          <span>modaralist.com</span>
         </div>
       </div>
     ),

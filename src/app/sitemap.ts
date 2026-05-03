@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { CATEGORY_SEO_TR } from "@/lib/category-seo";
 import { MARMARA_CITY_SLUGS } from "@/lib/marmara-cities";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 const LOCALES = ["tr", "en"] as const;
 
 // Statik üst-seviye sayfalar (root'tan başlar)

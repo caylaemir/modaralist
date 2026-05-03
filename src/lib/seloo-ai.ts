@@ -193,7 +193,7 @@ async function searchProducts(args: ToolArgs) {
       category: p.category?.translations[0]?.name ?? null,
       price: Number(p.basePrice),
       discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
-      url: `https://modaralist.shop/tr/products/${p.slug}`,
+      url: `https://modaralist.com/tr/products/${p.slug}`,
       stockTotal: totalStock,
       availableSizes: sizes,
       availableColors: colors,
@@ -226,7 +226,7 @@ async function getProductDetails(args: ToolArgs) {
     category: p.category?.translations[0]?.name ?? null,
     price: Number(p.basePrice),
     discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
-    url: `https://modaralist.shop/tr/products/${p.slug}`,
+    url: `https://modaralist.com/tr/products/${p.slug}`,
     variants: p.variants.map((v) => ({
       size: v.size?.code ?? null,
       color: v.color?.nameTr ?? null,
@@ -247,7 +247,7 @@ async function getCategories() {
     slug: c.slug,
     name: c.translations[0]?.name ?? c.slug,
     productCount: c._count.products,
-    url: `https://modaralist.shop/tr/shop/${c.slug}`,
+    url: `https://modaralist.com/tr/shop/${c.slug}`,
   }));
 }
 
@@ -350,8 +350,8 @@ function getReturnAndLegal() {
     refundTimeline: "5-10 iş günü içinde aynı kart/hesaba",
     paymentMethods: ["Visa", "Mastercard", "American Express"],
     paymentSecurity: "iyzico ile şifrelenir, kart bilgileri sunucuda saklanmaz",
-    kvkkPage: "https://modaralist.shop/tr/pages/kvkk",
-    distanceSalesPage: "https://modaralist.shop/tr/pages/distance-sales",
+    kvkkPage: "https://modaralist.com/tr/pages/kvkk",
+    distanceSalesPage: "https://modaralist.com/tr/pages/distance-sales",
   };
 }
 

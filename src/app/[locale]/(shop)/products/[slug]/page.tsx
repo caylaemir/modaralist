@@ -91,7 +91,7 @@ export default async function ProductPage({
       ? approvedReviews.reduce((s, r) => s + r.rating, 0) / approvedReviews.length
       : 0;
 
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
   const productJsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",

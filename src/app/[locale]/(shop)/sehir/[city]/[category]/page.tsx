@@ -111,13 +111,13 @@ export default async function CityCategoryPage({
         "@type": "ListItem",
         position: 1,
         name: "Ana Sayfa",
-        item: `https://modaralist.shop/${locale}`,
+        item: `https://modaralist.com/${locale}`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: city.name,
-        item: `https://modaralist.shop/${locale}/sehir/${citySlug}`,
+        item: `https://modaralist.com/${locale}/sehir/${citySlug}`,
       },
       {
         "@type": "ListItem",
@@ -133,11 +133,11 @@ export default async function CityCategoryPage({
     "@type": "CollectionPage",
     name: `${city.name} ${seo.name}`,
     description: `${city.name}'de ${seo.name.toLowerCase()} modelleri`,
-    url: `https://modaralist.shop/${locale}/sehir/${citySlug}/${category}`,
+    url: `https://modaralist.com/${locale}/sehir/${citySlug}/${category}`,
     isPartOf: {
       "@type": "WebSite",
       name: "Modaralist",
-      url: "https://modaralist.shop",
+      url: "https://modaralist.com",
     },
     about: {
       "@type": "Place",

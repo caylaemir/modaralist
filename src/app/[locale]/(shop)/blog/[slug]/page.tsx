@@ -87,11 +87,11 @@ export default async function BlogPostPage({
     publisher: {
       "@type": "Organization",
       name: "Modaralist",
-      url: "https://modaralist.shop",
+      url: "https://modaralist.com",
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://modaralist.shop/${locale}/blog/${slug}`,
+      "@id": `https://modaralist.com/${locale}/blog/${slug}`,
     },
   };
 

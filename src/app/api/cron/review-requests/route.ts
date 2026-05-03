@@ -18,7 +18,7 @@ import { verifyCronAuth } from "@/lib/cron-auth";
  *   daha gondermez (ekstra column gerek yok, idempotent zaman penceresi)
  *
  * Cron komutu (VPS crontab):
- *   0 10 * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.shop/api/cron/review-requests
+ *   0 10 * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.com/api/cron/review-requests
  */
 export async function GET(req: Request) {
   if (!verifyCronAuth(req.headers.get("authorization"))) {
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
   });
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 
   let sent = 0;
   let skipped = 0;

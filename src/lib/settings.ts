@@ -192,7 +192,7 @@ export const SETTING_SECTIONS: Array<{
     description:
       "Footer, iletişim sayfası ve e-postalarda kullanılır. Boş bıraktığın alanlar sitede gösterilmez.",
     fields: [
-      { key: "contact.email", label: "E-posta", type: "email", placeholder: "merhaba@modaralist.shop" },
+      { key: "contact.email", label: "E-posta", type: "email", placeholder: "merhaba@modaralist.com" },
       { key: "contact.phone", label: "Telefon", type: "tel", placeholder: "+90 212 000 00 00" },
       {
         key: "contact.address",

@@ -63,7 +63,7 @@ export default async function OgImage() {
           }}
         >
           <span>made in turkey</span>
-          <span>modaralist.shop</span>
+          <span>modaralist.com</span>
         </div>
       </div>
     ),

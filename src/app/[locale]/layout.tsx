@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     "online giyim",
     "streetwear",
   ],
-  metadataBase: new URL("https://modaralist.shop"),
+  metadataBase: new URL("https://modaralist.com"),
   applicationName: "Modaralist",
   alternates: {
     canonical: "/",
@@ -116,7 +116,7 @@ export default async function LocaleLayout({
   ]);
 
   const base =
-    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 
   const sameAs = [
     settings?.["social.instagram"],

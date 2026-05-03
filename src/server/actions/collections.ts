@@ -233,7 +233,7 @@ type CollectionForNotify = {
 
 async function sendDropNotifyEmails(collection: CollectionForNotify) {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
   const trName =
     collection.translations.find((t) => t.locale === "tr")?.name ??
     collection.slug;

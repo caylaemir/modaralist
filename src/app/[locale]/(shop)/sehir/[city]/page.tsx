@@ -62,7 +62,7 @@ export default async function CityPage({
     "@context": "https://schema.org",
     "@type": "OnlineStore",
     name: `Modaralist — ${city.name}`,
-    url: `https://modaralist.shop/${locale}/sehir/${citySlug}`,
+    url: `https://modaralist.com/${locale}/sehir/${citySlug}`,
     areaServed: {
       "@type": "City",
       name: city.name,
@@ -86,13 +86,13 @@ export default async function CityPage({
         "@type": "ListItem",
         position: 1,
         name: "Ana Sayfa",
-        item: `https://modaralist.shop/${locale}`,
+        item: `https://modaralist.com/${locale}`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Şehirler",
-        item: `https://modaralist.shop/${locale}/sehir/${citySlug}`,
+        item: `https://modaralist.com/${locale}/sehir/${citySlug}`,
       },
       {
         "@type": "ListItem",

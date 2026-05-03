@@ -158,7 +158,7 @@ export default async function CategoryPage({
     })
     .catch(() => []);
 
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 
   // Breadcrumb JSON-LD
   const breadcrumbJsonLd = {

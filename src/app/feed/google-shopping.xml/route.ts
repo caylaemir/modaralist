@@ -9,9 +9,9 @@ import { db } from "@/lib/db";
  *
  * Setup:
  *  1. https://merchants.google.com 'a kayit ol (ucretsiz)
- *  2. Sitenizi ekleyin (modaralist.shop) — Search Console verification
+ *  2. Sitenizi ekleyin (modaralist.com) — Search Console verification
  *  3. Products > Add products > Feed > Scheduled fetch
- *  4. URL: https://modaralist.shop/feed/google-shopping.xml
+ *  4. URL: https://modaralist.com/feed/google-shopping.xml
  *  5. Frequency: daily
  *  6. Onay sonrasi urunler Google Shopping'de listelenir (UCRETSIZ)
  *
@@ -23,7 +23,7 @@ import { db } from "@/lib/db";
  */
 export const revalidate = 21600;
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 const BRAND = "Modaralist";
 
 // XML special chars escape

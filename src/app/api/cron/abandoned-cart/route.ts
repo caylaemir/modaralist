@@ -17,7 +17,7 @@ import { verifyCronAuth } from "@/lib/cron-auth";
  * - notes alaninda 'abandoned-mailed' yoksa: mail at + notes'u guncelle
  *
  * Cron komutu (VPS crontab):
- *   0 * * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.shop/api/cron/abandoned-cart
+ *   0 * * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.com/api/cron/abandoned-cart
  */
 export async function GET(req: Request) {
   if (!verifyCronAuth(req.headers.get("authorization"))) {
@@ -66,7 +66,7 @@ export async function GET(req: Request) {
   });
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.shop";
+    process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 
   let sent = 0;
   let skipped = 0;
