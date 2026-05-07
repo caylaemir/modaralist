@@ -22,76 +22,6 @@ import { BestSellers } from "@/components/shop/best-sellers";
 
 export const dynamic = "force-dynamic";
 
-const FALLBACK_PRODUCTS: ProductCardData[] = [
-  {
-    slug: "asymetric-drape-top",
-    name: "Asymetric Drape Top",
-    dropLabel: "Drop 01",
-    price: 2490,
-    image:
-      "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=1000&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "linen-wide-leg",
-    name: "Linen Wide Leg Trousers",
-    dropLabel: "Drop 01",
-    price: 1890,
-    image:
-      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "cotton-slip-dress",
-    name: "Cotton Slip Dress",
-    dropLabel: "Drop 01",
-    price: 2190,
-    image:
-      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "sheer-mesh-top",
-    name: "Sheer Mesh Top",
-    dropLabel: "Drop 01",
-    price: 1590,
-    image:
-      "https://images.unsplash.com/photo-1550639525-c97d455acf70?auto=format&fit=crop&w=1000&q=85",
-    soldOut: true,
-  },
-  {
-    slug: "raw-edge-blazer",
-    name: "Raw Edge Blazer",
-    dropLabel: "Drop 01",
-    price: 3290,
-    image:
-      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "knit-column",
-    name: "Merino Column Knit",
-    dropLabel: "Drop 01",
-    price: 2790,
-    image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "wool-overcoat",
-    name: "Wool Overcoat",
-    dropLabel: "Drop 01",
-    price: 4890,
-    image:
-      "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    slug: "silk-scarf-top",
-    name: "Silk Scarf Top",
-    dropLabel: "Drop 01",
-    price: 1790,
-    image:
-      "https://images.unsplash.com/photo-1475180098004-ca77a66827be?auto=format&fit=crop&w=1000&q=85",
-  },
-];
-
 export default async function Home({
   params,
 }: {
@@ -115,18 +45,15 @@ export default async function Home({
     collections.find((c) => c.status === "LIVE") ??
     collections.find((c) => c.status === "UPCOMING") ??
     null;
-  const featured: ProductCardData[] =
-    dbProducts.length > 0
-      ? dbProducts.map((p) => ({
-          slug: p.slug,
-          name: p.name,
-          dropLabel: p.dropLabel ?? "",
-          price: p.price,
-          image: p.images[0] ?? "",
-          hoverImage: p.hoverImage ?? undefined,
-          soldOut: p.soldOut,
-        }))
-      : FALLBACK_PRODUCTS;
+  const featured: ProductCardData[] = dbProducts.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    dropLabel: p.dropLabel ?? "",
+    price: p.price,
+    image: p.images[0] ?? "",
+    hoverImage: p.hoverImage ?? undefined,
+    soldOut: p.soldOut,
+  }));
   const bestSellersCards: ProductCardData[] = bestSellers.map((p) => ({
     slug: p.slug,
     name: p.name,
@@ -169,48 +96,50 @@ export default async function Home({
 
       <BestSellers products={bestSellersCards} locale={lang} />
 
-      <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-40">
-        <div className="mb-16 grid gap-10 md:grid-cols-12 md:items-end">
-          <div className="md:col-span-8">
-            <Reveal>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-                — {t("lineupTitle").toLowerCase()}
-              </p>
-            </Reveal>
-            <SplitText
-              text={t("lineupTitle")}
-              as="h2"
-              className="display mt-6 text-[10vw] leading-[0.95] md:text-[6vw]"
-            />
+      {featured.length > 0 ? (
+        <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-40">
+          <div className="mb-16 grid gap-10 md:grid-cols-12 md:items-end">
+            <div className="md:col-span-8">
+              <Reveal>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — {t("lineupTitle").toLowerCase()}
+                </p>
+              </Reveal>
+              <SplitText
+                text={t("lineupTitle")}
+                as="h2"
+                className="display mt-6 text-[10vw] leading-[0.95] md:text-[6vw]"
+              />
+            </div>
+            <div className="md:col-span-4">
+              <Reveal delay={0.3}>
+                <p className="max-w-sm text-sm leading-relaxed text-mist">
+                  {lang === "en"
+                    ? "Numbered, limited-run pieces — Bursa-made streetwear. Each drop captures a season."
+                    : "Numaralı, sınırlı sayıda — Bursa'da üretilen streetwear. Her drop sezonun bir anını yakalar."}
+                </p>
+                <Link
+                  href="/shop"
+                  className="mt-6 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.35em]"
+                >
+                  {t("shopAll")} <ArrowUpRight className="size-4" />
+                </Link>
+              </Reveal>
+            </div>
           </div>
-          <div className="md:col-span-4">
-            <Reveal delay={0.3}>
-              <p className="max-w-sm text-sm leading-relaxed text-mist">
-                {lang === "en"
-                  ? "Numbered, limited-run pieces — Bursa-made streetwear. Each drop captures a season."
-                  : "Numaralı, sınırlı sayıda — Bursa'da üretilen streetwear. Her drop sezonun bir anını yakalar."}
-              </p>
-              <Link
-                href="/shop"
-                className="mt-6 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.35em]"
-              >
-                {t("shopAll")} <ArrowUpRight className="size-4" />
-              </Link>
-            </Reveal>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
-          {featured.map((p, i) => (
-            <ProductCard
-              key={p.slug}
-              product={p}
-              locale={locale as "tr" | "en"}
-              index={i}
-            />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
+            {featured.map((p, i) => (
+              <ProductCard
+                key={p.slug}
+                product={p}
+                locale={locale as "tr" | "en"}
+                index={i}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {spotlight ? (
         <section className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink">

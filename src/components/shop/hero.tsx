@@ -72,7 +72,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="text-[10px] uppercase tracking-[0.35em] text-paper/80"
           >
-            SS26 — Drop 01
+            Modaralist · Bursa
           </motion.p>
 
           <motion.div

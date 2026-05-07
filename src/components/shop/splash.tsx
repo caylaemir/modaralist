@@ -57,7 +57,7 @@ export function Splash() {
             transition={{ delay: 0.8, duration: 0.5 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.4em] text-paper/50"
           >
-            SS26 — Drop 01
+            Numaralı Koleksiyonlar
           </motion.span>
         </motion.div>
       )}
