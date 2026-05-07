@@ -1,15 +1,18 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Phone, MapPin, Mail, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { getAllSettings } from "@/lib/settings";
-import { CATEGORY_SEO_TR } from "@/lib/category-seo";
+import { getTopLevelCategories, getCollectionsList } from "@/lib/shop";
 
 export async function Footer() {
-  const [t, tNav, tCommon, settings] = await Promise.all([
+  const locale = (await getLocale()) === "en" ? "en" : "tr";
+  const [t, tNav, tCommon, settings, categories, collections] = await Promise.all([
     getTranslations("Footer"),
     getTranslations("Nav"),
     getTranslations("Common"),
     getAllSettings(),
+    getTopLevelCategories(locale as "tr" | "en"),
+    getCollectionsList(locale as "tr" | "en"),
   ]);
 
   const socials = [
@@ -36,13 +39,9 @@ export async function Footer() {
         <div>
           <p className="eyebrow mb-5 text-mist">{t("categories")}</p>
           <ul className="space-y-3 text-sm">
-            {Object.values(CATEGORY_SEO_TR).map((c) => (
+            {categories.map((c) => (
               <li key={c.slug}>
-                <Link
-                  href={`/shop/${c.slug}`}
-                  className="hover:opacity-60"
-                  title={`${c.name} modelleri — Marmara'ya hızlı kargo`}
-                >
+                <Link href={`/shop/${c.slug}`} className="hover:opacity-60">
                   {c.name}
                 </Link>
               </li>
@@ -61,12 +60,22 @@ export async function Footer() {
         <div>
           <p className="eyebrow mb-5 text-mist">{t("drops")}</p>
           <ul className="space-y-3 text-sm">
+            {collections.slice(0, 6).map((c) => (
+              <li key={c.id}>
+                <Link href={`/drops/${c.slug}`} className="hover:opacity-60">
+                  {c.name}
+                </Link>
+              </li>
+            ))}
             <li>
-              <Link href="/drops" className="hover:opacity-60">
+              <Link
+                href="/drops"
+                className="text-mist underline-offset-4 hover:text-ink hover:underline"
+              >
                 {tNav("drops")}
               </Link>
             </li>
-            <li>
+            <li className="pt-2">
               <Link href="/track" className="hover:opacity-60">
                 {tCommon("orderTracking")}
               </Link>

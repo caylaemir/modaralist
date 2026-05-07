@@ -498,6 +498,24 @@ export async function getMegaMenuCategories(
   }));
 }
 
+// Footer'da gosterilecek aktif top-level kategoriler.
+// _count > 0 filtresi YOK — yeni baslayan kategori bos olabilir, yine de listelenir.
+export async function getTopLevelCategories(
+  locale: ShopLocale
+): Promise<{ slug: string; name: string }[]> {
+  const cats = await db.category.findMany({
+    where: { isActive: true, parentId: null },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: {
+      translations: { where: { locale } },
+    },
+  });
+  return cats.map((c) => ({
+    slug: c.slug,
+    name: c.translations[0]?.name ?? c.slug,
+  }));
+}
+
 export async function searchProducts(
   query: string,
   locale: ShopLocale,
