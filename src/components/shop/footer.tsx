@@ -122,6 +122,11 @@ export async function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/pages/membership" className="hover:opacity-60">
+                Üyelik Sözleşmesi
+              </Link>
+            </li>
+            <li>
               <Link href="/pages/faq" className="hover:opacity-60">
                 SSS
               </Link>

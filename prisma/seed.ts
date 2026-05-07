@@ -362,6 +362,18 @@ async function main() {
         body: "<h3>When will my order ship?</h3><p>Paid orders ship within 1-3 business days.</p><h3>Can I return?</h3><p>You can return within 14 days with tags attached.</p>",
       },
     },
+    {
+      // Uyelik Sozlesmesi placeholder — gercek metin scripts/import-legal-pages.ts ile yuklenir.
+      slug: "membership",
+      tr: {
+        title: "Üyelik Sözleşmesi",
+        body: "<p>Üyelik sözleşmesi metni — gerçek içerik admin panelinden veya import-legal-pages script'i ile yüklenir.</p>",
+      },
+      en: {
+        title: "Membership Agreement",
+        body: "<p>Membership agreement — real content is loaded via import-legal-pages script.</p>",
+      },
+    },
   ];
 
   for (const pg of pagesData) {

@@ -107,14 +107,30 @@ export default function RegisterPage() {
 
         <p className="text-xs leading-relaxed text-mist">
           Devam ederek{" "}
-          <Link href="/kvkk" className="underline underline-offset-2">
-            KVKK aydınlatma metnini
+          <Link
+            href="/pages/membership"
+            target="_blank"
+            className="underline underline-offset-2"
+          >
+            Üyelik Sözleşmesi
+          </Link>
+          ,{" "}
+          <Link
+            href="/pages/kvkk"
+            target="_blank"
+            className="underline underline-offset-2"
+          >
+            KVKK Aydınlatma Metni
           </Link>{" "}
           ve{" "}
-          <Link href="/terms" className="underline underline-offset-2">
-            kullanım şartlarını
-          </Link>{" "}
-          kabul etmiş olursun.
+          <Link
+            href="/pages/privacy"
+            target="_blank"
+            className="underline underline-offset-2"
+          >
+            Gizlilik Politikası
+          </Link>
+          'nı kabul etmiş olursun.
         </p>
       </form>
 

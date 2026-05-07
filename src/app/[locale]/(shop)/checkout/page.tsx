@@ -581,8 +581,15 @@ export default function CheckoutPage() {
                     className="mt-0.5 size-4 accent-ink"
                   />
                   <span>
-                    KVKK aydınlatma metnini okudum, kişisel verilerimin
-                    işlenmesini onaylıyorum.
+                    <a
+                      href="/pages/kvkk"
+                      target="_blank"
+                      rel="noopener"
+                      className="underline underline-offset-2"
+                    >
+                      KVKK Aydınlatma Metni
+                    </a>
+                    'ni okudum, kişisel verilerimin işlenmesini onaylıyorum.
                   </span>
                 </label>
                 <label className="flex items-start gap-3">
@@ -596,8 +603,15 @@ export default function CheckoutPage() {
                     className="mt-0.5 size-4 accent-ink"
                   />
                   <span>
-                    Mesafeli Satış Sözleşmesi ve Ön Bilgilendirme Formunu okudum,
-                    kabul ediyorum.
+                    <a
+                      href="/pages/distance-sales"
+                      target="_blank"
+                      rel="noopener"
+                      className="underline underline-offset-2"
+                    >
+                      Mesafeli Satış Sözleşmesi
+                    </a>{" "}
+                    ve Ön Bilgilendirme Formu'nu okudum, kabul ediyorum.
                   </span>
                 </label>
               </div>
