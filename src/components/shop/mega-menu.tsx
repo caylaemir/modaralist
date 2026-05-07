@@ -28,6 +28,27 @@ type Props = {
 export function MegaMenu({ categories, locale }: Props) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Trigger -> dropdown gecisinde olusan kucuk bos alanda menu erken
+  // kapanmasin diye 150ms grace period.
+  function cancelClose() {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }
+  function scheduleClose() {
+    cancelClose();
+    closeTimerRef.current = setTimeout(() => setOpenSlug(null), 150);
+  }
+  function openMenu(slug: string) {
+    cancelClose();
+    setOpenSlug(slug);
+  }
+
+  // Unmount'ta timer temizle
+  useEffect(() => () => cancelClose(), []);
 
   // Disinda tiklanirsa kapat
   useEffect(() => {
@@ -56,7 +77,6 @@ export function MegaMenu({ categories, locale }: Props) {
     <div
       ref={containerRef}
       className="hidden items-center gap-7 md:flex"
-      onMouseLeave={() => setOpenSlug(null)}
     >
       {categories.map((cat) => {
         const isOpen = openSlug === cat.slug;
@@ -71,7 +91,8 @@ export function MegaMenu({ categories, locale }: Props) {
           <div
             key={cat.slug}
             className="relative"
-            onMouseEnter={() => hasChildren && setOpenSlug(cat.slug)}
+            onMouseEnter={() => hasChildren && openMenu(cat.slug)}
+            onMouseLeave={scheduleClose}
           >
             <Link
               href={`/shop/${cat.slug}`}
@@ -89,6 +110,8 @@ export function MegaMenu({ categories, locale }: Props) {
             {hasChildren && isOpen && (
               <div
                 role="menu"
+                onMouseEnter={cancelClose}
+                onMouseLeave={scheduleClose}
                 className="fixed left-0 right-0 top-16 z-50 border-y border-line bg-paper shadow-sm md:top-20"
               >
                 <div className="mx-auto max-w-[1600px] px-5 py-10 md:px-10">
