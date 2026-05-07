@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+// 'Menü', 'Kapat' gibi labellar Common namespace'inden gelir.
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/stores/cart";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ type Props = {
 
 export function Header({ categories }: Props) {
   const t = useTranslations("Nav");
+  const tCommon = useTranslations("Common");
   const pathname = usePathname();
   const locale = useLocale() as "tr" | "en";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,7 +49,7 @@ export function Header({ categories }: Props) {
           type="button"
           onClick={() => setMenuOpen(true)}
           className="grid size-11 place-items-center md:hidden"
-          aria-label="Menü"
+          aria-label={tCommon("menu")}
         >
           <Menu className="size-5" />
         </button>
@@ -103,7 +105,7 @@ export function Header({ categories }: Props) {
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
-              aria-label="Kapat"
+              aria-label={tCommon("close")}
             >
               <X className="size-5" />
             </button>
@@ -128,7 +130,7 @@ export function Header({ categories }: Props) {
                           setOpenMobile(expanded ? null : cat.slug)
                         }
                         className="text-2xl text-mist"
-                        aria-label={expanded ? "Kapat" : "Aç"}
+                        aria-label={expanded ? tCommon("close") : tCommon("open")}
                         aria-expanded={expanded}
                       >
                         {expanded ? "−" : "+"}

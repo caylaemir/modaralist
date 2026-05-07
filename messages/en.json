@@ -75,11 +75,25 @@
     "information": "Information",
     "aboutUs": "About Us",
     "contact": "Contact",
+    "contactHeading": "Contact",
     "returns": "Returns & Exchanges",
     "privacy": "Privacy",
-    "terms": "Terms",
+    "terms": "Terms of Use",
+    "distanceSales": "Distance Sales",
+    "membership": "Membership Agreement",
+    "faq": "FAQ",
     "kvkk": "Data Protection",
-    "followUs": "Follow Us"
+    "followUs": "Follow Us",
+    "categories": "Categories",
+    "shop": "Shop",
+    "trustPaymentTitle": "Secure Payment",
+    "trustPaymentDesc": "Powered by iyzico · Visa / Mastercard / Amex · 3D Secure",
+    "trustReturnTitle": "14-Day Returns",
+    "trustReturnDesc": "Free returns on items with tags intact",
+    "trustShippingTitle": "Fast Shipping",
+    "trustShippingDesc": "1-2 business days for Marmara · 2-4 days nationwide",
+    "copyright": "All rights reserved.",
+    "handcrafted": "Handcrafted in Turkey"
   },
   "Common": {
     "loading": "Loading...",
@@ -89,6 +103,10 @@
     "back": "Back",
     "continue": "Continue",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "orderTracking": "Order Tracking",
+    "siteTagline": "Modern silhouettes, numbered collections, limited production.",
+    "open": "Open",
+    "menu": "Menu"
   }
 }

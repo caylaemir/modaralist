@@ -75,11 +75,25 @@
     "information": "Bilgi",
     "aboutUs": "Hakkımızda",
     "contact": "İletişim",
+    "contactHeading": "İletişim",
     "returns": "İade ve Değişim",
     "privacy": "Gizlilik",
-    "terms": "Şartlar",
+    "terms": "Kullanım Koşulları",
+    "distanceSales": "Mesafeli Satış",
+    "membership": "Üyelik Sözleşmesi",
+    "faq": "SSS",
     "kvkk": "KVKK",
-    "followUs": "Bizi Takip Et"
+    "followUs": "Bizi Takip Et",
+    "categories": "Kategoriler",
+    "shop": "Mağaza",
+    "trustPaymentTitle": "Güvenli Ödeme",
+    "trustPaymentDesc": "iyzico altyapısı · Visa / Mastercard / Amex · 3D Secure",
+    "trustReturnTitle": "14 Gün İade",
+    "trustReturnDesc": "Etiketleri sökülmemiş ürünler için koşulsuz iade",
+    "trustShippingTitle": "Hızlı Kargo",
+    "trustShippingDesc": "Marmara'ya 1-2 iş günü · diğer iller 2-4 iş günü",
+    "copyright": "Tüm hakları saklıdır.",
+    "handcrafted": "Handcrafted in Turkey"
   },
   "Common": {
     "loading": "Yükleniyor...",
@@ -89,6 +103,10 @@
     "back": "Geri",
     "continue": "Devam Et",
     "save": "Kaydet",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "orderTracking": "Sipariş Takibi",
+    "siteTagline": "Modern siluetler, numaralı koleksiyonlar, sınırlı üretim.",
+    "open": "Aç",
+    "menu": "Menü"
   }
 }

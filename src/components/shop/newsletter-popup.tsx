@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,34 +17,49 @@ type PopupConfig = {
   discountCode: string;
 };
 
-const DEFAULT_CONFIG: PopupConfig = {
-  enabled: true,
-  delaySeconds: 15,
-  eyebrow: "— ilk siparişine özel",
-  title: "%10 indirim hemen senin.",
-  subtitle:
-    "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
-  ctaLabel: "İndirim Kodumu Gönder",
-  discountCode: "",
-};
+const DEFAULTS = {
+  tr: {
+    eyebrow: "— ilk siparişine özel",
+    title: "%10 indirim hemen senin.",
+    subtitle:
+      "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
+    ctaLabel: "İndirim Kodumu Gönder",
+  },
+  en: {
+    eyebrow: "— for your first order",
+    title: "10% off, on us.",
+    subtitle:
+      "Drop your email and we'll send a 10% discount code for your first order. You'll also be first to know about new drops.",
+    ctaLabel: "Send My Discount Code",
+  },
+} as const;
 
 export function NewsletterPopup() {
+  const locale = useLocale() as "tr" | "en";
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [config, setConfig] = useState<PopupConfig | null>(null);
   const [done, setDone] = useState(false);
 
+  const defaults: PopupConfig = {
+    enabled: true,
+    delaySeconds: 15,
+    discountCode: "",
+    ...DEFAULTS[locale],
+  };
+
   // Settings'ten config çek
   useEffect(() => {
     fetch("/api/public-config")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.popup) setConfig({ ...DEFAULT_CONFIG, ...d.popup });
-        else setConfig(DEFAULT_CONFIG);
+        if (d?.popup) setConfig({ ...defaults, ...d.popup });
+        else setConfig(defaults);
       })
-      .catch(() => setConfig(DEFAULT_CONFIG));
-  }, []);
+      .catch(() => setConfig(defaults));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   // Config geldiğinde + popup gösterilebiliyorsa zamanlayıcı kur
   useEffect(() => {
@@ -80,11 +96,19 @@ export function NewsletterPopup() {
         body: JSON.stringify({ email, source: "popup" }),
       });
       if (res.status === 429) {
-        toast.error("Çok fazla deneme. Birkaç dakika sonra tekrar dene.");
+        toast.error(
+          locale === "en"
+            ? "Too many attempts. Try again in a few minutes."
+            : "Çok fazla deneme. Birkaç dakika sonra tekrar dene."
+        );
         return;
       }
       if (!res.ok) {
-        toast.error("Kaydedilemedi. Lütfen tekrar dene.");
+        toast.error(
+          locale === "en"
+            ? "Couldn't subscribe. Please try again."
+            : "Kaydedilemedi. Lütfen tekrar dene."
+        );
         return;
       }
       setDone(true);
@@ -93,9 +117,15 @@ export function NewsletterPopup() {
       } catch {
         /* ignore */
       }
-      toast.success("Listedesin. İndirim kodu kısa sürede e-postanda.");
+      toast.success(
+        locale === "en"
+          ? "You're in. Discount code will arrive in your inbox shortly."
+          : "Listedesin. İndirim kodu kısa sürede e-postanda."
+      );
     } catch {
-      toast.error("Bağlantı hatası. Tekrar dene.");
+      toast.error(
+        locale === "en" ? "Connection error. Try again." : "Bağlantı hatası. Tekrar dene."
+      );
     } finally {
       setPending(false);
     }
@@ -113,7 +143,7 @@ export function NewsletterPopup() {
           <button
             type="button"
             onClick={dismiss}
-            aria-label="Kapat"
+            aria-label={locale === "en" ? "Close" : "Kapat"}
             className="text-mist hover:text-ink"
           >
             <X className="size-4" />
@@ -125,21 +155,27 @@ export function NewsletterPopup() {
         {done ? (
           <div className="mt-8 border-t border-line pt-6 text-center">
             <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-              ✓ kayıt alındı
+              {locale === "en" ? "✓ subscribed" : "✓ kayıt alındı"}
             </p>
             {config.discountCode ? (
               <>
-                <p className="mt-3 text-sm">İndirim kodun:</p>
+                <p className="mt-3 text-sm">
+                  {locale === "en" ? "Your discount code:" : "İndirim kodun:"}
+                </p>
                 <p className="display mt-3 select-all text-3xl tabular-nums">
                   {config.discountCode}
                 </p>
                 <p className="mt-3 text-[11px] text-mist">
-                  Checkout&apos;ta uygula. Email&apos;ine de gönderdik.
+                  {locale === "en"
+                    ? "Apply at checkout. We've also emailed it to you."
+                    : "Checkout'ta uygula. Email'ine de gönderdik."}
                 </p>
               </>
             ) : (
               <p className="mt-3 text-sm text-mist">
-                İndirim kodun email&apos;inde — kısa süre içinde gelir.
+                {locale === "en"
+                  ? "Your discount code is in your inbox — arriving shortly."
+                  : "İndirim kodun email'inde — kısa süre içinde gelir."}
               </p>
             )}
             <button
@@ -147,7 +183,7 @@ export function NewsletterPopup() {
               onClick={() => setOpen(false)}
               className="mt-6 inline-block border-b border-ink pb-1 text-[11px] uppercase tracking-[0.3em]"
             >
-              Alışverişe devam →
+              {locale === "en" ? "Continue shopping →" : "Alışverişe devam →"}
             </button>
           </div>
         ) : (
@@ -157,7 +193,7 @@ export function NewsletterPopup() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@adresin.com"
+              placeholder={locale === "en" ? "your@email.com" : "email@adresin.com"}
               className="w-full border-b border-line bg-transparent py-3 text-sm outline-none focus:border-ink"
             />
             <button
@@ -165,7 +201,13 @@ export function NewsletterPopup() {
               disabled={pending}
               className="mt-6 flex w-full items-center justify-between bg-ink px-6 py-4 text-[11px] uppercase tracking-[0.3em] text-paper disabled:opacity-50"
             >
-              <span>{pending ? "Gönderiliyor..." : config.ctaLabel}</span>
+              <span>
+                {pending
+                  ? locale === "en"
+                    ? "Sending..."
+                    : "Gönderiliyor..."
+                  : config.ctaLabel}
+              </span>
               <span>→</span>
             </button>
             <button
@@ -173,7 +215,7 @@ export function NewsletterPopup() {
               onClick={dismiss}
               className="mt-4 w-full text-[10px] uppercase tracking-[0.3em] text-mist hover:text-ink"
             >
-              Hayır, teşekkürler
+              {locale === "en" ? "No thanks" : "Hayır, teşekkürler"}
             </button>
           </form>
         )}

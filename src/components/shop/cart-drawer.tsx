@@ -12,6 +12,7 @@ import { BundleDiscount } from "./bundle-discount";
 
 export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
   const t = useTranslations("Cart");
+  const tCommon = useTranslations("Common");
   const { lines, isOpen, close, setQuantity, remove, subtotal } = useCart();
 
   return (
@@ -34,7 +35,7 @@ export function CartDrawer({ locale }: { locale: "tr" | "en" }) {
           >
             <div className="flex items-center justify-between border-b border-line px-6 py-5">
               <h2 className="caps-wide text-sm">{t("title")}</h2>
-              <button onClick={close} aria-label="Kapat">
+              <button onClick={close} aria-label={tCommon("close")}>
                 <X className="size-5" />
               </button>
             </div>

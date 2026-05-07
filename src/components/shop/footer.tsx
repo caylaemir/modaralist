@@ -5,8 +5,10 @@ import { getAllSettings } from "@/lib/settings";
 import { CATEGORY_SEO_TR } from "@/lib/category-seo";
 
 export async function Footer() {
-  const [t, settings] = await Promise.all([
+  const [t, tNav, tCommon, settings] = await Promise.all([
     getTranslations("Footer"),
+    getTranslations("Nav"),
+    getTranslations("Common"),
     getAllSettings(),
   ]);
 
@@ -27,13 +29,12 @@ export async function Footer() {
             {settings["site.title"] || "modaralist"}
           </Link>
           <p className="mt-6 max-w-xs text-sm leading-relaxed text-mist">
-            {settings["site.description"] ||
-              "Modern siluetler, numaralı koleksiyonlar, sınırlı üretim."}
+            {settings["site.description"] || tCommon("siteTagline")}
           </p>
         </div>
 
         <div>
-          <p className="eyebrow mb-5 text-mist">Kategoriler</p>
+          <p className="eyebrow mb-5 text-mist">{t("categories")}</p>
           <ul className="space-y-3 text-sm">
             {Object.values(CATEGORY_SEO_TR).map((c) => (
               <li key={c.slug}>
@@ -51,7 +52,7 @@ export async function Footer() {
                 href="/shop"
                 className="text-mist underline-offset-4 hover:text-ink hover:underline"
               >
-                Tüm Mağaza
+                {t("shop")}
               </Link>
             </li>
           </ul>
@@ -62,17 +63,17 @@ export async function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <Link href="/drops" className="hover:opacity-60">
-                Tüm Koleksiyonlar
+                {tNav("drops")}
               </Link>
             </li>
             <li>
               <Link href="/track" className="hover:opacity-60">
-                Sipariş Takibi
+                {tCommon("orderTracking")}
               </Link>
             </li>
             <li>
               <Link href="/search" className="hover:opacity-60">
-                Ara
+                {tNav("search")}
               </Link>
             </li>
             <li>
@@ -113,22 +114,22 @@ export async function Footer() {
             </li>
             <li>
               <Link href="/pages/terms" className="hover:opacity-60">
-                Kullanım Koşulları
+                {t("terms")}
               </Link>
             </li>
             <li>
               <Link href="/pages/distance-sales" className="hover:opacity-60">
-                Mesafeli Satış
+                {t("distanceSales")}
               </Link>
             </li>
             <li>
               <Link href="/pages/membership" className="hover:opacity-60">
-                Üyelik Sözleşmesi
+                {t("membership")}
               </Link>
             </li>
             <li>
               <Link href="/pages/faq" className="hover:opacity-60">
-                SSS
+                {t("faq")}
               </Link>
             </li>
           </ul>
@@ -139,7 +140,7 @@ export async function Footer() {
             settings["contact.phone"] ||
             settings["contact.address"]) && (
             <>
-              <p className="eyebrow mb-5 text-mist">İletişim</p>
+              <p className="eyebrow mb-5 text-mist">{t("contactHeading")}</p>
               <ul className="space-y-3 text-sm">
                 {settings["contact.email"] ? (
                   <li>
@@ -199,18 +200,18 @@ export async function Footer() {
         <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-5 py-8 md:grid-cols-3 md:px-10">
           <TrustItem
             icon={<ShieldCheck className="size-5" strokeWidth={1.5} />}
-            title="Güvenli Ödeme"
-            desc="iyzico altyapısı · Visa / Mastercard / Amex · 3D Secure"
+            title={t("trustPaymentTitle")}
+            desc={t("trustPaymentDesc")}
           />
           <TrustItem
             icon={<Undo2 className="size-5" strokeWidth={1.5} />}
-            title="14 Gün İade"
-            desc="Etiketleri sökülmemiş ürünler için koşulsuz iade"
+            title={t("trustReturnTitle")}
+            desc={t("trustReturnDesc")}
           />
           <TrustItem
             icon={<Truck className="size-5" strokeWidth={1.5} />}
-            title="Hızlı Kargo"
-            desc="Marmara'ya 1-2 iş günü · diğer iller 2-4 iş günü"
+            title={t("trustShippingTitle")}
+            desc={t("trustShippingDesc")}
           />
         </div>
       </div>
@@ -219,12 +220,12 @@ export async function Footer() {
         <div className="mx-auto flex max-w-[1600px] flex-col items-start justify-between gap-3 px-5 py-6 text-xs text-mist md:flex-row md:items-center md:px-10">
           <p>
             © {new Date().getFullYear()} {settings["site.title"] || "Modaralist"}.{" "}
-            Tüm hakları saklıdır.
+            {t("copyright")}
             {settings["legal.companyName"] ? (
               <span className="ml-3">{settings["legal.companyName"]}</span>
             ) : null}
           </p>
-          <p className="caps-wide">Handcrafted in Turkey</p>
+          <p className="caps-wide">{t("handcrafted")}</p>
         </div>
       </div>
     </footer>
