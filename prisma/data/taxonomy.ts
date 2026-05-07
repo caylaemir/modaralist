@@ -168,7 +168,16 @@ export const TAXONOMY: TopCategoryNode[] = [
 
 // Eski yapidan kalan ama yeni listede olmayan kategoriler — deactivate edilecek.
 // Urun atamasi varsa silmiyoruz; admin elle tasiyabilir.
-export const DEPRECATED_SLUGS = ["polar"];
+// 'tops', 'bottoms', 'dresses', 'outerwear', 'knitwear' — eski seed.ts'ten kalan
+// generic kategoriler. 'polar' — yeni 6'lik yapida yer almiyor.
+export const DEPRECATED_SLUGS = [
+  "polar",
+  "tops",
+  "bottoms",
+  "dresses",
+  "outerwear",
+  "knitwear",
+];
 
 // Top-level slug listesi — header navigation icin kullanilir.
 export const TOP_LEVEL_SLUGS = TAXONOMY.map((t) => t.slug);
