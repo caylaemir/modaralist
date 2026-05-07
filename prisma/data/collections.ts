@@ -111,4 +111,10 @@ export const COLLECTIONS_2026: SeasonalCollection[] = [
 ];
 
 // Eski demo koleksiyonu — yeni 4'lu yapida yer almiyor, archive'la.
-export const DEPRECATED_COLLECTION_SLUGS = ["ss26-birinci-bolum"];
+// Slug iki dilde de olabilir: TR seed'de 'ss26-birinci-bolum', EN seed'de
+// 'ss26-chapter-one' yaratildi (Collection.slug top-level field, ikisinden
+// hangisinin yaratildigina seed.ts kullanim sirasi karar verir).
+export const DEPRECATED_COLLECTION_SLUGS = [
+  "ss26-birinci-bolum",
+  "ss26-chapter-one",
+];
