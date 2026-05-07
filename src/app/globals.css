@@ -75,6 +75,145 @@ body {
   animation: marquee 40s linear infinite;
 }
 
+/* Hukuki + statik sayfalar (privacy, kvkk, terms, vb.) icin typography.
+   Admin'in icerikciden gelen serbest HTML'i (h2/h3/p/ul/ol/strong/a/blockquote)
+   markaya uygun, okunabilir bir tipografi ile render eder. */
+.prose-modaralist {
+  color: var(--color-ink);
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.75;
+}
+
+.prose-modaralist > * + * {
+  margin-top: 1.1em;
+}
+
+.prose-modaralist h2 {
+  font-family: var(--font-display), var(--font-sans), serif;
+  font-size: 1.625rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-weight: 400;
+}
+
+.prose-modaralist > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.prose-modaralist h3 {
+  font-family: var(--font-display), var(--font-sans), serif;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  margin-top: 2rem;
+  letter-spacing: -0.005em;
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.prose-modaralist p {
+  color: var(--color-ink-soft);
+}
+
+.prose-modaralist strong,
+.prose-modaralist b {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.prose-modaralist em,
+.prose-modaralist i {
+  font-style: italic;
+  color: var(--color-ink);
+}
+
+.prose-modaralist a {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.prose-modaralist a:hover {
+  opacity: 0.6;
+}
+
+.prose-modaralist ul,
+.prose-modaralist ol {
+  padding-left: 1.4rem;
+  color: var(--color-ink-soft);
+}
+
+.prose-modaralist ul {
+  list-style: disc;
+}
+
+.prose-modaralist ol {
+  list-style: decimal;
+}
+
+.prose-modaralist ol[type="a"] {
+  list-style: lower-alpha;
+}
+
+.prose-modaralist li {
+  margin-top: 0.5em;
+  padding-left: 0.25rem;
+}
+
+.prose-modaralist li::marker {
+  color: var(--color-mist);
+}
+
+.prose-modaralist blockquote {
+  border-left: 2px solid var(--color-line);
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  color: var(--color-mist);
+  font-style: italic;
+}
+
+.prose-modaralist hr {
+  border: none;
+  border-top: 1px solid var(--color-line);
+  margin: 2.5rem 0;
+}
+
+.prose-modaralist code {
+  background: var(--color-bone);
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.prose-modaralist table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.prose-modaralist th,
+.prose-modaralist td {
+  border: 1px solid var(--color-line);
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose-modaralist th {
+  background: var(--color-bone);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
 /* Admin mobile sidebar — açıkken slide in */
 .admin-sidebar {
   transform: translateX(-100%);
