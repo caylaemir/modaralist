@@ -83,7 +83,27 @@ export const FAQS_EN: FaqItem[] = [
   {
     question: "Can I get notified when my size restocks?",
     answer:
-      "Sold-out items show a \"Notify me\" button. Drops are limited edition and may not be restocked.",
+      "Sold-out items show a \"Notify me\" button. Leave your email and you'll be the first to know when stock arrives. Drops are limited edition and may not be restocked.",
+  },
+  {
+    question: "What is a drop? Will it be restocked?",
+    answer:
+      "A drop is our limited-edition seasonal collection. Pieces are numbered and typically not reproduced. Once sold out, items move to the archive — restocks are rare.",
+  },
+  {
+    question: "Can I change my address after placing the order?",
+    answer:
+      "Yes, before the order ships. Reach us via WhatsApp or email with your order number — we'll update it as fast as possible.",
+  },
+  {
+    question: "Is my data safe under KVKK?",
+    answer:
+      "Yes. Your name, phone and address are used solely for order processing and shipping. Card data is never stored on our servers — it's encrypted and sent directly to PCI-DSS compliant iyzico. You can review your full rights at /pages/kvkk and download or delete your data from your account.",
+  },
+  {
+    question: "Do you ship internationally?",
+    answer:
+      "Currently we only ship within Turkey. International shipping is on the roadmap — subscribe to our newsletter to be notified when it's live.",
   },
 ];
 

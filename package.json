@@ -14,6 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:import-legal": "tsx scripts/import-legal-pages.ts",
     "db:import-taxonomy": "tsx scripts/import-taxonomy.ts",
+    "db:import-info": "tsx scripts/import-info-pages.ts",
+    "db:draft-demo-products": "tsx scripts/draft-demo-products.ts",
     "db:studio": "prisma studio",
     "prepare": "husky"
   },
