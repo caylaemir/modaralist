@@ -53,7 +53,7 @@ export const TAXONOMY: TopCategoryNode[] = [
     children: [
       {
         slug: "oversize-tisort",
-        nameTr: "Oversize Tişört",
+        nameTr: "Oversize Tshirt",
         nameEn: "Oversize T-Shirt",
         children: seriesFor("oversize-tisort"),
       },
@@ -65,7 +65,7 @@ export const TAXONOMY: TopCategoryNode[] = [
       },
       {
         slug: "oversize-kapsonlu",
-        nameTr: "Oversize Kapşonlu",
+        nameTr: "Oversize Kapsonlu",
         nameEn: "Oversize Hoodie",
         children: seriesFor("oversize-kapsonlu"),
       },
@@ -74,7 +74,7 @@ export const TAXONOMY: TopCategoryNode[] = [
   {
     // TISORT — direkt 6 series (alt-kategori yok)
     slug: "tshirt",
-    nameTr: "Tişört",
+    nameTr: "Tshirt",
     nameEn: "T-Shirt",
     children: seriesFor("tshirt"),
   },
@@ -92,13 +92,13 @@ export const TAXONOMY: TopCategoryNode[] = [
       },
       {
         slug: "sweatshirt-kapsonlu",
-        nameTr: "Kapşonlu",
+        nameTr: "Kapsonlu",
         nameEn: "Hoodie",
         children: seriesFor("sweatshirt-kapsonlu"),
       },
       {
         slug: "sweatshirt-fermuarli-kapsonlu",
-        nameTr: "Fermuarlı Kapşonlu",
+        nameTr: "Fermuarli Kapsonlu",
         nameEn: "Zip Hoodie",
         children: seriesFor("sweatshirt-fermuarli-kapsonlu"),
       },
@@ -107,7 +107,7 @@ export const TAXONOMY: TopCategoryNode[] = [
   {
     // ESOFMAN — Erkek / Kadin
     slug: "esofman",
-    nameTr: "Eşofman",
+    nameTr: "Esofman",
     nameEn: "Sweatpants",
     children: [
       {
@@ -118,7 +118,7 @@ export const TAXONOMY: TopCategoryNode[] = [
       },
       {
         slug: "esofman-kadin",
-        nameTr: "Kadın",
+        nameTr: "Kadin",
         nameEn: "Women",
         children: [],
       },
@@ -127,7 +127,7 @@ export const TAXONOMY: TopCategoryNode[] = [
   {
     // SORT — Erkek / Kadin
     slug: "sort",
-    nameTr: "Şort",
+    nameTr: "Sort",
     nameEn: "Shorts",
     children: [
       {
@@ -138,7 +138,7 @@ export const TAXONOMY: TopCategoryNode[] = [
       },
       {
         slug: "sort-kadin",
-        nameTr: "Kadın",
+        nameTr: "Kadin",
         nameEn: "Women",
         children: [],
       },
@@ -158,7 +158,7 @@ export const TAXONOMY: TopCategoryNode[] = [
       },
       {
         slug: "outdoor-kadin",
-        nameTr: "Kadın",
+        nameTr: "Kadin",
         nameEn: "Women",
         children: [],
       },
