@@ -9,6 +9,7 @@ import { NewsletterPopup } from "@/components/shop/newsletter-popup";
 import { WhatsAppButton } from "@/components/shop/whatsapp-button";
 import { SelooAI } from "@/components/shop/seloo-ai";
 import { setRequestLocale } from "next-intl/server";
+import { getMegaMenuCategories } from "@/lib/shop";
 
 // Settings/auth/db sorgulari layout'ta — tum shop sayfalari dinamik
 // (statik prerender 'Expected a suspended thenable' hatasi veriyordu)
@@ -23,12 +24,14 @@ export default async function ShopLayout({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
+  const megaMenu = await getMegaMenuCategories(lang);
 
   return (
     <MaintenanceGate>
       <SmoothScroll />
       <AnnouncementBanner />
-      <Header />
+      <Header categories={megaMenu} />
       <main>{children}</main>
       <Footer />
       <CartDrawer locale={locale as "tr" | "en"} />

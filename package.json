@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:import-legal": "tsx scripts/import-legal-pages.ts",
+    "db:import-taxonomy": "tsx scripts/import-taxonomy.ts",
     "db:studio": "prisma studio",
     "prepare": "husky"
   },

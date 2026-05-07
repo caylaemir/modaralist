@@ -435,6 +435,69 @@ export async function getCategoriesList(
   ];
 }
 
+// 3-seviye kategori agaci — header mega-menu'ye besler.
+// Performans: Tum kategoriler tek sorguda + memory'de tree kurulur.
+// Filtre: isActive=true, urun_count olmasa bile gosterilir (yeni kategoriler bos baslar).
+export type MegaMenuCategory = {
+  slug: string;
+  name: string;
+  children: Array<{
+    slug: string;
+    name: string;
+    children: Array<{ slug: string; name: string }>;
+  }>;
+};
+
+export async function getMegaMenuCategories(
+  locale: ShopLocale
+): Promise<MegaMenuCategory[]> {
+  const cats = await db.category.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: {
+      translations: { where: { locale } },
+    },
+  });
+
+  type Node = {
+    id: string;
+    parentId: string | null;
+    slug: string;
+    name: string;
+    children: Node[];
+  };
+
+  const byId = new Map<string, Node>();
+  for (const c of cats) {
+    byId.set(c.id, {
+      id: c.id,
+      parentId: c.parentId,
+      slug: c.slug,
+      name: c.translations[0]?.name ?? c.slug,
+      children: [],
+    });
+  }
+
+  const roots: Node[] = [];
+  for (const node of byId.values()) {
+    if (node.parentId && byId.has(node.parentId)) {
+      byId.get(node.parentId)!.children.push(node);
+    } else if (!node.parentId) {
+      roots.push(node);
+    }
+  }
+
+  return roots.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    children: r.children.map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      children: c.children.map((s) => ({ slug: s.slug, name: s.name })),
+    })),
+  }));
+}
+
 export async function searchProducts(
   query: string,
   locale: ShopLocale,

@@ -1,20 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/stores/cart";
 import { cn } from "@/lib/utils";
 import { LocaleSwitcher } from "./locale-switcher";
+import { MegaMenu, type MegaCategory } from "./mega-menu";
 
-export function Header() {
+type Props = {
+  categories: MegaCategory[];
+};
+
+export function Header({ categories }: Props) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
+  const locale = useLocale() as "tr" | "en";
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
-  const shopDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [openMobile, setOpenMobile] = useState<string | null>(null);
   const { itemCount, open } = useCart();
   const count = itemCount();
 
@@ -27,38 +32,8 @@ export function Header() {
 
   useEffect(() => {
     setMenuOpen(false);
-    setShopDropdownOpen(false);
+    setOpenMobile(null);
   }, [pathname]);
-
-  // Dropdown disinda tiklanirsa kapat — touch + mouse ortak davranis
-  useEffect(() => {
-    if (!shopDropdownOpen) return;
-    function onPointerDown(e: PointerEvent) {
-      const node = shopDropdownRef.current;
-      if (node && !node.contains(e.target as Node)) {
-        setShopDropdownOpen(false);
-      }
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [shopDropdownOpen]);
-
-  const links = [
-    { href: "/shop", label: t("shop") },
-    { href: "/drops", label: t("drops") },
-    { href: "/pages/about", label: t("about") },
-    { href: "/pages/contact", label: t("contact") },
-  ];
-
-  const categories = [
-    { slug: "tshirt", label: "Tshirt" },
-    { slug: "sweatshirt", label: "Sweatshirt" },
-    { slug: "oversize", label: "Oversize" },
-    { slug: "outdoor", label: "Outdoor" },
-    { slug: "polar", label: "Polar" },
-    { slug: "esofman", label: "Eşofman" },
-    { slug: "sort", label: "Şort" },
-  ];
 
   return (
     <header
@@ -77,68 +52,8 @@ export function Header() {
           <Menu className="size-5" />
         </button>
 
-        <nav className="hidden items-center gap-8 text-sm md:flex">
-          {/* Mağaza dropdown — kategori shortcut'ları (click-toggle, touch uyumlu) */}
-          <div
-            ref={shopDropdownRef}
-            className="relative"
-            onMouseEnter={() => setShopDropdownOpen(true)}
-            onMouseLeave={() => setShopDropdownOpen(false)}
-          >
-            <button
-              type="button"
-              onClick={() => setShopDropdownOpen((v) => !v)}
-              aria-haspopup="menu"
-              aria-expanded={shopDropdownOpen}
-              className="caps-wide flex items-center gap-1 text-xs text-ink transition-opacity hover:opacity-60"
-            >
-              {t("shop")}
-            </button>
-            <div
-              className={cn(
-                "absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition-all duration-200",
-                shopDropdownOpen
-                  ? "visible opacity-100"
-                  : "invisible opacity-0"
-              )}
-            >
-              <div className="min-w-[220px] border border-line bg-paper py-3 shadow-sm">
-                <ul className="flex flex-col">
-                  {categories.map((c) => (
-                    <li key={c.slug}>
-                      <Link
-                        href={`/shop/${c.slug}`}
-                        onClick={() => setShopDropdownOpen(false)}
-                        className="block px-5 py-2 text-[13px] text-ink hover:bg-bone"
-                      >
-                        {c.label}
-                      </Link>
-                    </li>
-                  ))}
-                  <li className="mt-1 border-t border-line pt-1">
-                    <Link
-                      href="/shop"
-                      onClick={() => setShopDropdownOpen(false)}
-                      className="block px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-mist hover:text-ink"
-                    >
-                      Tüm Mağaza →
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {links.slice(1).map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="caps-wide text-xs text-ink transition-opacity hover:opacity-60"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Desktop nav — 6 kategori mega-menu */}
+        <MegaMenu categories={categories} locale={locale} />
 
         <Link
           href="/"
@@ -180,6 +95,7 @@ export function Header() {
         </div>
       </div>
 
+      {/* Mobile drawer — accordion ile kategoriler */}
       {menuOpen && (
         <div className="fixed inset-0 z-50 h-[100dvh] overflow-y-auto bg-paper pb-[env(safe-area-inset-bottom)] md:hidden">
           <div className="flex h-16 items-center justify-between px-5">
@@ -192,32 +108,69 @@ export function Header() {
               <X className="size-5" />
             </button>
           </div>
-          <nav className="flex flex-col gap-6 px-5 pt-10">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="display text-4xl"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <div className="mt-8 border-t border-line pt-8">
-              <p className="caps-wide text-[10px] text-mist">Kategoriler</p>
-              <ul className="mt-4 flex flex-col gap-3">
-                {categories.map((c) => (
-                  <li key={c.slug}>
+          <nav className="flex flex-col gap-2 px-5 pt-6">
+            {categories.map((cat) => {
+              const expanded = openMobile === cat.slug;
+              const hasChildren = cat.children.length > 0;
+              return (
+                <div key={cat.slug} className="border-b border-line py-3">
+                  <div className="flex items-center justify-between">
                     <Link
-                      href={`/shop/${c.slug}`}
-                      className="text-base"
+                      href={`/shop/${cat.slug}`}
+                      className="display text-3xl"
                     >
-                      {c.label}
+                      {cat.name}
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <Link href="/account" className="caps-wide mt-10 text-xs">
+                    {hasChildren && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMobile(expanded ? null : cat.slug)
+                        }
+                        className="text-2xl text-mist"
+                        aria-label={expanded ? "Kapat" : "Aç"}
+                        aria-expanded={expanded}
+                      >
+                        {expanded ? "−" : "+"}
+                      </button>
+                    )}
+                  </div>
+                  {expanded && hasChildren && (
+                    <div className="mt-3 space-y-3 pl-3">
+                      {cat.children.map((sub) => (
+                        <div key={sub.slug}>
+                          <Link
+                            href={`/shop/${sub.slug}`}
+                            className="block text-base text-ink"
+                          >
+                            {sub.name}
+                          </Link>
+                          {sub.children.length > 0 && (
+                            <ul className="mt-2 space-y-1.5 pl-3">
+                              {sub.children.map((s) => (
+                                <li key={s.slug}>
+                                  <Link
+                                    href={`/shop/${s.slug}`}
+                                    className="text-sm text-mist"
+                                  >
+                                    {s.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <Link
+              href="/account"
+              className="caps-wide mt-8 text-xs"
+            >
               {t("account")}
             </Link>
           </nav>
