@@ -266,6 +266,82 @@ const MEMBERSHIP_TR_BODY = `
 </ul>
 `;
 
+const RETURNS_TR_BODY = `
+<p>Modaralist'ten satın aldığın ürünlerden memnun kalmazsan endişelenme — <strong>6502 sayılı Tüketicinin Korunması Hakkında Kanun</strong> ve <strong>Mesafeli Sözleşmeler Yönetmeliği</strong> kapsamında sahip olduğun yasal haklara ek olarak, sürecin kolay ilerlemesi için elimizden geleni yapıyoruz.</p>
+
+<h2>Özet — En önemli 3 madde</h2>
+<ul>
+<li><strong>14 gün koşulsuz cayma hakkı.</strong> Ürünü teslim aldığın tarihten itibaren 14 (on dört) gün içinde, herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayabilirsin.</li>
+<li><strong>Anlaşmalı kargo (Aras Kargo) ile iade ücretsiz.</strong> Aras Kargo şubesinin olmadığı bir bölgedeysen iade için ek masraf çıkartmıyoruz, ürünü senin bulunduğun yerden teslim almakla yükümlüyüz.</li>
+<li><strong>Tüm ödeme 14 gün içinde iade.</strong> Ürün elimize ulaştığı tarihten itibaren en geç 14 gün içinde — kargo ücreti dahil — tahsil edilen tüm tutarı, ödeme yaptığın karta/hesaba geri yatırırız.</li>
+</ul>
+
+<h2>Hangi ürünleri iade edebilirsin?</h2>
+<p>Kullanılmamış, etiketleri sökülmemiş, orijinal ambalajı bozulmamış ve faturalı tüm ürünler iade edilebilir. Ürünü kullandığında — yıkadığında, kestiğinde, etiketini söktüğünde — değişiklik veya bozulmadan kaynaklanan değer kayıplarından yasal olarak sen sorumlu olursun.</p>
+
+<h3>Cayma hakkının kullanılamayacağı haller</h3>
+<p>Mesafeli Sözleşmeler Yönetmeliği'nin 15. Maddesi uyarınca aşağıdaki ürünlerde cayma hakkı kullanılamaz:</p>
+<ol type="a">
+<li>Senin isteğin veya kişisel ihtiyaçların doğrultusunda hazırlanan, kişiye özel üretilmiş ürünler (özel baskı, kişiselleştirilmiş tasarım vb.).</li>
+<li>Tesliminden sonra <strong>ambalaj, bant, mühür, paket gibi koruyucu unsurları açılmış</strong> olan ve iadesi sağlık ve hijyen açısından uygun olmayan ürünler (örn. iç çamaşırı, çorap, mayo).</li>
+<li>Tesliminden sonra başka ürünlerle karışan ve doğası gereği ayrıştırılması mümkün olmayan ürünler.</li>
+<li>Çabuk bozulabilen veya son kullanma tarihi geçebilecek ürünler.</li>
+</ol>
+
+<h2>İade süreci — Adım adım</h2>
+<ol>
+<li><strong>Bize haber ver.</strong> 14 gün içinde aşağıdaki yollardan biriyle iade talebini iletmen yeterli — yazılı bildirim hukuken geçerlidir:
+  <ul>
+  <li>E-posta: <a href="mailto:admin@modaralist.com">admin@modaralist.com</a> (sipariş numaran + iade nedeni)</li>
+  <li>Telefon: <a href="tel:+905017008816">+90 501 700 88 16</a></li>
+  <li>Hesap sayfan üzerinden sipariş detayında "İade et" akışı</li>
+  </ul>
+</li>
+<li><strong>Ürünü hazırla.</strong> Ürünün <em>faturasını, kutusunu, ambalajını, varsa hediye edilen aksesuarları</em> eksiksiz ve hasarsız şekilde paketle.</li>
+<li><strong>Aras Kargo ile gönder.</strong> Anlaşmalı kargomuz Aras Kargo aracılığıyla iade kargo ücreti <strong>tarafımızca karşılanır</strong>. Başka bir kargo şirketi kullanırsan kargo masrafları sana ait olur ve süreçte oluşacak hasardan Modaralist sorumlu değildir.
+  <p style="margin-top:0.6em;"><strong>İade adresi:</strong><br/>
+  Trend İş Güvenliği Malzemeleri Tekstil San.Tic.Ltd.Şti.<br/>
+  Kazım Karabekir Mahallesi, 2. Konuk Sokak No:3<br/>
+  Yıldırım / BURSA</p>
+</li>
+<li><strong>Bekleme süreci.</strong> Ürün adresimize ulaştıktan sonra inceleriz ve <strong>en geç 14 gün içinde</strong> tüm ödemelerini (kargo ücreti dahil) iade ederiz.</li>
+<li><strong>Para iadesi.</strong> İade, ödeme yaparken kullandığın araca yapılır:
+  <ul>
+  <li>Kredi kartı: bankaya tek seferde iade talimatı verilir, banka yansıtması <strong>1-10 iş günü</strong> sürebilir. Taksitli alımlarda banka sana ödemeyi de taksitle yansıtabilir.</li>
+  <li>Havale/EFT: iade gönderim bilgilerinde belirttiğin IBAN'a aynı tutarda yapılır.</li>
+  </ul>
+</li>
+</ol>
+
+<h2>Hasarlı veya yanlış ürün geldiyse</h2>
+<p>Kargo görevlisi paketi sana teslim ettiğinde olağan muayeneyi yapman gerekir. <strong>Tesliminden önce hasarlı olduğu görülen paketleri teslim alma</strong>, kargo yetkilisi ile tutanak tut. Eğer paket sağlam görünüp içindeki ürün hasarlı/yanlış/eksikse:</p>
+<ul>
+<li>Teslim aldıktan sonra <strong>en geç 24 saat içinde</strong> bizi bilgilendir (e-posta + fotoğraf).</li>
+<li>Bu durumda iade kargo ücreti tamamen bize aittir; ürünü hızlıca yenisiyle değiştirir veya tam iade yaparız.</li>
+<li>Yasal cayma hakkın saklıdır — yine 14 gün içinde başvurabilirsin.</li>
+</ul>
+
+<h2>Değişim (beden / renk)</h2>
+<p>Türk hukukunda doğrudan "değişim" hakkı düzenlenmemiştir; sürecin pratik akışı şu şekildedir:</p>
+<ol>
+<li>Mevcut ürünü standart iade akışıyla bize gönder.</li>
+<li>Aynı anda yeni siparişini sitemizden ver — böylece istediğin beden/renk anında ayrılır, stoksuz kalma riski olmaz.</li>
+<li>İlk siparişin para iadesi 14 gün içinde tamamlanır.</li>
+</ol>
+
+<h2>Şikâyet ve itiraz hakkın</h2>
+<p>İade sürecinde bir uyuşmazlık yaşarsan, 6502 sayılı Kanun'un sana tanıdığı yollar şunlardır:</p>
+<ul>
+<li><strong>Tüketici Hakem Heyeti</strong> — Ticaret Bakanlığı'nca her yıl Aralık ayında belirlenen parasal sınırlara göre, yerleşim yerinin bulunduğu veya alışverişin yapıldığı yerdeki Tüketici Hakem Heyeti'ne başvurabilirsin.</li>
+<li><strong>Tüketici Mahkemesi</strong> — 6502 sayılı Kanun'un 73/A maddesi uyarınca dava açılmadan önce arabulucuya başvurulması şartı ile Tüketici Mahkemesi'nde dava açabilirsin.</li>
+<li><strong>e-Devlet — Tüketici Şikâyeti</strong> sistemini de kullanabilirsin (<a href="https://tuketicisikayeti.ticaret.gov.tr">tuketicisikayeti.ticaret.gov.tr</a>).</li>
+</ul>
+<p>Bunlardan önce <a href="mailto:admin@modaralist.com">admin@modaralist.com</a> adresine yazman bizi her zaman mutlu eder — çoğu konu hızlıca, hiçbir kuruma gitmeden çözülebilir.</p>
+
+<h2>İlgili dökümanlar</h2>
+<p>İade ve cayma hakkının tüm hukuki detayı için bkz. <a href="/pages/distance-sales">Mesafeli Satış Sözleşmesi — Madde 12 (Cayma Hakkı)</a>. Kişisel verilerin işlenmesi için bkz. <a href="/pages/kvkk">KVKK Aydınlatma Metni</a>.</p>
+`;
+
 export const LEGAL_PAGES: LegalPage[] = [
   {
     slug: "privacy",
@@ -340,6 +416,21 @@ export const LEGAL_PAGES: LegalPage[] = [
       body: MEMBERSHIP_TR_BODY,
       seoTitle: "Membership Agreement — Modaralist",
       seoDesc: "Modaralist membership agreement.",
+    },
+  },
+  {
+    slug: "returns",
+    tr: {
+      title: "İade & Değişim",
+      body: RETURNS_TR_BODY,
+      seoTitle: "İade & Değişim — Modaralist",
+      seoDesc: "14 gün koşulsuz iade hakkı, ücretsiz Aras Kargo iadesi, adım adım iade süreci. 6502 sayılı Tüketici Kanunu kapsamında haklarınız.",
+    },
+    en: {
+      title: "Returns & Exchange",
+      body: RETURNS_TR_BODY,
+      seoTitle: "Returns & Exchange — Modaralist",
+      seoDesc: "14-day right of withdrawal, free Aras Kargo returns, step-by-step process. Your rights under Turkish consumer law.",
     },
   },
 ];
