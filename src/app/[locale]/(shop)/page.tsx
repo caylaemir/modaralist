@@ -12,6 +12,7 @@ import {
   getFeaturedProducts,
   getBestSellingProducts,
   getCategoriesWithCover,
+  getCollectionsList,
 } from "@/lib/shop";
 import { getActiveHomepageBlocks } from "@/lib/homepage";
 import { DynamicBlocks } from "@/components/shop/blocks/dynamic-blocks";
@@ -101,12 +102,19 @@ export default async function Home({
   const t = await getTranslations("Home");
   const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const [dbProducts, activeBlocks, categories, bestSellers] = await Promise.all([
+  const [dbProducts, activeBlocks, categories, bestSellers, collections] = await Promise.all([
     getFeaturedProducts(lang, 8),
     getActiveHomepageBlocks(),
     getCategoriesWithCover(lang, 7),
     getBestSellingProducts(lang, 8, 90),
+    getCollectionsList(lang),
   ]);
+  // Spotlight koleksiyon: ilk LIVE'i, yoksa ilk UPCOMING'i, hicbir biri
+  // yoksa null (spotlight render edilmez).
+  const spotlight =
+    collections.find((c) => c.status === "LIVE") ??
+    collections.find((c) => c.status === "UPCOMING") ??
+    null;
   const featured: ProductCardData[] =
     dbProducts.length > 0
       ? dbProducts.map((p) => ({
@@ -149,7 +157,7 @@ export default async function Home({
       <Marquee
         items={[
           "MODARALIST",
-          "SS26 — DROP 01",
+          "NUMARALI KOLEKSİYONLAR",
           "MODARALIST",
           "MADE IN TURKEY",
           "MODARALIST",
@@ -178,7 +186,9 @@ export default async function Home({
           <div className="md:col-span-4">
             <Reveal delay={0.3}>
               <p className="max-w-sm text-sm leading-relaxed text-mist">
-                Sezonun ilk drop'u — numaralı, sınırlı, sonrası yok. Her parça bir anın fotoğrafı gibi.
+                {lang === "en"
+                  ? "Numbered, limited-run pieces — Bursa-made streetwear. Each drop captures a season."
+                  : "Numaralı, sınırlı sayıda — Bursa'da üretilen streetwear. Her drop sezonun bir anını yakalar."}
               </p>
               <Link
                 href="/shop"
@@ -202,44 +212,50 @@ export default async function Home({
         </div>
       </section>
 
-      <section className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink">
-        <div
-          className="absolute inset-0 scale-105 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=2400&q=85')",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
-        <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-20 md:px-10 md:pb-32">
-          <Reveal>
-            <p className="text-[10px] uppercase tracking-[0.4em] text-paper/70">
-              {t("featuredCollection")}
-            </p>
-          </Reveal>
-          <SplitText
-            text="where stillness meets movement."
-            as="h3"
-            className="display mt-6 max-w-4xl text-[10vw] leading-[0.95] text-paper md:text-[6vw]"
+      {spotlight ? (
+        <section className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink">
+          <div
+            className="absolute inset-0 scale-105 bg-cover bg-center"
+            style={
+              spotlight.heroImageUrl
+                ? { backgroundImage: `url('${spotlight.heroImageUrl}')` }
+                : {
+                    background:
+                      "linear-gradient(135deg, #2a2a2a 0%, #0a0a0a 100%)",
+                  }
+            }
           />
-          <Reveal delay={0.5}>
-            <Link
-              href="/drops"
-              className="mt-12 inline-flex items-center gap-3 border-b border-paper pb-2 text-[11px] uppercase tracking-[0.35em] text-paper"
-            >
-              {t("viewCollection")} <ArrowUpRight className="size-4" />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
+          <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-20 md:px-10 md:pb-32">
+            <Reveal>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-paper/70">
+                {t("featuredCollection")}
+              </p>
+            </Reveal>
+            <SplitText
+              text={spotlight.tagline ?? spotlight.name}
+              as="h3"
+              className="display mt-6 max-w-4xl text-[10vw] leading-[0.95] text-paper md:text-[6vw]"
+            />
+            <Reveal delay={0.5}>
+              <Link
+                href={`/drops/${spotlight.slug}`}
+                className="mt-12 inline-flex items-center gap-3 border-b border-paper pb-2 text-[11px] uppercase tracking-[0.35em] text-paper"
+              >
+                {t("viewCollection")} <ArrowUpRight className="size-4" />
+              </Link>
+            </Reveal>
+          </div>
+        </section>
+      ) : null}
 
       <Marquee
         items={[
-          "NEW SEASON",
+          "BURSA",
           "MODARALIST",
-          "SHOP SS26",
+          "SINIRLI ÜRETİM",
           "MODARALIST",
-          "DROP 01",
+          "MARMARA'YA HIZLI KARGO",
           "MODARALIST",
         ]}
       />

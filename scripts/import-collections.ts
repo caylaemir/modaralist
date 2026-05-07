@@ -23,6 +23,13 @@ async function main() {
   for (const c of COLLECTIONS_2026) {
     const existing = await db.collection.findUnique({ where: { slug: c.slug } });
 
+    // heroImageUrl: yalnizca DB'de bos ise atanir — admin gercek brand
+    // gorseliyle override etmis olabilir, onu ezme.
+    const heroUpdate =
+      existing?.heroImageUrl == null && c.heroImageUrl
+        ? { heroImageUrl: c.heroImageUrl }
+        : {};
+
     const col = await db.collection.upsert({
       where: { slug: c.slug },
       update: {
@@ -31,6 +38,7 @@ async function main() {
         endsAt: new Date(c.endsAt),
         themePrimary: c.themePrimary ?? null,
         themeAccent: c.themeAccent ?? null,
+        ...heroUpdate,
       },
       create: {
         slug: c.slug,
@@ -40,6 +48,7 @@ async function main() {
         endsAt: new Date(c.endsAt),
         themePrimary: c.themePrimary ?? null,
         themeAccent: c.themeAccent ?? null,
+        heroImageUrl: c.heroImageUrl ?? null,
       },
     });
 
