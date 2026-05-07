@@ -16,6 +16,7 @@
     "db:import-taxonomy": "tsx scripts/import-taxonomy.ts",
     "db:import-info": "tsx scripts/import-info-pages.ts",
     "db:import-collections": "tsx scripts/import-collections.ts",
+    "db:import-sample-products": "tsx scripts/import-sample-products.ts",
     "db:draft-demo-products": "tsx scripts/draft-demo-products.ts",
     "db:studio": "prisma studio",
     "prepare": "husky"

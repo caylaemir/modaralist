@@ -22,6 +22,9 @@ export type TopCategoryNode = {
   slug: string;
   nameTr: string;
   nameEn: string;
+  // Anasayfa kategori grid'inde gosterilen kapak gorseli (3:4).
+  // Admin gercek brand fotoyla override edebilir.
+  bannerUrl?: string;
   // Top-level'in ya alt-kategorileri ya da direkt series cocuklari olur.
   // Ornek: TISORT direkt 6 series; OVERSIZE 3 alt-kat, her biri 6 series.
   children: SubCategoryNode[] | SeriesNode[];
@@ -50,6 +53,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "oversize",
     nameTr: "Oversize",
     nameEn: "Oversize",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=1200&q=85",
     children: [
       {
         slug: "oversize-tisort",
@@ -76,6 +81,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "tshirt",
     nameTr: "Tshirt",
     nameEn: "T-Shirt",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
     children: seriesFor("tshirt"),
   },
   {
@@ -83,6 +90,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "sweatshirt",
     nameTr: "Sweatshirt",
     nameEn: "Sweatshirt",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
     children: [
       {
         slug: "sweatshirt-classic",
@@ -109,6 +118,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "esofman",
     nameTr: "Esofman",
     nameEn: "Sweatpants",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=85",
     children: [
       {
         slug: "esofman-erkek",
@@ -129,6 +140,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "sort",
     nameTr: "Sort",
     nameEn: "Shorts",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=1200&q=85",
     children: [
       {
         slug: "sort-erkek",
@@ -149,6 +162,8 @@ export const TAXONOMY: TopCategoryNode[] = [
     slug: "outdoor",
     nameTr: "Outdoor",
     nameEn: "Outdoor",
+    bannerUrl:
+      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
     children: [
       {
         slug: "outdoor-erkek",
@@ -190,6 +205,7 @@ export function* flattenTaxonomy(): Generator<{
   parentSlug: string | null;
   depth: 0 | 1 | 2;
   sortOrder: number;
+  bannerUrl?: string;
 }> {
   let topOrder = 0;
   for (const top of TAXONOMY) {
@@ -200,6 +216,7 @@ export function* flattenTaxonomy(): Generator<{
       parentSlug: null,
       depth: 0,
       sortOrder: topOrder++,
+      bannerUrl: top.bannerUrl,
     };
 
     let subOrder = 0;

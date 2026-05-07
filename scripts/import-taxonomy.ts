@@ -60,18 +60,30 @@ async function main() {
       parentId = parent.id;
     }
 
+    // bannerUrl: yalnizca DB'de bos ise atanir — admin override etmis olabilir.
+    const existing = await db.category.findUnique({
+      where: { slug: node.slug },
+      select: { bannerUrl: true },
+    });
+    const bannerUpdate =
+      existing?.bannerUrl == null && node.bannerUrl
+        ? { bannerUrl: node.bannerUrl }
+        : {};
+
     const cat = await db.category.upsert({
       where: { slug: node.slug },
       update: {
         parentId,
         sortOrder: node.sortOrder,
         isActive: true,
+        ...bannerUpdate,
       },
       create: {
         slug: node.slug,
         parentId,
         sortOrder: node.sortOrder,
         isActive: true,
+        bannerUrl: node.bannerUrl ?? null,
       },
     });
 
