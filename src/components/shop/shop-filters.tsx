@@ -22,6 +22,7 @@ export function ShopFilters({
   categories,
   availableSizes,
   availableColors,
+  hideCategorySection = false,
 }: {
   value: ShopFilter;
   onChange: (v: ShopFilter) => void;
@@ -29,6 +30,9 @@ export function ShopFilters({
   categories: { slug: string; name: string }[];
   availableSizes: string[];
   availableColors: { code: string; name: string; hex: string }[];
+  // Kategori sayfasinda 'Kategori' bolumu mantiksiz (zaten o kategorideyiz);
+  // gizlenmesi icin true gec.
+  hideCategorySection?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -107,28 +111,38 @@ export function ShopFilters({
               </div>
 
               <div className="flex-1 overflow-y-auto p-6">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                  Kategori
-                </p>
-                <ul className="mt-4 space-y-3">
-                  {categories.map((c) => (
-                    <li key={c.slug}>
-                      <button
-                        onClick={() => onChange({ ...value, category: c.slug })}
-                        className={`display text-3xl transition-opacity ${
-                          value.category === c.slug
-                            ? "opacity-100"
-                            : "opacity-40 hover:opacity-70"
-                        }`}
-                      >
-                        {c.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {!hideCategorySection ? (
+                  <>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
+                      Kategori
+                    </p>
+                    <ul className="mt-4 space-y-3">
+                      {categories.map((c) => (
+                        <li key={c.slug}>
+                          <button
+                            onClick={() =>
+                              onChange({ ...value, category: c.slug })
+                            }
+                            className={`display text-3xl transition-opacity ${
+                              value.category === c.slug
+                                ? "opacity-100"
+                                : "opacity-40 hover:opacity-70"
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
 
                 {/* Cinsiyet — radio (single select) */}
-                <div className="mt-10 border-t border-line pt-6">
+                <div
+                  className={`${
+                    hideCategorySection ? "" : "mt-10 border-t border-line pt-6"
+                  }`}
+                >
                   <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
                     Cinsiyet
                   </p>

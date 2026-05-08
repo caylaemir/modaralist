@@ -167,6 +167,43 @@ export async function getProductsList(locale: ShopLocale): Promise<ShopProduct[]
   return products.map((p) => mapProduct(p as ProductWithRelations, locale));
 }
 
+// Bir kategori (top-level) altindaki TUM urunleri (children'in altindaki dahil)
+// ShopProduct[] olarak doner. Kategori sayfasinda filter destegi icin.
+export async function getProductsByCategoryTree(
+  categorySlug: string,
+  locale: ShopLocale
+): Promise<ShopProduct[]> {
+  // Once kategori ID'sini ve children ID'lerini topla
+  const cat = await db.category.findUnique({
+    where: { slug: categorySlug },
+    include: {
+      children: {
+        where: { isActive: true },
+        include: {
+          children: { where: { isActive: true } },
+        },
+      },
+    },
+  });
+  if (!cat) return [];
+
+  const ids: string[] = [cat.id];
+  for (const child of cat.children) {
+    ids.push(child.id);
+    for (const grand of child.children) ids.push(grand.id);
+  }
+
+  const products = await db.product.findMany({
+    where: {
+      status: { in: ["PUBLISHED", "COMING_SOON"] },
+      categoryId: { in: ids },
+    },
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    include: productInclude,
+  });
+  return products.map((p) => mapProduct(p as ProductWithRelations, locale));
+}
+
 export async function getProduct(
   slug: string,
   locale: ShopLocale

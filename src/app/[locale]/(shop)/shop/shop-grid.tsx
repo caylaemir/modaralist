@@ -26,9 +26,16 @@ type Props = {
   products: ShopProduct[];
   categories: { slug: string; name: string }[];
   locale: "tr" | "en";
+  // Kategori sayfasinda 'Kategori' filtre bolumunu gizle.
+  hideCategorySection?: boolean;
 };
 
-export function ShopGrid({ products, categories, locale }: Props) {
+export function ShopGrid({
+  products,
+  categories,
+  locale,
+  hideCategorySection = false,
+}: Props) {
   const [filter, setFilter] = useState<ShopFilter>({
     category: "all",
     sort: "new",
@@ -111,6 +118,7 @@ export function ShopGrid({ products, categories, locale }: Props) {
         categories={categories}
         availableSizes={availableSizes}
         availableColors={availableColors}
+        hideCategorySection={hideCategorySection}
       />
 
       {filtered.length === 0 ? (

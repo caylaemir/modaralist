@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Reveal } from "@/components/shop/reveal";
-import { ProductCard } from "@/components/shop/product-card";
 import { Marquee } from "@/components/shop/marquee";
 import { Link } from "@/i18n/navigation";
 import { db } from "@/lib/db";
 import { CATEGORY_SEO_TR, MARMARA_REGION } from "@/lib/category-seo";
+import { getProductsByCategoryTree } from "@/lib/shop";
+import { ShopGrid } from "../shop-grid";
 import type { Locale } from "@prisma/client";
 
 export const revalidate = 1800; // 30 dk cache
@@ -144,29 +145,11 @@ export default async function CategoryPage({
   };
 
   // Urunleri parent + children kategorilerden topla (alt kategori varsa hepsi gelsin)
-  const childIds = cat.children.map((c) => c.id);
-  const products = await db.product
-    .findMany({
-      where: {
-        status: "PUBLISHED",
-        categoryId: { in: [cat.id, ...childIds] },
-      },
-      orderBy: { createdAt: "desc" },
-      include: {
-        translations: { where: { locale: lang } },
-        images: { orderBy: { sortOrder: "asc" }, take: 2 },
-        variants: { where: { isActive: true }, select: { stock: true } },
-        collections: {
-          take: 1,
-          include: {
-            collection: {
-              include: { translations: { where: { locale: lang } } },
-            },
-          },
-        },
-      },
-    })
-    .catch(() => []);
+  // ShopGrid (filter destekli) icin ShopProduct formatinda urun listesi
+  // — bu kategorinin ve children'inin altindaki tum PUBLISHED urunleri.
+  const products = await getProductsByCategoryTree(seo.slug, lang).catch(
+    () => [] as Awaited<ReturnType<typeof getProductsByCategoryTree>>
+  );
 
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com";
 
@@ -336,40 +319,15 @@ export default async function CategoryPage({
             </Link>
           </div>
         ) : (
-          <>
-            <p className="mb-12 text-[11px] uppercase tracking-[0.3em] text-mist">
-              {products.length} parça
-            </p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
-              {products.map((p, i) => {
-                const tr = p.translations[0];
-                const totalStock = p.variants.reduce(
-                  (s, v) => s + v.stock,
-                  0
-                );
-                const drop = p.collections[0]?.collection;
-                const dropTr = drop?.translations[0];
-                return (
-                  <ProductCard
-                    key={p.slug}
-                    product={{
-                      slug: p.slug,
-                      name: tr?.name ?? p.slug,
-                      dropLabel: dropTr?.name ?? "",
-                      price: p.discountPrice
-                        ? Number(p.discountPrice)
-                        : Number(p.basePrice),
-                      image: p.images[0]?.url ?? "",
-                      hoverImage: p.images[1]?.url,
-                      soldOut: totalStock === 0,
-                    }}
-                    locale={lang}
-                    index={i}
-                  />
-                );
-              })}
-            </div>
-          </>
+          // Filter destekli grid — magaza ana sayfasiyla ayni component.
+          // hideCategorySection: zaten o kategorideyiz, 'Kategori' filtresine
+          // gerek yok.
+          <ShopGrid
+            products={products}
+            categories={[]}
+            locale={lang}
+            hideCategorySection
+          />
         )}
       </section>
 
