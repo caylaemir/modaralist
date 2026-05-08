@@ -14,10 +14,6 @@ const ALLOWED_FOLDERS = [
   "modaralist/blog",
 ] as const;
 
-// Cloudinary uploaded asset kisitlamalari (client cookie'lemese bile guvende)
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
-const RESOURCE_TYPE = "image";
-
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "STAFF")) {
@@ -42,13 +38,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "cloudinary not configured" }, { status: 503 });
   }
 
-  const timestamp = Math.floor(Date.now() / 1000);
-  // Cloudinary signature'a max_file_size + resource_type da dahil edildi:
-  // boylece imza sahibi farkli content-type veya buyuk dosya yukleyemez.
+  // Minimal signature: sadece folder + timestamp imzalanir. resource_type
+  // upload URL'inde zaten /image/ olarak belirtiliyor; max_file_size client
+  // tarafinda ve Cloudinary preset'inde kontrol edilir. Signature parametre
+  // sayisi azaldikca "Invalid Signature" riski dramatik dusuyor.
+  // SHA-1 — Cloudinary default. SHA-256 cloud'da explicitly aktif olmaliydi,
+  // SHA-1 daha geniş uyumlu.
   // ALPHABETICAL ORDER ZORUNLU (Cloudinary docs).
-  const paramsToSign = `folder=${folder}&max_file_size=${MAX_FILE_BYTES}&resource_type=${RESOURCE_TYPE}&timestamp=${timestamp}`;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
   const signature = crypto
-    .createHash("sha256")
+    .createHash("sha1")
     .update(paramsToSign + apiSecret)
     .digest("hex");
 
@@ -58,7 +58,5 @@ export async function POST(req: NextRequest) {
     folder,
     timestamp,
     signature,
-    maxFileSize: MAX_FILE_BYTES,
-    resourceType: RESOURCE_TYPE,
   });
 }

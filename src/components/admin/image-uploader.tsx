@@ -58,27 +58,25 @@ export function ImageUploader({
       fd.append("timestamp", String(sig.timestamp));
       fd.append("signature", sig.signature);
       fd.append("folder", sig.folder);
-      // Cloudinary signature'a dahil olduklari icin BURADA da ayni gonderilmek
-      // ZORUNDA (yoksa "Invalid Signature" hatasi)
-      if (sig.maxFileSize) fd.append("max_file_size", String(sig.maxFileSize));
-      if (sig.resourceType) fd.append("resource_type", sig.resourceType);
 
       const upRes = await fetch(
         `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
         { method: "POST", body: fd }
       );
-      if (!upRes.ok) {
-        toast.error(`${file.name}: yukleme basarisiz`);
+      const data = await upRes.json().catch(() => ({}));
+      if (!upRes.ok || !data.secure_url) {
+        // Cloudinary'nin gercek error mesajini goster ki "Invalid Signature"
+        // gibi spesifik durumlar takip edilebilsin.
+        const cloudErr = data?.error?.message ?? `HTTP ${upRes.status}`;
+        console.error("[upload] Cloudinary error:", data);
+        toast.error(`${file.name}: ${cloudErr}`);
         return;
       }
-      const data = await upRes.json();
-      if (data.secure_url) {
-        onUploaded(data.secure_url);
-        toast.success(`${file.name} yuklendi`);
-      }
+      onUploaded(data.secure_url);
+      toast.success(`${file.name} yuklendi`);
     } catch (err) {
       console.error("[upload]", err);
-      toast.error(`${file.name}: hata`);
+      toast.error(`${file.name}: ag hatasi`);
     } finally {
       setUploading((prev) => prev.filter((n) => n !== file.name));
     }
