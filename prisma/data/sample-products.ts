@@ -188,93 +188,6 @@ const PRODUCT_TYPES: Record<string, ProductType> = {
   },
 };
 
-const GENDER_TYPES: Record<string, ProductType & { image: string; hoverImage?: string; colorCodes: string[] }> = {
-  "esofman-erkek": {
-    trName: "Erkek Eşofman",
-    enName: "Men's Sweatpants",
-    basePrice: 890,
-    trMaterial: "%85 pamuk %15 polyester · 280 gsm",
-    enMaterial: "85% cotton, 15% polyester · 280 gsm",
-    trCare: "30°C yıkayın. Düz kurutun.",
-    enCare: "Machine wash at 30°C. Lay flat to dry.",
-    image:
-      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["ink", "bone"],
-  },
-  "esofman-kadin": {
-    trName: "Kadın Eşofman",
-    enName: "Women's Sweatpants",
-    basePrice: 890,
-    trMaterial: "%85 pamuk %15 polyester · 280 gsm",
-    enMaterial: "85% cotton, 15% polyester · 280 gsm",
-    trCare: "30°C yıkayın. Düz kurutun.",
-    enCare: "Machine wash at 30°C. Lay flat to dry.",
-    image:
-      "https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["bone", "sand"],
-  },
-  "sort-erkek": {
-    trName: "Erkek Şort",
-    enName: "Men's Shorts",
-    basePrice: 590,
-    trMaterial: "%100 pamuk fleece · 240 gsm",
-    enMaterial: "100% cotton fleece · 240 gsm",
-    trCare: "30°C yıkayın. Düşük ısıda ütüleyin.",
-    enCare: "Machine wash at 30°C. Iron low.",
-    image:
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["ink", "bone", "sand"],
-  },
-  "sort-kadin": {
-    trName: "Kadın Şort",
-    enName: "Women's Shorts",
-    basePrice: 590,
-    trMaterial: "%100 pamuk fleece · 240 gsm",
-    enMaterial: "100% cotton fleece · 240 gsm",
-    trCare: "30°C yıkayın. Düşük ısıda ütüleyin.",
-    enCare: "Machine wash at 30°C. Iron low.",
-    image:
-      "https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["bone", "sand"],
-  },
-  "outdoor-erkek": {
-    trName: "Erkek Outdoor",
-    enName: "Men's Outdoor",
-    basePrice: 1490,
-    trMaterial: "%100 polyester (geri dönüştürülmüş) · DWR kaplı",
-    enMaterial: "100% recycled polyester · DWR-coated",
-    trCare: "Kuru temizleme önerilir.",
-    enCare: "Dry clean recommended.",
-    image:
-      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["ink", "clay"],
-  },
-  "outdoor-kadin": {
-    trName: "Kadın Outdoor",
-    enName: "Women's Outdoor",
-    basePrice: 1490,
-    trMaterial: "%100 polyester (geri dönüştürülmüş) · DWR kaplı",
-    enMaterial: "100% recycled polyester · DWR-coated",
-    trCare: "Kuru temizleme önerilir.",
-    enCare: "Dry clean recommended.",
-    image:
-      "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=1200&q=85",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
-    colorCodes: ["clay", "bone"],
-  },
-};
-
 const SERIES_PARENT_TYPES = [
   "oversize-tisort",
   "oversize-sweatshirt",
@@ -464,37 +377,11 @@ function buildSeriesProducts(): SampleProduct[] {
   return out;
 }
 
-// 6 Erkek/Kadin leaf urunu.
-function buildGenderProducts(): SampleProduct[] {
-  const out: SampleProduct[] = [];
-  for (const [leafSlug, tp] of Object.entries(GENDER_TYPES)) {
-    out.push({
-      slug: leafSlug,
-      categorySlug: leafSlug,
-      basePrice: tp.basePrice,
-      colorCodes: tp.colorCodes,
-      sizeCodes: ["S", "M", "L", "XL"],
-      images: tp.hoverImage ? [tp.image, tp.hoverImage] : [tp.image],
-      tr: {
-        name: tp.trName,
-        description: "Klasik kesim, günlük kullanım için. Yumuşak dokulu, dayanıklı.",
-        material: tp.trMaterial,
-        care: tp.trCare,
-      },
-      en: {
-        name: tp.enName,
-        description: "Classic cut for everyday use. Soft texture, durable.",
-        material: tp.enMaterial,
-        care: tp.enCare,
-      },
-    });
-  }
-  return out;
-}
-
-// Toplam: 6 (top) + 42 (series) + 6 (gender) = 54 urun.
+// Toplam: 6 (top) + 42 (series) = 48 urun.
+// (Eski 6 gender urunu kaldirildi — Erkek/Kadin artik kategori degil
+// etiket olarak yonetiliyor. import-taxonomy o leaf'leri deactivate eder
+// ve mevcut urunleri parent'a tasir.)
 export const SAMPLE_PRODUCTS: SampleProduct[] = [
   ...TOP_LEVEL_LANDING,
   ...buildSeriesProducts(),
-  ...buildGenderProducts(),
 ];

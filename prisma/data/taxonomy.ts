@@ -114,77 +114,42 @@ export const TAXONOMY: TopCategoryNode[] = [
     ],
   },
   {
-    // ESOFMAN — Erkek / Kadin
+    // ESOFMAN — alt-kategori yok. Cinsiyet etiket olarak yonetilir.
     slug: "esofman",
     nameTr: "Esofman",
     nameEn: "Sweatpants",
     bannerUrl:
       "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=85",
-    children: [
-      {
-        slug: "esofman-erkek",
-        nameTr: "Erkek",
-        nameEn: "Men",
-        children: [],
-      },
-      {
-        slug: "esofman-kadin",
-        nameTr: "Kadin",
-        nameEn: "Women",
-        children: [],
-      },
-    ],
+    children: [],
   },
   {
-    // SORT — Erkek / Kadin
+    // SORT — alt-kategori yok. Cinsiyet etiket olarak yonetilir.
     slug: "sort",
     nameTr: "Sort",
     nameEn: "Shorts",
     bannerUrl:
       "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=1200&q=85",
-    children: [
-      {
-        slug: "sort-erkek",
-        nameTr: "Erkek",
-        nameEn: "Men",
-        children: [],
-      },
-      {
-        slug: "sort-kadin",
-        nameTr: "Kadin",
-        nameEn: "Women",
-        children: [],
-      },
-    ],
+    children: [],
   },
   {
-    // OUTDOOR — Erkek / Kadin
+    // OUTDOOR — alt-kategori yok. Cinsiyet etiket olarak yonetilir.
     slug: "outdoor",
     nameTr: "Outdoor",
     nameEn: "Outdoor",
     bannerUrl:
       "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
-    children: [
-      {
-        slug: "outdoor-erkek",
-        nameTr: "Erkek",
-        nameEn: "Men",
-        children: [],
-      },
-      {
-        slug: "outdoor-kadin",
-        nameTr: "Kadin",
-        nameEn: "Women",
-        children: [],
-      },
-    ],
+    children: [],
   },
 ];
 
 // Eski yapidan kalan ama yeni listede olmayan kategoriler — deactivate edilecek.
-// Urun atamasi varsa silmiyoruz; admin elle tasiyabilir.
-// 'tops', 'bottoms', 'dresses', 'outerwear', 'knitwear' — eski seed.ts'ten kalan
-// generic kategoriler. 'polar' — yeni 6'lik yapida yer almiyor.
+// import-taxonomy script'i: deactivate oncesi bu kategorideki urunleri
+// parent kategoriye tasir (urun kaybi olmasin).
+//
+// 'tops','bottoms','dresses','outerwear','knitwear': eski seed'ten generic
+// 'polar': yeni 6'li yapida yer almiyor
+// '*-erkek','*-kadin': artik etiket olarak yonetiliyor (urun formunda 'Cinsiyet'
+//   bolumu); kategori olarak gereksiz.
 export const DEPRECATED_SLUGS = [
   "polar",
   "tops",
@@ -192,6 +157,12 @@ export const DEPRECATED_SLUGS = [
   "dresses",
   "outerwear",
   "knitwear",
+  "esofman-erkek",
+  "esofman-kadin",
+  "sort-erkek",
+  "sort-kadin",
+  "outdoor-erkek",
+  "outdoor-kadin",
 ];
 
 // Top-level slug listesi — header navigation icin kullanilir.

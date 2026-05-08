@@ -114,15 +114,31 @@ async function main() {
     console.log(`[taxonomy] ${indent}✓ ${node.slug} (${node.nameTr})`);
   }
 
-  // 2) Deprecated kategorileri deactivate
+  // 2) Deprecated kategoriler — once urunleri parent'a tasi, sonra deactivate.
+  // (Urun kaybi olmasin diye silmiyoruz; parent kategoriye yapislir.)
   for (const slug of DEPRECATED_SLUGS) {
-    const result = await db.category.updateMany({
+    const cat = await db.category.findUnique({
       where: { slug },
+      select: { id: true, parentId: true },
+    });
+    if (!cat) continue;
+
+    // Bu kategorideki urunleri parent'a tasi (parent yoksa categoryId=null).
+    const moved = await db.product.updateMany({
+      where: { categoryId: cat.id },
+      data: { categoryId: cat.parentId },
+    });
+    if (moved.count > 0) {
+      console.log(
+        `[taxonomy] ↪ ${slug}: ${moved.count} urun parent'a tasindi`
+      );
+    }
+
+    await db.category.update({
+      where: { id: cat.id },
       data: { isActive: false },
     });
-    if (result.count > 0) {
-      console.log(`[taxonomy] ⊘ deactivate edildi: ${slug}`);
-    }
+    console.log(`[taxonomy] ⊘ deactivate edildi: ${slug}`);
   }
 
   // 3) Ozet
