@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,6 +57,7 @@ type FormOutput = z.output<typeof formSchema>;
 export type ProductFormCategory = {
   id: string;
   name: string;
+  parentId: string | null;
 };
 
 export type ProductFormColor = {
@@ -406,20 +407,17 @@ export function ProductForm({
             </select>
           </div>
 
-          <div>
-            <label className={labelCls}>Kategori</label>
-            <select
-              {...register("categoryId")}
-              className={`${inputCls} mt-1`}
-            >
-              <option value="">— Seçin —</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CategoryCascade
+            categories={categories}
+            currentCategoryId={watch("categoryId") || ""}
+            onChange={(catId) =>
+              setValue("categoryId", catId, { shouldDirty: true })
+            }
+            inputCls={inputCls}
+            labelCls={labelCls}
+          />
+          {/* Hidden: hook-form valus'unu register'la bagla. */}
+          <input type="hidden" {...register("categoryId")} />
 
           <div className="grid grid-cols-3 gap-2">
             <div>
@@ -998,5 +996,169 @@ export function ProductForm({
         </button>
       </div>
     </form>
+  );
+}
+
+// ---------- Category Cascade ----------
+//
+// 3-seviye kategori secimi. parentId alaninin oldugu DB taksonomisi:
+//   Top-level (parentId=null) -> Sub-cat (parentId=top) -> Series (parentId=sub)
+// Eski tek dropdown 60 kategoriyi karisik gosteriyordu (Basic / Erkek
+// gibi gencel isimler tekrar ediyordu, hangi parent'a ait belli degildi).
+//
+// Davranis:
+// - Once Ana Kategori (Oversize, Tshirt, Sweatshirt, Esofman, Sort, Outdoor)
+// - Sonra Alt Kategori (sadece secilen ana'nin children'i — varsa)
+// - Sonra Seri/Detay (sadece secilen alt'in children'i — varsa)
+// - Final cidi categoryId form state'ine yazilir.
+// - currentCategoryId initial degeri verilirse, parents geriye dogru cikartip
+//   3 select'i preset eder.
+function CategoryCascade({
+  categories,
+  currentCategoryId,
+  onChange,
+  inputCls,
+  labelCls,
+}: {
+  categories: ProductFormCategory[];
+  currentCategoryId: string;
+  onChange: (categoryId: string) => void;
+  inputCls: string;
+  labelCls: string;
+}) {
+  // currentCategoryId'den ata zincirini cikartiyor: leaf -> ... -> top.
+  const ancestry = useMemo(() => {
+    const result: { top?: string; sub?: string; leaf?: string } = {};
+    if (!currentCategoryId) return result;
+    const node = categories.find((c) => c.id === currentCategoryId);
+    if (!node) return result;
+    if (node.parentId == null) {
+      result.top = node.id;
+      return result;
+    }
+    const parent = categories.find((c) => c.id === node.parentId);
+    if (!parent) {
+      result.top = node.id;
+      return result;
+    }
+    if (parent.parentId == null) {
+      // node = sub, parent = top
+      result.top = parent.id;
+      result.sub = node.id;
+      return result;
+    }
+    const grand = categories.find((c) => c.id === parent.parentId);
+    if (!grand) {
+      result.top = parent.id;
+      result.sub = node.id;
+      return result;
+    }
+    // node = leaf, parent = sub, grand = top
+    result.top = grand.id;
+    result.sub = parent.id;
+    result.leaf = node.id;
+    return result;
+  }, [currentCategoryId, categories]);
+
+  const [topId, setTopId] = useState<string>(ancestry.top ?? "");
+  const [subId, setSubId] = useState<string>(ancestry.sub ?? "");
+  const [leafId, setLeafId] = useState<string>(ancestry.leaf ?? "");
+
+  // categories veya currentCategoryId disardan degisirse state'i resync et.
+  useEffect(() => {
+    setTopId(ancestry.top ?? "");
+    setSubId(ancestry.sub ?? "");
+    setLeafId(ancestry.leaf ?? "");
+  }, [ancestry.top, ancestry.sub, ancestry.leaf]);
+
+  const tops = useMemo(
+    () => categories.filter((c) => c.parentId == null),
+    [categories]
+  );
+  const subs = useMemo(
+    () =>
+      topId ? categories.filter((c) => c.parentId === topId) : [],
+    [categories, topId]
+  );
+  const leaves = useMemo(
+    () =>
+      subId ? categories.filter((c) => c.parentId === subId) : [],
+    [categories, subId]
+  );
+
+  function handleTopChange(value: string) {
+    setTopId(value);
+    setSubId("");
+    setLeafId("");
+    // Eger secilen top'un altinda hic sub yoksa, top'u final categoryId yap.
+    const hasSubs = categories.some((c) => c.parentId === value);
+    onChange(hasSubs ? "" : value);
+  }
+  function handleSubChange(value: string) {
+    setSubId(value);
+    setLeafId("");
+    const hasLeaves = categories.some((c) => c.parentId === value);
+    // Sub'un altinda leaf yoksa sub'u final yap (orn. esofman-erkek)
+    onChange(hasLeaves ? "" : value);
+  }
+  function handleLeafChange(value: string) {
+    setLeafId(value);
+    onChange(value);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className={labelCls}>Ana Kategori</label>
+        <select
+          value={topId}
+          onChange={(e) => handleTopChange(e.target.value)}
+          className={`${inputCls} mt-1`}
+        >
+          <option value="">— Seçin —</option>
+          {tops.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {topId && subs.length > 0 ? (
+        <div>
+          <label className={labelCls}>Alt Kategori</label>
+          <select
+            value={subId}
+            onChange={(e) => handleSubChange(e.target.value)}
+            className={`${inputCls} mt-1`}
+          >
+            <option value="">— Seçin —</option>
+            {subs.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
+      {subId && leaves.length > 0 ? (
+        <div>
+          <label className={labelCls}>Seri / Detay</label>
+          <select
+            value={leafId}
+            onChange={(e) => handleLeafChange(e.target.value)}
+            className={`${inputCls} mt-1`}
+          >
+            <option value="">— Seçin —</option>
+            {leaves.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+    </div>
   );
 }

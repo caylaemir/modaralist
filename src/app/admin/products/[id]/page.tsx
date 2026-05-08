@@ -81,6 +81,7 @@ export default async function EditProductPage({
         categories={categories.map((c) => ({
           id: c.id,
           name: c.translations[0]?.name ?? c.slug,
+          parentId: c.parentId,
         }))}
         colors={colors.map((c) => ({
           id: c.id,
