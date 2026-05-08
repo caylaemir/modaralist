@@ -33,10 +33,10 @@ export const COLLECTIONS_2026: SeasonalCollection[] = [
     initialStatus: "LIVE",
     themePrimary: "#7a8b6f",
     themeAccent: "#f5f2ed",
-    // Bahar atmosferi — yumusak isik, acilan dallar. Admin gercek brand
-    // gorseliyle override edebilir.
+    // Bahar editorial — model + acik tonlar + dogal isik. Admin gercek
+    // brand fotosuyla override edebilir.
     heroImageUrl:
-      "https://images.unsplash.com/photo-1490750967868-a78f47153f1b?auto=format&fit=crop&w=2400&q=85",
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=90",
     tr: {
       name: "İlkbahar 2026",
       tagline: "uyanış",
@@ -58,9 +58,9 @@ export const COLLECTIONS_2026: SeasonalCollection[] = [
     initialStatus: "LIVE",
     themePrimary: "#d6c8a8",
     themeAccent: "#0a0a0a",
-    // Yaz atmosferi — kum, gunes. Eski SS26 dagi imgesi buraya tasindi.
+    // Yaz editorial — sahil/sicak ton, model.
     heroImageUrl:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=2400&q=85",
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2400&q=90",
     tr: {
       name: "Yaz 2026",
       tagline: "yaz başlıyor",
@@ -82,9 +82,9 @@ export const COLLECTIONS_2026: SeasonalCollection[] = [
     initialStatus: "UPCOMING",
     themePrimary: "#9e7b5a",
     themeAccent: "#f5f2ed",
-    // Sonbahar atmosferi — yapraklar, sis.
+    // Sonbahar editorial — trench/coat, model, kahverengi tonlari.
     heroImageUrl:
-      "https://images.unsplash.com/photo-1507371341162-763b5e419408?auto=format&fit=crop&w=2400&q=85",
+      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=2400&q=90",
     tr: {
       name: "Sonbahar 2026",
       tagline: "katmanlar",
@@ -106,9 +106,9 @@ export const COLLECTIONS_2026: SeasonalCollection[] = [
     initialStatus: "UPCOMING",
     themePrimary: "#2a2a2a",
     themeAccent: "#d6c8a8",
-    // Kis atmosferi — kar, dag.
+    // Kis editorial — kalin kazak/mont, model, sade ton.
     heroImageUrl:
-      "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=2400&q=85",
+      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=2400&q=90",
     tr: {
       name: "Kış 2026",
       tagline: "ağırlık",
