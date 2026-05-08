@@ -20,6 +20,7 @@ const formSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Sadece küçük harf, rakam ve tire"),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED", "COMING_SOON"]),
   categoryId: z.string().optional(),
+  collectionId: z.string().optional(),
   basePrice: z.coerce.number().min(0),
   discountPrice: z
     .union([z.coerce.number().min(0), z.literal("")])
@@ -78,11 +79,18 @@ export type ProductFormTag = {
   labelTr: string;
 };
 
+export type ProductFormCollection = {
+  id: string;
+  slug: string;
+  name: string;
+};
+
 export type ProductFormInitial = {
   id?: string;
   slug?: string;
   status?: "DRAFT" | "PUBLISHED" | "ARCHIVED" | "COMING_SOON";
   categoryId?: string | null;
+  collectionId?: string | null;
   basePrice?: number;
   discountPrice?: number | null;
   taxRate?: number;
@@ -112,6 +120,7 @@ export function ProductForm({
   mode,
   productId,
   categories,
+  collections,
   colors,
   sizes,
   tags,
@@ -120,6 +129,7 @@ export function ProductForm({
   mode: "create" | "edit";
   productId?: string;
   categories: ProductFormCategory[];
+  collections: ProductFormCollection[];
   colors: ProductFormColor[];
   sizes: ProductFormSize[];
   tags: ProductFormTag[];
@@ -153,6 +163,7 @@ export function ProductForm({
         slug: initial?.slug ?? "",
         status: initial?.status ?? "DRAFT",
         categoryId: initial?.categoryId ?? "",
+        collectionId: initial?.collectionId ?? "",
         basePrice: initial?.basePrice ?? 0,
         discountPrice: initial?.discountPrice ?? "",
         taxRate: initial?.taxRate ?? 20,
@@ -301,6 +312,7 @@ export function ProductForm({
       slug: parsed.slug,
       status: parsed.status,
       categoryId: parsed.categoryId ? parsed.categoryId : null,
+      collectionId: parsed.collectionId ? parsed.collectionId : null,
       basePrice: parsed.basePrice,
       discountPrice: parsed.discountPrice ?? null,
       taxRate: parsed.taxRate,
@@ -418,6 +430,26 @@ export function ProductForm({
           />
           {/* Hidden: hook-form valus'unu register'la bagla. */}
           <input type="hidden" {...register("categoryId")} />
+
+          {/* Koleksiyon — bos birakirsan tarih bazli auto-assign
+              (Mart-Mayis -> ilkbahar, Haziran-Agustos -> yaz, vs.) */}
+          <div>
+            <label className={labelCls}>Koleksiyon (Sezon)</label>
+            <select
+              {...register("collectionId")}
+              className={`${inputCls} mt-1`}
+            >
+              <option value="">— Otomatik (yükleme tarihine göre)</option>
+              {collections.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-mist">
+              Bos birakirsan ürün, eklendigi tarihin sezonuna otomatik atanir.
+            </p>
+          </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div>

@@ -16,7 +16,6 @@ import {
 } from "@/lib/shop";
 import { getActiveHomepageBlocks } from "@/lib/homepage";
 import { DynamicBlocks } from "@/components/shop/blocks/dynamic-blocks";
-import { ActiveDropBanner } from "@/components/shop/active-drop-banner";
 import { CategoriesSection } from "@/components/shop/categories-section";
 import { BestSellers } from "@/components/shop/best-sellers";
 
@@ -39,12 +38,6 @@ export default async function Home({
     getBestSellingProducts(lang, 8, 90),
     getCollectionsList(lang),
   ]);
-  // Spotlight koleksiyon: ilk LIVE'i, yoksa ilk UPCOMING'i, hicbir biri
-  // yoksa null (spotlight render edilmez).
-  const spotlight =
-    collections.find((c) => c.status === "LIVE") ??
-    collections.find((c) => c.status === "UPCOMING") ??
-    null;
   const featured: ProductCardData[] = dbProducts.map((p) => ({
     slug: p.slug,
     name: p.name,
@@ -78,8 +71,17 @@ export default async function Home({
   return (
     <>
       <Splash />
-      <Hero />
-      <ActiveDropBanner locale={lang} />
+      {/* Hero: 4 sezonluk koleksiyonu DB'den slide olarak gosterir.
+          ActiveDropBanner ve alttaki spotlight section kaldirildi —
+          tek koleksiyon spotlight'i hero icindedir. */}
+      <Hero
+        collections={collections.slice(0, 4).map((c) => ({
+          slug: c.slug,
+          name: c.name,
+          tagline: c.tagline,
+          heroImageUrl: c.heroImageUrl,
+        }))}
+      />
 
       <Marquee
         items={[
@@ -137,43 +139,6 @@ export default async function Home({
                 index={i}
               />
             ))}
-          </div>
-        </section>
-      ) : null}
-
-      {spotlight ? (
-        <section className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-ink">
-          <div
-            className="absolute inset-0 scale-105 bg-cover bg-center"
-            style={
-              spotlight.heroImageUrl
-                ? { backgroundImage: `url('${spotlight.heroImageUrl}')` }
-                : {
-                    background:
-                      "linear-gradient(135deg, #2a2a2a 0%, #0a0a0a 100%)",
-                  }
-            }
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
-          <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-20 md:px-10 md:pb-32">
-            <Reveal>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-paper/70">
-                {t("featuredCollection")}
-              </p>
-            </Reveal>
-            <SplitText
-              text={spotlight.tagline ?? spotlight.name}
-              as="h3"
-              className="display mt-6 max-w-4xl text-[10vw] leading-[0.95] text-paper md:text-[6vw]"
-            />
-            <Reveal delay={0.5}>
-              <Link
-                href={`/drops/${spotlight.slug}`}
-                className="mt-12 inline-flex items-center gap-3 border-b border-paper pb-2 text-[11px] uppercase tracking-[0.35em] text-paper"
-              >
-                {t("viewCollection")} <ArrowUpRight className="size-4" />
-              </Link>
-            </Reveal>
           </div>
         </section>
       ) : null}

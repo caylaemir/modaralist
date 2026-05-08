@@ -6,6 +6,7 @@ import { Prisma, ProductStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { seasonalCollectionSlugForDate } from "@/lib/season";
 
 // ---------- Auth guard ----------
 
@@ -68,6 +69,9 @@ const productInputSchema = z.object({
   images: z.array(imageSchema).default([]),
   variants: z.array(variantSchema).default([]),
   tagIds: z.array(z.string()).default([]),
+  // Koleksiyon: admin form'da secilirse direkt o ID kullanilir.
+  // null/bos -> tarih bazli auto-assign (mart-mayis -> ilkbahar vs.)
+  collectionId: z.string().optional().nullable(),
 });
 
 // Type-only export TypeScript tarafindan compile-time'da silinir,
@@ -89,6 +93,43 @@ function normalizeTranslations(input: ProductInput) {
   }));
 }
 
+// Urune koleksiyon bagla. input.collectionId varsa direkt o, yoksa
+// tarih bazli sezonluk koleksiyona dene (varsa attach, yoksa skip).
+async function attachToCollection(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  collectionId: string | null | undefined,
+  fallbackDate: Date
+): Promise<void> {
+  let targetId: string | null = null;
+
+  if (collectionId) {
+    targetId = collectionId;
+  } else {
+    // Auto-assign: tarih bazli slug, DB'de varsa kullan
+    const slug = seasonalCollectionSlugForDate(fallbackDate);
+    const found = await tx.collection.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (found) targetId = found.id;
+  }
+
+  if (!targetId) return;
+
+  // Onceki koleksiyon baglantilarini temizle (admin formda re-save sirasinda
+  // birden fazla collection olusmasin)
+  await tx.collectionProduct.deleteMany({ where: { productId } });
+
+  await tx.collectionProduct.create({
+    data: {
+      collectionId: targetId,
+      productId,
+      sortOrder: 0,
+    },
+  });
+}
+
 // ---------- Actions ----------
 
 export async function createProduct(rawInput: ProductInput) {
@@ -102,43 +143,48 @@ export async function createProduct(rawInput: ProductInput) {
     throw new Error("Bu slug zaten kullanılıyor.");
   }
 
-  const product = await db.product.create({
-    data: {
-      slug: input.slug,
-      status: input.status as ProductStatus,
-      categoryId: input.categoryId || null,
-      basePrice: new Prisma.Decimal(input.basePrice),
-      discountPrice:
-        input.discountPrice != null && input.discountPrice !== undefined
-          ? new Prisma.Decimal(input.discountPrice)
-          : null,
-      taxRate: new Prisma.Decimal(input.taxRate),
-      currency: input.currency,
-      lowStockLimit: input.lowStockLimit,
-      publishedAt: input.status === "PUBLISHED" ? new Date() : null,
-      translations: { create: translations },
-      images: {
-        create: input.images.map((img, i) => ({
-          url: img.url,
-          alt: img.alt ?? null,
-          sortOrder: img.sortOrder ?? i,
-          isHover: img.isHover ?? false,
-        })),
+  const product = await db.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        slug: input.slug,
+        status: input.status as ProductStatus,
+        categoryId: input.categoryId || null,
+        basePrice: new Prisma.Decimal(input.basePrice),
+        discountPrice:
+          input.discountPrice != null && input.discountPrice !== undefined
+            ? new Prisma.Decimal(input.discountPrice)
+            : null,
+        taxRate: new Prisma.Decimal(input.taxRate),
+        currency: input.currency,
+        lowStockLimit: input.lowStockLimit,
+        publishedAt: input.status === "PUBLISHED" ? new Date() : null,
+        translations: { create: translations },
+        images: {
+          create: input.images.map((img, i) => ({
+            url: img.url,
+            alt: img.alt ?? null,
+            sortOrder: img.sortOrder ?? i,
+            isHover: img.isHover ?? false,
+          })),
+        },
+        variants: {
+          create: input.variants.map((v) => ({
+            sku: v.sku,
+            sizeId: v.sizeId || null,
+            colorId: v.colorId || null,
+            stock: v.stock,
+            isActive: v.isActive,
+          })),
+        },
+        tags:
+          input.tagIds.length > 0
+            ? { connect: input.tagIds.map((id) => ({ id })) }
+            : undefined,
       },
-      variants: {
-        create: input.variants.map((v) => ({
-          sku: v.sku,
-          sizeId: v.sizeId || null,
-          colorId: v.colorId || null,
-          stock: v.stock,
-          isActive: v.isActive,
-        })),
-      },
-      tags:
-        input.tagIds.length > 0
-          ? { connect: input.tagIds.map((id) => ({ id })) }
-          : undefined,
-    },
+    });
+
+    await attachToCollection(tx, created.id, input.collectionId, new Date());
+    return created;
   });
 
   revalidatePath("/admin/products");
@@ -253,6 +299,15 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
         },
       },
     });
+
+    // 6. Koleksiyon: form'da secilmisse direkt, yoksa tarih bazli auto.
+    // (Update'te urunun createdAt'ini kullaniyoruz — yeni urun degil.)
+    await attachToCollection(
+      tx,
+      id,
+      input.collectionId,
+      existing.createdAt
+    );
   });
 
   revalidatePath("/admin/products");

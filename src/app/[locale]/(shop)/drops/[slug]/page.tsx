@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Reveal } from "@/components/shop/reveal";
 import { SplitText } from "@/components/shop/split-text";
-import { ProductCard } from "@/components/shop/product-card";
+import { ShopGrid } from "../../shop/shop-grid";
 import { Countdown } from "@/components/shop/countdown";
 import { NotifyMe } from "@/components/shop/notify-me";
 import { Marquee } from "@/components/shop/marquee";
-import { getCollection, getCollectionProducts } from "@/lib/shop";
+import { getCollection, getCollectionProducts, getTopLevelCategories } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +35,10 @@ export default async function CollectionPage({
   setRequestLocale(locale);
   const lang = (locale === "en" ? "en" : "tr") as "tr" | "en";
 
-  const [collection, products] = await Promise.all([
+  const [collection, products, topLevelCats] = await Promise.all([
     getCollection(slug, lang),
     getCollectionProducts(slug, lang),
+    getTopLevelCategories(lang),
   ]);
 
   if (!collection) notFound();
@@ -133,27 +134,23 @@ export default async function CollectionPage({
             <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
               — koleksiyon
             </p>
+            <h2 className="display mt-6 text-[8vw] leading-[1] md:text-[4vw]">
+              {products.length} parça
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm text-mist">
+              Filtreden kategori, beden, renk veya cinsiyet seçerek
+              koleksiyonu keşfet.
+            </p>
           </Reveal>
-          <h2 className="display mt-6 text-[8vw] leading-[1] md:text-[4vw]">
-            {products.length} parça
-          </h2>
-          <div className="mt-16 grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
-            {products.map((p, i) => (
-              <ProductCard
-                key={p.slug}
-                product={{
-                  slug: p.slug,
-                  name: p.name,
-                  dropLabel: p.dropLabel ?? "",
-                  price: p.price,
-                  image: p.images[0] ?? "",
-                  hoverImage: p.hoverImage ?? undefined,
-                  soldOut: p.soldOut,
-                }}
-                locale={locale as "tr" | "en"}
-                index={i}
-              />
-            ))}
+          {/* Filter destekli grid — kategori sayfasiyla ayni component.
+              Bu sayfada 'Kategori' bolumu aktif: drop icindeki kategoriler
+              arasi filtrelemek mantikli (Tshirt / Sweatshirt / vs.) */}
+          <div className="mt-12">
+            <ShopGrid
+              products={products}
+              categories={topLevelCats}
+              locale={locale as "tr" | "en"}
+            />
           </div>
         </section>
       ) : (

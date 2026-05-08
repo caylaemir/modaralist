@@ -7,36 +7,48 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ArrowUpRight } from "lucide-react";
 
-const SLIDES = [
+// Server-side besleme: koleksiyon görselleri + adlar.
+// Bos array gelirse fallback statik slide kullanilir.
+export type HeroCollection = {
+  slug: string;
+  name: string;
+  tagline: string | null;
+  heroImageUrl: string | null;
+};
+
+const FALLBACK_SLIDES: HeroCollection[] = [
   {
-    src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2400&q=85",
-    caption: "Chapter I — Stillness",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=2400&q=85",
-    caption: "Chapter II — Drift",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=2400&q=85",
-    caption: "Chapter III — Silhouette",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2400&q=85",
-    caption: "Chapter IV — Form",
+    slug: "ilkbahar-2026",
+    name: "İlkbahar 2026",
+    tagline: null,
+    heroImageUrl:
+      "https://images.unsplash.com/photo-1490750967868-a78f47153f1b?auto=format&fit=crop&w=2400&q=85",
   },
 ];
 
-export function Hero() {
+export function Hero({ collections }: { collections: HeroCollection[] }) {
   const t = useTranslations("Home");
   const [i, setI] = useState(0);
 
+  // Hero görseli olan koleksiyonlari kullan; hicbiri yoksa fallback.
+  const slides = (
+    collections.length > 0
+      ? collections.filter((c) => c.heroImageUrl)
+      : []
+  ).length
+    ? collections.filter((c) => c.heroImageUrl)
+    : FALLBACK_SLIDES;
+
   useEffect(() => {
-    const id = setInterval(() => setI((v) => (v + 1) % SLIDES.length), 5200);
+    if (slides.length <= 1) return;
+    const id = setInterval(() => setI((v) => (v + 1) % slides.length), 5200);
     return () => clearInterval(id);
-  }, []);
+  }, [slides.length]);
 
   const words = t("heroHeadline").split(" ");
   const sub = t("heroSubline").split(" ");
+
+  const current = slides[i];
 
   return (
     <section className="relative h-[100svh] min-h-[680px] w-full overflow-hidden bg-ink">
@@ -49,17 +61,19 @@ export function Hero() {
           transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
-          {/* Next/Image: ilk slide priority + fetchPriority=high (LCP optimize),
-              digerleri lazy. sizes 100vw cunku tam ekran. */}
-          <Image
-            src={SLIDES[i].src}
-            alt={SLIDES[i].caption}
-            fill
-            sizes="100vw"
-            priority={i === 0}
-            fetchPriority={i === 0 ? "high" : "auto"}
-            className="object-cover"
-          />
+          {current.heroImageUrl ? (
+            <Image
+              src={current.heroImageUrl}
+              alt={current.name}
+              fill
+              sizes="100vw"
+              priority={i === 0}
+              fetchPriority={i === 0 ? "high" : "auto"}
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2a2a2a] to-[#0a0a0a]" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/60" />
         </motion.div>
       </AnimatePresence>
@@ -75,20 +89,22 @@ export function Hero() {
             Modaralist · Bursa
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-paper/80"
-          >
-            <span className="tabular-nums">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span className="h-px w-12 bg-paper/40" />
-            <span className="tabular-nums">
-              {String(SLIDES.length).padStart(2, "0")}
-            </span>
-          </motion.div>
+          {slides.length > 1 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-paper/80"
+            >
+              <span className="tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="h-px w-12 bg-paper/40" />
+              <span className="tabular-nums">
+                {String(slides.length).padStart(2, "0")}
+              </span>
+            </motion.div>
+          ) : null}
         </div>
 
         <div>
@@ -145,23 +161,33 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10 flex flex-wrap items-end justify-between gap-6"
           >
-            <Link
-              href="/shop"
-              className="group flex items-center gap-4 border-b border-paper pb-2 text-[11px] uppercase tracking-[0.35em] text-paper"
-            >
-              <span>{t("shopAll")}</span>
-              <ArrowUpRight className="size-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current.slug}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Link
+                  href={`/drops/${current.slug}`}
+                  className="group flex items-center gap-4 border-b border-paper pb-2 text-[11px] uppercase tracking-[0.35em] text-paper"
+                >
+                  <span>{t("viewCollection")}</span>
+                  <ArrowUpRight className="size-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </motion.div>
+            </AnimatePresence>
             <AnimatePresence mode="wait">
               <motion.p
-                key={i}
+                key={current.slug + "-caption"}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.6 }}
                 className="text-[10px] uppercase tracking-[0.35em] text-paper/60"
               >
-                {SLIDES[i].caption}
+                {current.tagline ?? current.name}
               </motion.p>
             </AnimatePresence>
           </motion.div>

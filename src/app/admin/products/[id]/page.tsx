@@ -16,34 +16,46 @@ export default async function EditProductPage({
   const { id } = await params;
   await ensureGenderTags();
 
-  const [product, categories, colors, sizes, tags] = await Promise.all([
-    db.product
-      .findUnique({
-        where: { id },
-        include: {
-          translations: true,
-          variants: {
-            include: { size: true, color: true },
+  const [product, categories, colors, sizes, tags, collections] =
+    await Promise.all([
+      db.product
+        .findUnique({
+          where: { id },
+          include: {
+            translations: true,
+            variants: {
+              include: { size: true, color: true },
+            },
+            images: { orderBy: { sortOrder: "asc" } },
+            category: {
+              include: { translations: { where: { locale: "tr" } } },
+            },
+            tags: { select: { id: true } },
+            collections: {
+              take: 1,
+              select: { collectionId: true },
+            },
           },
-          images: { orderBy: { sortOrder: "asc" } },
-          category: {
-            include: { translations: { where: { locale: "tr" } } },
-          },
-          tags: { select: { id: true } },
-        },
-      })
-      .catch(() => null),
-    db.category
-      .findMany({
-        where: { isActive: true },
-        include: { translations: { where: { locale: "tr" } } },
-        orderBy: { sortOrder: "asc" },
-      })
-      .catch(() => []),
-    db.color.findMany({ orderBy: { code: "asc" } }).catch(() => []),
-    db.size.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
-    db.productTag.findMany({ orderBy: { code: "asc" } }).catch(() => []),
-  ]);
+        })
+        .catch(() => null),
+      db.category
+        .findMany({
+          where: { isActive: true },
+          include: { translations: { where: { locale: "tr" } } },
+          orderBy: { sortOrder: "asc" },
+        })
+        .catch(() => []),
+      db.color.findMany({ orderBy: { code: "asc" } }).catch(() => []),
+      db.size.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+      db.productTag.findMany({ orderBy: { code: "asc" } }).catch(() => []),
+      db.collection
+        .findMany({
+          where: { status: { in: ["UPCOMING", "LIVE", "SOLD_OUT"] } },
+          include: { translations: { where: { locale: "tr" } } },
+          orderBy: { sortOrder: "asc" },
+        })
+        .catch(() => []),
+    ]);
 
   if (!product) {
     notFound();
@@ -85,6 +97,11 @@ export default async function EditProductPage({
           name: c.translations[0]?.name ?? c.slug,
           parentId: c.parentId,
         }))}
+        collections={collections.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          name: c.translations[0]?.name ?? c.slug,
+        }))}
         colors={colors.map((c) => ({
           id: c.id,
           code: c.code,
@@ -98,6 +115,7 @@ export default async function EditProductPage({
           slug: product.slug,
           status: product.status,
           categoryId: product.categoryId,
+          collectionId: product.collections[0]?.collectionId ?? null,
           basePrice: Number(product.basePrice),
           discountPrice:
             product.discountPrice != null

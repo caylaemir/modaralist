@@ -8,7 +8,7 @@ export default async function NewProductPage() {
   // Cinsiyet etiketleri yoksa yarat — form'da radio her zaman aktif olsun
   await ensureGenderTags();
 
-  const [categories, colors, sizes, tags] = await Promise.all([
+  const [categories, colors, sizes, tags, collections] = await Promise.all([
     db.category.findMany({
       where: { isActive: true },
       include: { translations: { where: { locale: "tr" } } },
@@ -17,6 +17,11 @@ export default async function NewProductPage() {
     db.color.findMany({ orderBy: { code: "asc" } }),
     db.size.findMany({ orderBy: { sortOrder: "asc" } }),
     db.productTag.findMany({ orderBy: { code: "asc" } }),
+    db.collection.findMany({
+      where: { status: { in: ["UPCOMING", "LIVE", "SOLD_OUT"] } },
+      include: { translations: { where: { locale: "tr" } } },
+      orderBy: { sortOrder: "asc" },
+    }),
   ]);
 
   return (
@@ -41,6 +46,11 @@ export default async function NewProductPage() {
           id: c.id,
           name: c.translations[0]?.name ?? c.slug,
           parentId: c.parentId,
+        }))}
+        collections={collections.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          name: c.translations[0]?.name ?? c.slug,
         }))}
         colors={colors.map((c) => ({
           id: c.id,
