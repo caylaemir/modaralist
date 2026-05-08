@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getProduct, getRelatedProducts } from "@/lib/shop";
+import { effectivePrice } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -104,7 +105,8 @@ export default async function ProductPage({
       "@type": "Offer",
       url: `${base}/${locale}/products/${product.slug}`,
       priceCurrency: "TRY",
-      price: product.discountPrice ?? product.price,
+      // discountPrice 0 olabilir (admin form bos yerine 0); helper safe.
+      price: effectivePrice(product.price, product.discountPrice),
       availability: product.soldOut
         ? "https://schema.org/SoldOut"
         : "https://schema.org/InStock",

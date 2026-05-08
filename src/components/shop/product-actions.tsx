@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useCart } from "@/stores/cart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, hasValidDiscount, effectivePrice as calcEffectivePrice } from "@/lib/utils";
 import { SizeGuide } from "./size-guide";
 import type { ShopProduct } from "@/lib/shop";
 
@@ -42,6 +42,12 @@ export function ProductActions({
     return () => obs.disconnect();
   }, []);
 
+  // discountPrice 0 olabilir (admin form bos yerine 0 kaydediyor); ayrica
+  // 0 JSX'te `&&` ile render edilirse '0' karakteri DOM'a yazilir. Helper
+  // hem null hem 0 hem >= basePrice durumlarini eler.
+  const showDiscount = hasValidDiscount(product.price, product.discountPrice);
+  const effectivePrice = calcEffectivePrice(product.price, product.discountPrice);
+
   const sizesInStock = useMemo(() => {
     const map = new Map<string, number>();
     for (const v of product.variants) {
@@ -70,7 +76,7 @@ export function ProductActions({
       size: variant.size,
       color: variant.color,
       image: product.images[0] ?? null,
-      unitPrice: product.discountPrice ?? product.price,
+      unitPrice: effectivePrice,
       quantity: 1,
     });
     toast.success(`${product.name} sepete eklendi.`);
@@ -85,13 +91,16 @@ export function ProductActions({
         <h1 className="display mt-3 text-4xl md:text-5xl">{product.name}</h1>
         <div className="mt-4 flex items-baseline gap-3">
           <p className="text-lg tabular-nums">
-            {formatPrice(product.discountPrice ?? product.price, locale)}
+            {formatPrice(
+              effectivePrice,
+              locale
+            )}
           </p>
-          {product.discountPrice && (
+          {showDiscount ? (
             <p className="text-sm tabular-nums text-mist line-through">
               {formatPrice(product.price, locale)}
             </p>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -204,7 +213,7 @@ export function ProductActions({
                   {product.name}
                 </p>
                 <p className="mt-0.5 text-[13px] tabular-nums">
-                  {formatPrice(product.discountPrice ?? product.price, locale)}
+                  {formatPrice(effectivePrice, locale)}
                 </p>
               </div>
               <button

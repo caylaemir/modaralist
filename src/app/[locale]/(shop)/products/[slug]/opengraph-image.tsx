@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getProduct } from "@/lib/shop";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, effectivePrice } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const alt = "Modaralist ürün";
@@ -19,7 +19,7 @@ export default async function OgImage({
   const title = product?.name ?? "Modaralist";
   const subtitle = product?.dropLabel ?? "Modaralist";
   const price = product
-    ? formatPrice(product.discountPrice ?? product.price, lang)
+    ? formatPrice(effectivePrice(product.price, product.discountPrice), lang)
     : "";
 
   return new ImageResponse(

@@ -8,6 +8,7 @@ import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { calculateBundleDiscount, parseBundleConfig } from "@/lib/cart-bundle";
+import { effectivePrice } from "@/lib/utils";
 import { validateCoupon, recordCouponUsage } from "@/lib/coupon";
 
 const schema = z.object({
@@ -89,11 +90,18 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  // discountPrice 0 olabiliyor (admin form bos yerine 0 kaydediyor) — `??`
+  // operatoru 0'i null kabul etmez, sonuc 0 olur ve odeme tutari 0 TL olur.
+  // Helper basePrice + discountPrice'i guvenli sekilde degerlendirir.
   const priceByVariantId = new Map(
-    dbVariants.map((v) => [
-      v.id,
-      Number(v.product.discountPrice ?? v.product.basePrice),
-    ])
+    dbVariants.map((v) => {
+      const base = Number(v.product.basePrice);
+      const disc =
+        v.product.discountPrice != null
+          ? Number(v.product.discountPrice)
+          : null;
+      return [v.id, effectivePrice(base, disc)];
+    })
   );
 
   // Kanonik line'lar (server-trusted)
