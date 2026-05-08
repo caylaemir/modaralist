@@ -637,14 +637,12 @@ export function ProductForm({
         </div>
       </section>
 
-      {/* --------- Cinsiyet (özel selector — tag-based ama UI temiz) --------- */}
+      {/* --------- Cinsiyet (radio — tag tag tarafindan otomatik yonetiliyor) --------- */}
       <section className="border border-line bg-paper p-6">
         <h2 className="caps-wide text-sm">Cinsiyet</h2>
         <p className="mt-1 text-xs text-mist">
-          Mağazadaki cinsiyet filtresi bunu kullanır. Tek seçim — istersen
-          unisex koy. Arka planda <span className="font-mono">kadin</span>/
-          <span className="font-mono">erkek</span>/
-          <span className="font-mono">unisex</span> etiketi otomatik atanır.
+          Mağazadaki cinsiyet filtresi bunu kullanır. Tek seçim. Etiket
+          (kadin/erkek/unisex) otomatik yaratilir ve atanir.
         </p>
 
         <Controller
@@ -671,25 +669,8 @@ export function ProductForm({
               { code: "unisex" as const, label: "Unisex" },
             ];
 
-            const allMissing = !genderTags.kadin && !genderTags.erkek && !genderTags.unisex;
-
             return (
               <div className="mt-4">
-                {allMissing ? (
-                  <div className="border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-                    Cinsiyet seçimi için önce{" "}
-                    <a
-                      href="/admin/tags"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium underline"
-                    >
-                      Etiketler sayfasından
-                    </a>{" "}
-                    Kadın/Erkek/Unisex etiketlerini ekle (üstteki "Hızlı ekle"
-                    butonuyla 1 tıkla).
-                  </div>
-                ) : (
                   <div className="flex flex-wrap gap-2">
                     {options.map((opt) => {
                       const tag = opt.code ? genderTags[opt.code] : null;
@@ -735,14 +716,10 @@ export function ProductForm({
                           }
                         >
                           {opt.label}
-                          {opt.code && !tag ? (
-                            <span className="ml-1 text-[10px]">⚠️</span>
-                          ) : null}
                         </button>
                       );
                     })}
                   </div>
-                )}
               </div>
             );
           }}

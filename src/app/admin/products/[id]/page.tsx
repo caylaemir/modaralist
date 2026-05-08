@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
+import { ensureGenderTags } from "@/lib/admin-bootstrap";
 import { ProductForm } from "../_components/product-form";
 import { DeleteProductButton } from "../_components/delete-product-button";
 
@@ -13,6 +14,7 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await ensureGenderTags();
 
   const [product, categories, colors, sizes, tags] = await Promise.all([
     db.product

@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
+import { ensureGenderTags } from "@/lib/admin-bootstrap";
 import { ProductForm } from "../_components/product-form";
 
 export default async function NewProductPage() {
+  // Cinsiyet etiketleri yoksa yarat — form'da radio her zaman aktif olsun
+  await ensureGenderTags();
+
   const [categories, colors, sizes, tags] = await Promise.all([
     db.category.findMany({
       where: { isActive: true },
