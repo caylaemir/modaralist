@@ -119,6 +119,16 @@ export default async function CategoryPage({
   });
   if (!cat || !cat.isActive) notFound();
 
+  // "Diger kategoriler" — DB'den aktif top-level'lar (deactivate edilen
+  // 'polar' gibi eski kategoriler artik gozukmesin).
+  const otherTopLevels = await db.category.findMany({
+    where: { isActive: true, parentId: null, slug: { not: category } },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: {
+      translations: { where: { locale: lang } },
+    },
+  });
+
   // SEO icerigi varsa kullan, yoksa DB'den uret (alt kategoriler vs. icin fallback)
   const seoStatic = CATEGORY_SEO_TR[category];
   const trData = cat.translations[0];
@@ -355,54 +365,117 @@ export default async function CategoryPage({
         )}
       </section>
 
-      {/* SEO odaklı uzun açıklama — kategorinin altında */}
-      <section className="mx-auto mt-32 max-w-3xl px-5 pb-32 md:px-10">
-        <Reveal>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-            — {seo.name.toLowerCase()} hakkında
-          </p>
-          <h2 className="display mt-6 text-3xl md:text-4xl">
-            Marmara'nın {seo.name.toLowerCase()} adresi
-          </h2>
-          <p className="mt-8 text-base leading-relaxed text-mist">
-            {seo.longDescription}
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.2}>
-          <div className="mt-12 border-t border-line pt-8">
-            <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-              — kargo bölgeleri
-            </p>
-            <p className="mt-4 text-sm text-mist">
-              Marmara bölgesinin tüm şehirlerine 1-2 iş günü içinde kargolanır:{" "}
-              {MARMARA_REGION.cities.join(", ")}.
-            </p>
+      {/* SEO + brand context — premium asimetrik layout */}
+      <section className="mt-40 border-t border-line bg-bone/30">
+        <div className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-32">
+          {/* Hakkinda — 12-col asimetrik */}
+          <div className="grid gap-10 md:grid-cols-12 md:gap-16">
+            <div className="md:col-span-5">
+              <Reveal>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — {seo.name.toLowerCase()} koleksiyonu
+                </p>
+                <h2 className="display mt-6 text-[8vw] leading-[0.95] md:text-[3.5vw]">
+                  <span className="italic">Marmara'nın</span>
+                  <br />
+                  {seo.name.toLowerCase()} adresi
+                </h2>
+              </Reveal>
+            </div>
+            <div className="md:col-span-7 md:pt-6">
+              <Reveal delay={0.15}>
+                <p className="text-base leading-relaxed text-ink/85 md:text-lg">
+                  {seo.longDescription}
+                </p>
+              </Reveal>
+            </div>
           </div>
-        </Reveal>
 
-        <Reveal delay={0.3}>
-          <div className="mt-12 border-t border-line pt-8">
-            <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-              — diğer kategoriler
-            </p>
-            <ul className="mt-4 flex flex-wrap gap-3">
-              {Object.values(CATEGORY_SEO_TR)
-                .filter((c) => c.slug !== seo.slug)
-                .map((c) => (
-                  <li key={c.slug}>
-                    <Link
-                      href={`/shop/${c.slug}`}
-                      className="border border-line px-3 py-2 text-[11px] uppercase tracking-[0.25em] hover:border-ink"
-                    >
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
+          {/* Hizmet seridi — 3 column trust badges */}
+          <div className="mt-20 grid gap-6 border-t border-line pt-12 md:grid-cols-3 md:gap-12 md:pt-16">
+            <Reveal delay={0.1}>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — Kargo
+                </p>
+                <p className="display mt-3 text-2xl">1-2 iş günü</p>
+                <p className="mt-3 text-sm leading-relaxed text-mist">
+                  Marmara bölgesinin tüm şehirlerine: {MARMARA_REGION.cities.join(", ")}.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — Üretim
+                </p>
+                <p className="display mt-3 text-2xl">Bursa atölyesi</p>
+                <p className="mt-3 text-sm leading-relaxed text-mist">
+                  Türkiye'nin tekstil başkenti — kumaştan dikişe, baskıdan etikete kadar bizim kontrolümüzde.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.3}>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+                  — İade
+                </p>
+                <p className="display mt-3 text-2xl">14 gün koşulsuz</p>
+                <p className="mt-3 text-sm leading-relaxed text-mist">
+                  Ücretsiz iade kargo (Aras). Etiketler takılı oldukça beğenmediğin parçayı geri yolla, paranı al.
+                </p>
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
+        </div>
       </section>
+
+      {/* Diğer kategoriler — full-width görsel grid */}
+      {otherTopLevels.length > 0 ? (
+        <section className="mx-auto max-w-[1600px] px-5 py-24 md:px-10 md:py-32">
+          <Reveal>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
+              — koleksiyon devam
+            </p>
+            <h2 className="display mt-4 text-3xl md:text-5xl">
+              <span className="italic">Diğer</span> kategoriler
+            </h2>
+          </Reveal>
+          <div className="mt-12 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-5 md:gap-x-6">
+            {otherTopLevels.map((c) => {
+              const cTr = c.translations[0];
+              const name = cTr?.name ?? c.slug;
+              return (
+                <Link
+                  key={c.id}
+                  href={`/shop/${c.slug}`}
+                  className="group block"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-bone">
+                    {c.bannerUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.bannerUrl}
+                        alt={name}
+                        className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="size-full bg-gradient-to-br from-bone via-sand to-bone" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
+                  </div>
+                  <p className="display mt-4 text-lg group-hover:italic">
+                    {name}
+                  </p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-mist transition-colors group-hover:text-ink">
+                    Keşfet →
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <Marquee
         items={[
