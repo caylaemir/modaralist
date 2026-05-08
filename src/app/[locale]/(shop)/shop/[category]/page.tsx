@@ -251,13 +251,21 @@ export default async function CategoryPage({
           <p className="mt-12 text-[10px] uppercase tracking-[0.4em] text-mist">
             — kategori
           </p>
-          <h1 className="display mt-6 max-w-5xl text-[10vw] leading-[0.95] md:text-[6vw]">
-            {seo.h1}
+          {/* Kategori adi sadelestirilmis hero — tek kelime, italic display.
+              SEO H1 (seo.h1) sadelik icin gizli h1 olarak korunur (Google'a
+              gider, kullanici sadece kategori adini gorur). */}
+          <h1 className="display mt-4 text-[18vw] italic leading-[0.9] md:text-[8vw]">
+            {seo.name.toLowerCase()}.
           </h1>
+          {seo.h1 && seo.h1 !== seo.name ? (
+            <p className="mt-6 max-w-2xl text-[11px] uppercase tracking-[0.35em] text-mist">
+              {seo.h1}
+            </p>
+          ) : null}
         </Reveal>
 
         <Reveal delay={0.2}>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-mist">
+          <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink/80 md:text-lg">
             {seo.intro}
           </p>
         </Reveal>

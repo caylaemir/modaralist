@@ -119,13 +119,19 @@ export default async function CityPage({
         </p>
       </Reveal>
       <SplitText
-        text={`${city.name} — Modaralist.`}
+        text={`${city.name.toLowerCase()}.`}
         as="h1"
-        className="display mt-6 text-[12vw] leading-[0.95] md:text-[7vw]"
+        className="display mt-4 text-[20vw] italic leading-[0.9] md:text-[9vw]"
       />
 
+      <Reveal delay={0.2}>
+        <p className="mt-6 max-w-2xl text-[11px] uppercase tracking-[0.35em] text-mist">
+          {city.name} · Modaralist
+        </p>
+      </Reveal>
+
       <Reveal delay={0.3}>
-        <p className="mt-10 max-w-2xl text-lg leading-relaxed text-mist">
+        <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink/80 md:text-lg">
           {city.blurb}
         </p>
       </Reveal>

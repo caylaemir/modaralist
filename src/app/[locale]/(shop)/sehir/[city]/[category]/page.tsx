@@ -179,17 +179,23 @@ export default async function CityCategoryPage({
 
       <Reveal>
         <p className="mt-8 text-[10px] uppercase tracking-[0.4em] text-mist">
-          — {city.name} {seo.name.toLowerCase()}
+          — {city.name.toLowerCase()} koleksiyonu
         </p>
       </Reveal>
+      {/* Hero: kategori adi italic + sehir SEO altinda eyebrow */}
       <SplitText
-        text={`${city.name} ${seo.name}`}
+        text={`${seo.name.toLowerCase()}.`}
         as="h1"
-        className="display mt-6 text-[12vw] leading-[0.95] md:text-[7vw]"
+        className="display mt-4 text-[18vw] italic leading-[0.9] md:text-[8vw]"
       />
+      <Reveal delay={0.2}>
+        <p className="mt-6 max-w-2xl text-[11px] uppercase tracking-[0.35em] text-mist">
+          {city.name} · Marmara
+        </p>
+      </Reveal>
 
       <Reveal delay={0.3}>
-        <p className="mt-8 max-w-2xl text-base leading-relaxed text-mist md:text-lg">
+        <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink/80 md:text-lg">
           <strong className="text-ink">{city.name}</strong> içinde{" "}
           <strong className="text-ink">{seo.name.toLowerCase()}</strong> arıyorsan
           doğru yerdesin. {city.blurb}{" "}
