@@ -48,7 +48,11 @@ const variantSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const productInputSchema = z.object({
+// Bu schema sadece bu modul icinde kullaniliyor. Export ETMIYORUZ —
+// Next.js'te '"use server"' dosyalari sadece async function export edebilir;
+// object export edersen runtime'da 'A "use server" file can only export
+// async functions, found object' hatasi.
+const productInputSchema = z.object({
   slug: z
     .string()
     .min(1, "Slug zorunlu")
@@ -66,7 +70,9 @@ export const productInputSchema = z.object({
   tagIds: z.array(z.string()).default([]),
 });
 
-export type ProductInput = z.infer<typeof productInputSchema>;
+// Type-only export TypeScript tarafindan compile-time'da silinir,
+// runtime'da object yok — Next.js'i tetiklemez.
+type ProductInput = z.infer<typeof productInputSchema>;
 
 // ---------- Helpers ----------
 
