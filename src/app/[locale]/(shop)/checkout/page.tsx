@@ -9,6 +9,7 @@ import { formatPrice } from "@/lib/utils";
 import { Reveal } from "@/components/shop/reveal";
 import { toast } from "sonner";
 import { TR_CITIES } from "@/lib/tr-cities";
+import { calculateBundleDiscount, type BundleConfig } from "@/lib/cart-bundle";
 
 type Step = "contact" | "address" | "payment";
 
@@ -53,10 +54,22 @@ export default function CheckoutPage() {
   });
 
   const [rates, setRates] = useState<Rates>(DEFAULT_RATES);
+  // Paket (bundle) indirim ayarlari — /api/public-config'ten gelir.
+  // Sipariş özetinde "Paket indirimi" satiri ve toplam icin kullanilir
+  // (server tarafi /api/checkout zaten ayni hesabi yapar).
+  const [bundleConfig, setBundleConfig] = useState<BundleConfig | null>(null);
   useEffect(() => {
     fetch("/api/public-config")
       .then((r) => r.json())
       .then(async (d) => {
+        if (d?.bundle) {
+          setBundleConfig({
+            enabled: d.bundle.enabled,
+            minSubtotal: d.bundle.minSubtotal,
+            tier2Discount: d.bundle.tier2Discount,
+            tier3Discount: d.bundle.tier3Discount,
+          });
+        }
         if (d?.shop) {
           // A/B test (H8): kullanici 'B' variant cookie'sine atanmissa
           // freeShippingOverB esigini kullan (free-shipping-bar ile birebir
@@ -89,7 +102,23 @@ export default function CheckoutPage() {
   // Kupon FREE_SHIPPING ise kargo bedava
   const shippingCost = appliedCoupon?.freeShipping ? 0 : thresholdShipping;
   const couponDiscount = appliedCoupon?.discountAmount ?? 0;
-  const total = Math.max(0, sub + shippingCost - couponDiscount);
+  // Paket indirimi — sepetteki en ucuz parçaya, tier'a göre (2 / 3+ ürün).
+  // /api/checkout server tarafında aynı hesabı yapıp tahsil eder; burada
+  // sadece sipariş özetinde göstermek için tekrar hesaplıyoruz.
+  const bundleResult =
+    bundleConfig && bundleConfig.enabled
+      ? calculateBundleDiscount(
+          lines.map((l) => ({
+            variantId: l.variantId,
+            unitPrice: l.unitPrice,
+            quantity: l.quantity,
+          })),
+          sub,
+          bundleConfig
+        )
+      : null;
+  const bundleDiscount = bundleResult?.applied ? bundleResult.discountAmount : 0;
+  const total = Math.max(0, sub + shippingCost - couponDiscount - bundleDiscount);
 
   async function applyCoupon() {
     setCouponError(null);
@@ -751,6 +780,14 @@ export default function CheckoutPage() {
                   {shippingCost === 0 ? "Ücretsiz" : formatPrice(shippingCost, locale)}
                 </dd>
               </div>
+              {bundleDiscount > 0 ? (
+                <div className="flex justify-between text-emerald-700">
+                  <dt>Paket indirimi (%{bundleResult?.discountPercent})</dt>
+                  <dd className="tabular-nums">
+                    -{formatPrice(bundleDiscount, locale)}
+                  </dd>
+                </div>
+              ) : null}
               {couponDiscount > 0 ? (
                 <div className="flex justify-between text-emerald-700">
                   <dt>Kupon ({appliedCoupon?.code})</dt>
