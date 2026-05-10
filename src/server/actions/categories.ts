@@ -5,23 +5,48 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+const slugSchema = z
+  .string()
+  .min(1, "Slug zorunlu")
+  .regex(/^[a-z0-9-]+$/, "Slug sadece küçük harf, rakam ve tire içerebilir");
+
 const translationSchema = z.object({
   locale: z.enum(["tr", "en"]),
   name: z.string().min(1, "İsim zorunlu"),
-  slug: z.string().min(1, "Slug zorunlu"),
+  slug: slugSchema,
   description: z.string().optional().nullable(),
   seoTitle: z.string().optional().nullable(),
   seoDesc: z.string().optional().nullable(),
 });
 
 const categoryInputSchema = z.object({
-  slug: z.string().min(1, "Slug zorunlu"),
+  slug: slugSchema,
   parentId: z.string().optional().nullable(),
   bannerUrl: z.string().optional().nullable(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
   translations: z.array(translationSchema).min(1, "En az bir çeviri gerekli"),
 });
+
+// parentId = newParentId yapilirsa donguye yol acar mi? (A->B->A gibi)
+// newParentId'den yukari yurur, categoryId'yi gorursa dongudur.
+async function wouldCreateCycle(
+  categoryId: string,
+  newParentId: string
+): Promise<boolean> {
+  let cursor: string | null = newParentId;
+  let guard = 0;
+  while (cursor && guard++ < 50) {
+    if (cursor === categoryId) return true;
+    const parent: { parentId: string | null } | null =
+      await db.category.findUnique({
+        where: { id: cursor },
+        select: { parentId: true },
+      });
+    cursor = parent?.parentId ?? null;
+  }
+  return false;
+}
 
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 
@@ -86,6 +111,9 @@ export async function updateCategory(id: string, input: CategoryInput) {
 
   if (data.parentId && data.parentId === id) {
     throw new Error("Bir kategori kendi üst kategorisi olamaz.");
+  }
+  if (data.parentId && (await wouldCreateCycle(id, data.parentId))) {
+    throw new Error("Bu üst kategori seçimi döngü oluşturur (kategori kendi alt ağacının altına taşınamaz).");
   }
 
   if (data.slug !== current.slug) {

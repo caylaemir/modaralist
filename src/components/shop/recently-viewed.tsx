@@ -9,6 +9,7 @@ type Product = {
   name: string;
   dropLabel?: string;
   price: number;
+  discountPrice?: number | null;
   image: string;
   hoverImage?: string;
   soldOut?: boolean;

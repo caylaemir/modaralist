@@ -46,7 +46,8 @@
     "total": "Total",
     "checkout": "Checkout",
     "remove": "Remove",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "orderSummary": "Order Summary"
   },
   "Checkout": {
     "title": "Checkout",

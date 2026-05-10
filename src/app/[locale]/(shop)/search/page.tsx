@@ -71,6 +71,7 @@ export default async function SearchPage({
                   name: p.name,
                   dropLabel: p.dropLabel ?? "",
                   price: p.price,
+                  discountPrice: p.discountPrice,
                   image: p.images[0] ?? "",
                   hoverImage: p.hoverImage ?? undefined,
                   soldOut: p.soldOut,

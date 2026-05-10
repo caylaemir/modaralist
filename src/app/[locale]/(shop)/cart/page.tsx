@@ -138,7 +138,7 @@ export default function CartPage() {
         <aside className="md:col-span-4">
           <div className="sticky top-28 border border-line bg-bone p-8">
             <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
-              {t("orderSummary" as "title")}
+              {t("orderSummary")}
             </p>
             <dl className="mt-8 space-y-4 text-sm">
               <div className="flex items-center justify-between">

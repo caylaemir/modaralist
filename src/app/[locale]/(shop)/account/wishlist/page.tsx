@@ -69,9 +69,11 @@ export default async function WishlistPage({
               (s, v) => s + v.stock,
               0
             );
-            const price = it.product.discountPrice
-              ? Number(it.product.discountPrice)
-              : Number(it.product.basePrice);
+            const price = Number(it.product.basePrice);
+            const discountPrice =
+              it.product.discountPrice != null
+                ? Number(it.product.discountPrice)
+                : null;
             return (
               <div key={it.id} className="relative">
                 <ProductCard
@@ -80,6 +82,7 @@ export default async function WishlistPage({
                     name: tr?.name ?? it.product.slug,
                     dropLabel: "",
                     price,
+                    discountPrice,
                     image: img?.url ?? "",
                     hoverImage: hover?.url,
                     soldOut: totalStock === 0,

@@ -46,7 +46,8 @@
     "total": "Toplam",
     "checkout": "Ödemeye Geç",
     "remove": "Kaldır",
-    "quantity": "Adet"
+    "quantity": "Adet",
+    "orderSummary": "Sipariş Özeti"
   },
   "Checkout": {
     "title": "Ödeme",

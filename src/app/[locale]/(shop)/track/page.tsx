@@ -1,7 +1,9 @@
+import { headers } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import { Reveal } from "@/components/shop/reveal";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
+import { rateLimit } from "@/lib/rate-limit";
 import { TrackForm } from "./track-form";
 
 export const dynamic = "force-dynamic";
@@ -42,21 +44,40 @@ export default async function TrackPage({
   const { order: orderNumber = "", email = "" } = await searchParams;
   const queried = orderNumber.trim().length > 0 && email.trim().length > 0;
 
-  const order = queried
-    ? await db.order
-        .findFirst({
-          where: {
-            orderNumber: orderNumber.trim().toUpperCase(),
-            email: email.trim().toLowerCase(),
-          },
-          include: {
-            items: { select: { productNameSnapshot: true, variantSnapshot: true, quantity: true, lineTotal: true } },
-            shipments: { orderBy: { createdAt: "desc" } },
-            addresses: { where: { type: "SHIPPING" } },
-          },
-        })
-        .catch(() => null)
-    : null;
+  // Sipariş sorgusu: IP başına dakikada 12 deneme — enumeration'a karşı.
+  let rateLimited = false;
+  if (queried) {
+    const h = await headers();
+    const ip =
+      h.get("x-real-ip")?.trim() ||
+      h
+        .get("x-forwarded-for")
+        ?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .pop() ||
+      "unknown";
+    if (ip !== "unknown" && !rateLimit(`track:${ip}`, 12, 60_000).allowed) {
+      rateLimited = true;
+    }
+  }
+
+  const order =
+    queried && !rateLimited
+      ? await db.order
+          .findFirst({
+            where: {
+              orderNumber: orderNumber.trim().toUpperCase(),
+              email: email.trim().toLowerCase(),
+            },
+            include: {
+              items: { select: { productNameSnapshot: true, variantSnapshot: true, quantity: true, lineTotal: true } },
+              shipments: { orderBy: { createdAt: "desc" } },
+              addresses: { where: { type: "SHIPPING" } },
+            },
+          })
+          .catch(() => null)
+      : null;
 
   const dateFmt = new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
@@ -88,7 +109,16 @@ export default async function TrackPage({
         />
       </div>
 
-      {queried && !order ? (
+      {queried && rateLimited ? (
+        <div className="mt-16 border-t border-line pt-10 text-center">
+          <p className="display text-3xl italic text-mist">
+            Çok fazla sorgu
+          </p>
+          <p className="mt-4 text-sm text-mist">
+            Birkaç dakika sonra tekrar dene.
+          </p>
+        </div>
+      ) : queried && !order ? (
         <div className="mt-16 border-t border-line pt-10 text-center">
           <p className="display text-3xl italic text-mist">
             Eşleşen sipariş bulunamadı

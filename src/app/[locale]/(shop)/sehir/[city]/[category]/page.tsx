@@ -13,6 +13,7 @@ import {
 } from "@/lib/marmara-cities";
 import { CATEGORY_SEO_TR } from "@/lib/category-seo";
 import { db } from "@/lib/db";
+import { getProductsByCategoryTree } from "@/lib/shop";
 import type { Locale } from "@prisma/client";
 
 export const revalidate = 3600;
@@ -78,28 +79,22 @@ export default async function CityCategoryPage({
 
   const cat = await db.category.findUnique({
     where: { slug: category },
-    include: { translations: { where: { locale: lang } } },
+    select: { isActive: true },
   });
-  if (!cat) notFound();
+  if (!cat || !cat.isActive) notFound();
 
-  const products = await db.product.findMany({
-    where: { status: "PUBLISHED", categoryId: cat.id },
-    take: 12,
-    orderBy: { createdAt: "desc" },
-    include: {
-      translations: { where: { locale: lang } },
-      images: { orderBy: { sortOrder: "asc" }, take: 2 },
-    },
-  });
+  // Kategori agacindaki tum urunler (leaf'lere atanmislar dahil) — ilk 12
+  const products = (await getProductsByCategoryTree(category, lang)).slice(0, 12);
 
   const productCards = products.map((p) => ({
     slug: p.slug,
-    name: p.translations[0]?.name ?? p.slug,
-    dropLabel: "",
-    price: Number(p.basePrice),
-    image: p.images[0]?.url ?? "",
-    hoverImage: p.images[1]?.url,
-    soldOut: false,
+    name: p.name,
+    dropLabel: p.dropLabel ?? "",
+    price: p.price,
+    discountPrice: p.discountPrice,
+    image: p.images[0] ?? "",
+    hoverImage: p.hoverImage ?? undefined,
+    soldOut: p.soldOut,
   }));
 
   // BreadcrumbList JSON-LD: 4 seviye (ana > sehirler > sehir > kategori)

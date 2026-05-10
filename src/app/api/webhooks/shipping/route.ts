@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
 
 // Kargo scripti bu endpoint'e istek atacak.
 // Header: x-shipping-secret
 // Body: { orderNumber, trackingNumber, carrier, status, trackingUrl? }
+
+// Sabit zamanli karsilastirma — `!==` eslesen karakter sayisina gore sure
+// degistirir, bu da gizli token'in karakter karakter brute-force'una izin verir.
+function secretMatches(provided: string | null, expected: string | undefined): boolean {
+  if (!expected || !provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 const bodySchema = z.object({
   orderNumber: z.string(),
@@ -21,8 +32,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get("x-shipping-secret");
-  if (!secret || secret !== process.env.SHIPPING_WEBHOOK_SECRET) {
+  if (!secretMatches(req.headers.get("x-shipping-secret"), process.env.SHIPPING_WEBHOOK_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

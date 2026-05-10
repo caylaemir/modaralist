@@ -9,11 +9,8 @@ const LOCALES = ["tr", "en"] as const;
 // Statik üst-seviye sayfalar (root'tan başlar)
 const TOP_PATHS = ["", "/shop", "/drops", "/track", "/search", "/blog"];
 
-// SEO odakli kategori slug'lari
-const CATEGORY_SLUGS = Object.keys(CATEGORY_SEO_TR);
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collections, pages] = await Promise.all([
+  const [products, collections, pages, activeCategories] = await Promise.all([
     db.product
       .findMany({
         where: { status: "PUBLISHED" },
@@ -41,10 +38,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         select: { slug: true, updatedAt: true, template: true },
       })
       .catch(() => []),
+    db.category
+      .findMany({ where: { isActive: true }, select: { slug: true } })
+      .catch(() => []),
   ]);
 
   const urls: MetadataRoute.Sitemap = [];
   const now = new Date();
+
+  // /shop/[category] — DB'deki AKTIF kategoriler (silinmis/pasif olanlar haric).
+  const activeCategorySlugs = activeCategories.map((c) => c.slug);
+  const activeSlugSet = new Set(activeCategorySlugs);
+  // /sehir/[city]/[category] sadece CATEGORY_SEO_TR'de tanimli VE hala aktif
+  // olan kategoriler icin var (sehir sayfasi !seo ise notFound atar) — pasif
+  // edilmis (orn. 'polar') slug'lari sitemap'e koymayalim, 404 olur.
+  const cityCategorySlugs = Object.keys(CATEGORY_SEO_TR).filter((s) =>
+    activeSlugSet.has(s)
+  );
 
   for (const locale of LOCALES) {
     for (const path of TOP_PATHS) {
@@ -55,8 +65,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: path === "" ? 1.0 : 0.7,
       });
     }
-    // Kategori sayfalari (en yuksek SEO degeri)
-    for (const slug of CATEGORY_SLUGS) {
+    // Kategori sayfalari (en yuksek SEO degeri) — aktif kategoriler
+    for (const slug of activeCategorySlugs) {
       urls.push({
         url: `${BASE}/${locale}/shop/${slug}`,
         lastModified: now,
@@ -109,7 +119,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
-      for (const cat of CATEGORY_SLUGS) {
+      for (const cat of cityCategorySlugs) {
         urls.push({
           url: `${BASE}/${locale}/sehir/${city}/${cat}`,
           lastModified: now,

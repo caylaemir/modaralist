@@ -223,9 +223,9 @@ export default async function ProductPage({
                       aria-label={`${r.rating} / 5 yıldız`}
                     >
                       <span aria-hidden="true">
-                        {"★".repeat(r.rating)}
+                        {"★".repeat(Math.max(0, Math.min(5, r.rating)))}
                         <span className="text-mist">
-                          {"★".repeat(5 - r.rating)}
+                          {"★".repeat(Math.max(0, 5 - Math.max(0, Math.min(5, r.rating))))}
                         </span>
                       </span>
                     </span>
@@ -268,6 +268,7 @@ export default async function ProductPage({
                   name: p.name,
                   dropLabel: p.dropLabel ?? "",
                   price: p.price,
+                  discountPrice: p.discountPrice,
                   image: p.images[0] ?? "",
                   hoverImage: p.hoverImage ?? undefined,
                   soldOut: p.soldOut,

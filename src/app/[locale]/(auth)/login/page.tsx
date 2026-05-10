@@ -14,10 +14,19 @@ export default function LoginPage() {
   );
 }
 
+// Sadece kendi sitemizin path'lerine yonlendir — `//evil.com` veya
+// `https://evil.com` gibi degerler open-redirect (phishing) acigi olur.
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw) return "/account";
+  if (!raw.startsWith("/")) return "/account";
+  if (raw.startsWith("//") || raw.startsWith("/\\")) return "/account";
+  return raw;
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "/account";
+  const callbackUrl = safeCallbackUrl(params.get("callbackUrl"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

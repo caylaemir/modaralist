@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { hasValidDiscount } from "@/lib/utils";
 
 /**
  * Google Merchant Center / Google Shopping urun feed'i.
@@ -58,8 +59,13 @@ export async function GET() {
     if (!tr) continue;
     const totalStock = p.variants.reduce((s, v) => s + v.stock, 0);
     const availability = totalStock > 0 ? "in stock" : "out of stock";
-    const price = Number(p.basePrice).toFixed(2);
-    const salePrice = p.discountPrice ? Number(p.discountPrice).toFixed(2) : null;
+    const basePrice = Number(p.basePrice);
+    const discountPrice = p.discountPrice != null ? Number(p.discountPrice) : null;
+    const price = basePrice.toFixed(2);
+    // discountPrice 0 olabiliyor (admin form); sadece gercek indirimde sale_price ver
+    const salePrice = hasValidDiscount(basePrice, discountPrice)
+      ? (discountPrice as number).toFixed(2)
+      : null;
     const mainImage = p.images[0]?.url ?? "";
     const additionalImages = p.images.slice(1, 5).map((i) => i.url);
     const link = `${BASE}/tr/products/${p.slug}`;

@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import type { UserRole } from "@prisma/client";
 
 declare module "next-auth" {
@@ -36,11 +37,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "E-posta", type: "email" },
         password: { label: "Şifre", type: "password" },
       },
-      async authorize(raw) {
+      async authorize(raw, request) {
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+
+        // Brute-force koruma: bcrypt.compare pahali oldugu icin kontroller
+        // ondan ONCE. IP basina toplam deneme + hesap (email) basina deneme
+        // penceresi. Limit asilirsa "gecersiz" gibi davran (bilgi sizdirmaz).
+        // NOT: in-memory limiter (cold start'ta sifirlanir) — tam koruma degil
+        // ama acik brute-force'u ~100x yavaslatir.
+        if (request) {
+          const ip = getClientIp(request);
+          if (ip !== "unknown" && !rateLimit(`login-ip:${ip}`, 20, 15 * 60_000).allowed) {
+            return null;
+          }
+        }
+        if (!rateLimit(`login-acct:${email.toLowerCase()}`, 10, 15 * 60_000).allowed) {
+          return null;
+        }
+
         const user = await db.user.findUnique({ where: { email } });
         if (!user?.passwordHash) return null;
 

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import { Link } from "@/i18n/navigation";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, hasValidDiscount, effectivePrice } from "@/lib/utils";
 import { WishlistHeart } from "./wishlist-heart";
 
 export type ProductCardData = {
@@ -11,6 +11,8 @@ export type ProductCardData = {
   name: string;
   dropLabel?: string;
   price: number;
+  // Indirimli fiyat (varsa). 0 / null / >= price ise yok sayilir (helper guvenli).
+  discountPrice?: number | null;
   image: string;
   hoverImage?: string;
   soldOut?: boolean;
@@ -26,6 +28,9 @@ export function ProductCard({
   locale?: "tr" | "en";
   index?: number;
 }) {
+  const onSale = hasValidDiscount(product.price, product.discountPrice ?? null);
+  const shownPrice = effectivePrice(product.price, product.discountPrice ?? null);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -46,13 +51,20 @@ export function ProductCard({
         ) : null}
         <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-          />
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+              className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
+            />
+          ) : (
+            // Gorseli olmayan urun — bos string next/image'i patlatir, placeholder goster
+            <div className="flex h-full w-full items-center justify-center bg-bone text-[10px] uppercase tracking-[0.3em] text-mist">
+              Modaralist
+            </div>
+          )}
           {product.hoverImage && (
             <Image
               src={product.hoverImage}
@@ -88,9 +100,14 @@ export function ProductCard({
               {product.name}
             </p>
           </div>
-          <p className="shrink-0 text-sm tabular-nums">
-            {formatPrice(product.price, locale)}
-          </p>
+          <div className="shrink-0 text-right">
+            <p className="text-sm tabular-nums">{formatPrice(shownPrice, locale)}</p>
+            {onSale && (
+              <p className="text-[11px] tabular-nums text-mist line-through">
+                {formatPrice(product.price, locale)}
+              </p>
+            )}
+          </div>
         </div>
       </Link>
       </div>

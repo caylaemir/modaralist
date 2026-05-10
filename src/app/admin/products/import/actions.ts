@@ -194,9 +194,25 @@ export async function importProductsAction(
         });
         continue;
       }
-      const discountPrice = row.discountPrice
-        ? Number(row.discountPrice)
-        : null;
+      let discountPrice: number | null = null;
+      if (row.discountPrice && row.discountPrice.trim().length > 0) {
+        const d = Number(row.discountPrice);
+        if (!Number.isFinite(d) || d < 0 || d > 1_000_000) {
+          result.errors.push({
+            row: r + 1,
+            message: `[discountPrice] Gecersiz indirim: '${row.discountPrice}' (slug=${row.slug})`,
+          });
+          continue;
+        }
+        if (d >= basePrice) {
+          result.errors.push({
+            row: r + 1,
+            message: `[discountPrice] Indirim fiyati taban fiyattan kucuk olmali: ${d} >= ${basePrice} (slug=${row.slug})`,
+          });
+          continue;
+        }
+        discountPrice = d;
+      }
 
       const existing = await db.product.findUnique({
         where: { slug: row.slug },

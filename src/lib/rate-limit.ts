@@ -68,11 +68,21 @@ export function rateLimit(
   };
 }
 
-/** Request'ten IP cekme yardimcisi (proxy header'larini sirayla dener) */
+/**
+ * Request'ten IP cekme yardimcisi.
+ *
+ * Guvenlik: `x-forwarded-for`'in EN SOLDAKI degeri istemci tarafindan serbestce
+ * uydurulabilir (proxy onune deger ekler). Guvenilen edge (Vercel) gercek
+ * baglanan IP'yi `x-real-ip`'e yazar -> once onu kullan. `x-forwarded-for`'a
+ * dusersek EN SAGDAKI giris (proxy'nin gordugu) en guveniliridir.
+ */
 export function getClientIp(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
   const real = req.headers.get("x-real-ip");
-  if (real) return real.trim();
+  if (real && real.trim()) return real.trim();
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) {
+    const parts = fwd.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
   return "unknown";
 }

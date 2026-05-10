@@ -5,6 +5,19 @@ import { z } from "zod";
 import { OrderStatus, ShipmentStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { restoreStockForOrder } from "@/lib/stock";
+
+// Stok checkout'ta (siparis olusturulurken) dusulur. Siparis CANCELLED veya
+// REFUNDED'a gecince geri verilmeli — ama yalnizca BIR KEZ. Bu yuzden hedef
+// durum "release eden" bir durumsa ve mevcut durum henuz release etmemisse
+// stok iade edilir (cifte iadeyi engeller).
+const STOCK_RELEASED_STATUSES = new Set<OrderStatus>([
+  OrderStatus.CANCELLED,
+  OrderStatus.REFUNDED,
+]);
+function shouldReleaseStock(from: OrderStatus, to: OrderStatus): boolean {
+  return STOCK_RELEASED_STATUSES.has(to) && !STOCK_RELEASED_STATUSES.has(from);
+}
 
 // ---------- Auth guard ----------
 
@@ -58,6 +71,10 @@ export async function updateOrderStatus(
       where: { id: orderId },
       data: { status: parsedStatus as OrderStatus },
     });
+
+    if (shouldReleaseStock(order.status, parsedStatus as OrderStatus)) {
+      await restoreStockForOrder(orderId, tx);
+    }
 
     await tx.orderStatusHistory.create({
       data: {
@@ -173,6 +190,10 @@ export async function cancelOrder(orderId: string, reason?: string) {
       data: { status: OrderStatus.CANCELLED },
     });
 
+    if (shouldReleaseStock(order.status, OrderStatus.CANCELLED)) {
+      await restoreStockForOrder(orderId, tx);
+    }
+
     await tx.orderStatusHistory.create({
       data: {
         orderId,
@@ -208,6 +229,10 @@ export async function refundOrder(orderId: string, reason?: string) {
         paymentStatus: "REFUNDED",
       },
     });
+
+    if (shouldReleaseStock(order.status, OrderStatus.REFUNDED)) {
+      await restoreStockForOrder(orderId, tx);
+    }
 
     await tx.orderStatusHistory.create({
       data: {

@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import * as Sentry from "@sentry/nextjs";
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -34,11 +35,13 @@ export async function sendEmail({ to, subject, html, replyTo }: SendArgs) {
     });
     if (error) {
       console.error("[email] gönderim hatası", error);
+      Sentry.captureException(error, { tags: { area: "email" }, extra: { to, subject } });
       return { id: null };
     }
     return { id: data?.id ?? null };
   } catch (err) {
     console.error("[email] istisna", err);
+    Sentry.captureException(err, { tags: { area: "email" }, extra: { to, subject } });
     return { id: null };
   }
 }
@@ -161,7 +164,14 @@ export async function sendPasswordResetEmail(args: {
   const resend = getResend();
   if (!resend) {
     // Resend kurulu değilken dev için URL'i logla, test edilebilir olsun.
-    console.log(`[email/sim] password reset for ${args.to}: ${args.resetUrl}`);
+    // Prod'da ASLA loglama — reset token'i loglara/Sentry breadcrumb'larina sizar.
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[email/sim] password reset for ${args.to}: ${args.resetUrl}`);
+    } else {
+      console.warn(
+        `[email] RESEND_API_KEY yok — ${args.to} icin sifre sifirlama maili GONDERILEMEDI`
+      );
+    }
     return { id: null };
   }
   return sendEmail({

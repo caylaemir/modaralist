@@ -35,6 +35,8 @@ export type ShopProduct = {
   colors: ShopColor[];
   variants: ShopVariant[];
   categorySlug: string | null;
+  // Kategori ata zinciri (top -> sub -> leaf, kendisi dahil) — filtre eslesmesi
+  categoryAncestorSlugs: string[];
   tags: string[];
   tagCodes: string[];
   soldOut: boolean;
@@ -69,9 +71,12 @@ type ProductWithRelations = {
     id: string;
     stock: number;
     size: { code: string } | null;
-    color: { code: string; hex: string; nameTr: string; nameEn: string };
+    color: { code: string; hex: string; nameTr: string; nameEn: string } | null;
   }[];
-  category: { slug: string } | null;
+  category: {
+    slug: string;
+    parent: { slug: string; parent: { slug: string } | null } | null;
+  } | null;
   tags: { code: string; labelTr: string; labelEn: string }[];
   collections: {
     collection: {
@@ -94,6 +99,8 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
   const colors: ShopColor[] = [];
   const seenColors = new Set<string>();
   for (const v of p.variants) {
+    // colorId nullable — renksiz varyant (admin'de renk secilmemis) olabilir
+    if (!v.color) continue;
     if (seenColors.has(v.color.code)) continue;
     seenColors.add(v.color.code);
     colors.push({
@@ -102,6 +109,16 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
       hex: v.color.hex,
     });
   }
+
+  // Kategori ata zinciri (top -> sub -> leaf, inclusive) — magaza filtresi
+  // urunu leaf kategoriye atanmis olsa da ust kategoriden bulabilsin diye.
+  const categoryAncestorSlugs = p.category
+    ? ([
+        p.category.parent?.parent?.slug,
+        p.category.parent?.slug,
+        p.category.slug,
+      ].filter(Boolean) as string[])
+    : [];
 
   const sortedImages = [...p.images].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -124,11 +141,12 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
     variants: p.variants.map((v) => ({
       id: v.id,
       size: v.size?.code ?? "",
-      color: locale === "tr" ? v.color.nameTr : v.color.nameEn,
-      colorCode: v.color.code,
+      color: v.color ? (locale === "tr" ? v.color.nameTr : v.color.nameEn) : "",
+      colorCode: v.color?.code ?? "",
       stock: v.stock,
     })),
     categorySlug: p.category?.slug ?? null,
+    categoryAncestorSlugs,
     tags: p.tags.map((t) => (locale === "tr" ? t.labelTr : t.labelEn)),
     tagCodes: p.tags.map((t) => t.code),
     soldOut: p.status === "PUBLISHED" && totalStock === 0,
@@ -146,7 +164,7 @@ const productInclude = {
       color: true,
     },
   },
-  category: true,
+  category: { include: { parent: { include: { parent: true } } } },
   tags: true,
   collections: {
     include: {

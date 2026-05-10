@@ -14,8 +14,11 @@ import { verifyCronAuth } from "@/lib/cron-auth";
  * - Her order icin: o user/email iliskili herhangi bir Review yazmis mi?
  *   - Yazmamissa: en pahali itemi sec, review request mail at
  *   - Yazmissa: skip
- * - Tek seferlik trigger: 5-7 gun penceresinde olanlar -> 7+ gun gecince bir
- *   daha gondermez (ekstra column gerek yok, idempotent zaman penceresi)
+ * - Tek seferlik trigger: pencere ~1 gun genisliginde (6-7 gun once teslim
+ *   edilmis) — gunluk cron'da her siparis bu pencereye yalnizca BIR kez girer,
+ *   yani musteriye ayni mail iki kez gitmez. (Onceki 5-7 gun penceresi 2 gun
+ *   genisindeydi -> ust uste 2 gun eslesip cifte mail atiyordu, ozellikle
+ *   misafir siparislerinde -- duzeltildi.)
  *
  * Cron komutu (VPS crontab):
  *   0 10 * * * curl -fsSL -H "Authorization: Bearer $CRON_SECRET" https://modaralist.com/api/cron/review-requests
@@ -26,14 +29,14 @@ export async function GET(req: Request) {
   }
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400_000);
-  const fiveDaysAgo = new Date(Date.now() - 5 * 86400_000);
+  const sixDaysAgo = new Date(Date.now() - 6 * 86400_000);
 
-  // updatedAt'i 5-7 gun once olan + DELIVERED siparisler
+  // updatedAt'i 6-7 gun once olan + DELIVERED siparisler (~1 gunluk pencere)
   // (updatedAt status degisince update olur, teslim zamani proxy'si)
   const deliveredOrders = await db.order.findMany({
     where: {
       status: "DELIVERED",
-      updatedAt: { gte: sevenDaysAgo, lt: fiveDaysAgo },
+      updatedAt: { gte: sevenDaysAgo, lt: sixDaysAgo },
     },
     select: {
       id: true,

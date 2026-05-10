@@ -75,7 +75,12 @@ export function ShopGrid({
     let list = products.slice();
 
     if (filter.category !== "all") {
-      list = list.filter((p) => p.categorySlug === filter.category);
+      // Urun leaf kategoriye atanmis olabilir; ata zincirinde de eslestir
+      list = list.filter(
+        (p) =>
+          p.categorySlug === filter.category ||
+          p.categoryAncestorSlugs.includes(filter.category)
+      );
     }
 
     // Cinsiyet filtresi — Tag.code uzerinden
