@@ -189,10 +189,10 @@ export default async function ProductPage({
       <TrackView slug={product.slug} />
 
       <section className="mx-auto mt-10 grid max-w-[1600px] gap-10 px-5 md:mt-16 md:grid-cols-12 md:px-10">
-        <div className="md:col-span-7 lg:col-span-8">
+        <div className="md:col-span-7">
           <ProductGallery images={product.images} alt={product.name} />
         </div>
-        <div className="md:col-span-5 lg:col-span-4">
+        <div className="md:col-span-5">
           <ProductActions product={product} locale={locale as "tr" | "en"} />
         </div>
       </section>

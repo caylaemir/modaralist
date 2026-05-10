@@ -5,7 +5,9 @@ import { motion } from "motion/react";
 
 export function ProductGallery({ images, alt }: { images: string[]; alt: string }) {
   return (
-    <div className="flex flex-col gap-3">
+    // Masaustunde gorsel cok buyuk gorunuyordu — max genislik ile sinirla,
+    // sola yasla (yaninda urun bilgisi/sepet paneli oturuyor).
+    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-3 lg:mx-0">
       {images.map((src, i) => (
         <motion.div
           key={i}
@@ -20,7 +22,7 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             alt={`${alt} ${i + 1}`}
             fill
             priority={i === 0}
-            sizes="(min-width: 1024px) 60vw, 100vw"
+            sizes="(min-width: 1024px) 640px, 100vw"
             className="object-cover"
           />
         </motion.div>
