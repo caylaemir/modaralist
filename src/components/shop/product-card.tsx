@@ -17,6 +17,8 @@ export type ProductCardData = {
   hoverImage?: string;
   soldOut?: boolean;
   badge?: string;
+  // Renk-bazli kart: tiklayinca urun sayfasi bu renkle acilir (?color=<code>)
+  colorParam?: string;
 };
 
 export function ProductCard({
@@ -30,6 +32,9 @@ export function ProductCard({
 }) {
   const onSale = hasValidDiscount(product.price, product.discountPrice ?? null);
   const shownPrice = effectivePrice(product.price, product.discountPrice ?? null);
+  const href = product.colorParam
+    ? `/products/${product.slug}?color=${encodeURIComponent(product.colorParam)}`
+    : `/products/${product.slug}`;
 
   return (
     <motion.div
@@ -49,7 +54,7 @@ export function ProductCard({
             {product.badge}
           </span>
         ) : null}
-        <Link href={`/products/${product.slug}`} className="block">
+        <Link href={href} className="block">
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
           {product.image ? (
             <Image

@@ -2,9 +2,47 @@
 
 import { useState, useMemo } from "react";
 import { X } from "lucide-react";
-import { ProductCard } from "@/components/shop/product-card";
+import { ProductCard, type ProductCardData } from "@/components/shop/product-card";
 import { ShopFilters, type ShopFilter } from "@/components/shop/shop-filters";
 import type { ShopProduct } from "@/lib/shop";
+
+type GridCard = ProductCardData & { key: string };
+
+// Bir urunu kart(lar)a cevirir: renge gorsel atanmissa her renk ayri kart
+// (o rengin gorseliyle, ?color=<code> linkiyle); yoksa tek bir genel kart.
+function toCards(p: ShopProduct): GridCard[] {
+  const colorCards: GridCard[] = [];
+  for (const c of p.colors) {
+    const imgs = p.colorImages[c.code];
+    if (!imgs || imgs.length === 0) continue;
+    colorCards.push({
+      key: `${p.slug}__${c.code}`,
+      slug: p.slug,
+      name: p.name,
+      dropLabel: p.dropLabel ?? "",
+      price: p.price,
+      discountPrice: p.discountPrice,
+      image: imgs[0],
+      hoverImage: imgs[1] ?? p.hoverImage ?? undefined,
+      soldOut: p.soldOut,
+      colorParam: c.code,
+    });
+  }
+  if (colorCards.length > 0) return colorCards;
+  return [
+    {
+      key: p.slug,
+      slug: p.slug,
+      name: p.name,
+      dropLabel: p.dropLabel ?? "",
+      price: p.price,
+      discountPrice: p.discountPrice,
+      image: p.images[0] ?? "",
+      hoverImage: p.hoverImage ?? undefined,
+      soldOut: p.soldOut,
+    },
+  ];
+}
 
 function FilterPill({ label, onClear }: { label: string; onClear: () => void }) {
   return (
@@ -114,19 +152,39 @@ export function ShopGrid({
     return list;
   }, [products, filter]);
 
+  // Urunleri kartlara patlat (renk-bazli). Renk filtresi aktifse renk-kartlari
+  // sadece eslesen renkten gosterilir (genel kartlar her zaman gecer — urunu
+  // zaten o renge sahip oldugu icin filtreden gecmis).
+  const cards = useMemo(() => {
+    const out: GridCard[] = [];
+    for (const p of filtered) {
+      for (const card of toCards(p)) {
+        if (
+          filter.colorCodes.length > 0 &&
+          card.colorParam &&
+          !filter.colorCodes.includes(card.colorParam)
+        ) {
+          continue;
+        }
+        out.push(card);
+      }
+    }
+    return out;
+  }, [filtered, filter.colorCodes]);
+
   return (
     <>
       <ShopFilters
         value={filter}
         onChange={setFilter}
-        total={filtered.length}
+        total={cards.length}
         categories={categories}
         availableSizes={availableSizes}
         availableColors={availableColors}
         hideCategorySection={hideCategorySection}
       />
 
-      {filtered.length === 0 ? (
+      {cards.length === 0 ? (
         <div className="flex min-h-[40vh] flex-col items-center justify-center py-20 text-center">
           <p className="display text-4xl">Bu kombinasyonda bir şey yok.</p>
           <p className="mt-4 text-sm text-mist">Filtreleri gevşet veya temizle.</p>
@@ -206,21 +264,8 @@ export function ShopGrid({
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:grid-cols-4 md:gap-x-6">
-          {filtered.map((p, i) => (
-            <ProductCard
-              key={p.slug}
-              product={{
-                slug: p.slug,
-                name: p.name,
-                dropLabel: p.dropLabel ?? "",
-                price: p.price,
-                image: p.images[0] ?? "",
-                hoverImage: p.hoverImage ?? undefined,
-                soldOut: p.soldOut,
-              }}
-              locale={locale}
-              index={i}
-            />
+          {cards.map((c, i) => (
+            <ProductCard key={c.key} product={c} locale={locale} index={i} />
           ))}
         </div>
       )}

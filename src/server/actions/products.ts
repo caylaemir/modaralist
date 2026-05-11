@@ -39,6 +39,8 @@ const imageSchema = z.object({
   alt: z.string().optional().nullable(),
   sortOrder: z.number().int().default(0),
   isHover: z.boolean().default(false),
+  // Bos/null -> genel gorsel; doluysa Color.id (o renge ait gorsel)
+  colorId: z.string().optional().nullable(),
 });
 
 const variantSchema = z.object({
@@ -165,6 +167,7 @@ export async function createProduct(rawInput: ProductInput) {
             alt: img.alt ?? null,
             sortOrder: img.sortOrder ?? i,
             isHover: img.isHover ?? false,
+            colorId: img.colorId || null,
           })),
         },
         variants: {
@@ -271,6 +274,7 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
           alt: img.alt ?? null,
           sortOrder: img.sortOrder ?? i,
           isHover: img.isHover ?? false,
+          colorId: img.colorId || null,
         })),
       });
     }

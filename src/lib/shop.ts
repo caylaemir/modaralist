@@ -27,6 +27,10 @@ export type ShopProduct = {
   price: number;
   discountPrice: number | null;
   images: string[];
+  // Renge atanmamis (genel) gorseller — her renkte gosterilebilir
+  sharedImages: string[];
+  // colorCode -> o renge atanmis gorsel URL'leri (sortOrder sirasinda)
+  colorImages: Record<string, string[]>;
   hoverImage: string | null;
   description: string;
   material: string;
@@ -66,7 +70,7 @@ type ProductWithRelations = {
   discountPrice: { toString(): string } | number | null;
   status: string;
   translations: { locale: string; name: string; description: string | null; material: string | null; care: string | null }[];
-  images: { url: string; isHover: boolean; sortOrder: number }[];
+  images: { url: string; isHover: boolean; sortOrder: number; color: { code: string } | null }[];
   variants: {
     id: string;
     stock: number;
@@ -122,6 +126,20 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
 
   const sortedImages = [...p.images].sort((a, b) => a.sortOrder - b.sortOrder);
 
+  // Gorselleri renge gore ayir — renge atanmis olanlar colorImages'a, atanmamis
+  // olanlar sharedImages'a. Urun sayfasinda renk secince o rengin gorselleri
+  // gosterilir; magaza listesinde her renk ayri kart olur.
+  const sharedImages: string[] = [];
+  const colorImages: Record<string, string[]> = {};
+  for (const img of sortedImages) {
+    const code = img.color?.code ?? null;
+    if (code) {
+      (colorImages[code] ??= []).push(img.url);
+    } else {
+      sharedImages.push(img.url);
+    }
+  }
+
   return {
     id: p.id,
     slug: p.slug,
@@ -131,6 +149,8 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
     price: Number(p.basePrice),
     discountPrice: p.discountPrice != null ? Number(p.discountPrice) : null,
     images: sortedImages.map((i) => i.url),
+    sharedImages,
+    colorImages,
     hoverImage:
       sortedImages.find((i) => i.isHover)?.url ?? sortedImages[1]?.url ?? null,
     description: tr?.description ?? "",
@@ -156,7 +176,7 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
 
 const productInclude = {
   translations: true,
-  images: true,
+  images: { include: { color: { select: { code: true } } } },
   variants: {
     where: { isActive: true },
     include: {

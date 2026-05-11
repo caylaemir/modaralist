@@ -135,7 +135,10 @@ export default async function EditProductPage({
             material: en?.material ?? null,
             care: en?.care ?? null,
           },
-          images: product.images.map((img) => ({ url: img.url })),
+          images: product.images.map((img) => ({
+            url: img.url,
+            colorId: img.colorId ?? "",
+          })),
           variants: product.variants.map((v) => ({
             sizeId: v.sizeId,
             colorId: v.colorId,

@@ -11,20 +11,49 @@ import type { ShopProduct } from "@/lib/shop";
 export function ProductActions({
   product,
   locale,
+  initialColorCode,
+  onColorChange,
 }: {
   product: ShopProduct;
   locale: "tr" | "en";
+  // Sayfa acilirken secili olacak renk kodu (orn. ?color=red linkinden)
+  initialColorCode?: string | null;
+  // Renk degisince ust bilesene (galeriye) bildirir
+  onColorChange?: (colorCode: string | null) => void;
 }) {
   const add = useCart((s) => s.add);
-  const [color, setColor] = useState(product.colors[0]?.name ?? null);
+  const [colorCode, setColorCode] = useState(
+    (initialColorCode && product.colors.some((c) => c.code === initialColorCode)
+      ? initialColorCode
+      : product.colors[0]?.code) ?? null
+  );
   const [size, setSize] = useState<string | null>(null);
   const [openDetails, setOpenDetails] = useState<"desc" | "material" | "care" | null>(
     "desc"
   );
 
+  const colorName = useMemo(
+    () => product.colors.find((c) => c.code === colorCode)?.name ?? null,
+    [product.colors, colorCode]
+  );
+
+  function chooseColor(code: string) {
+    setColorCode(code);
+    onColorChange?.(code);
+  }
+
+  // Sepete eklenince / sticky bar'da gosterilecek kapak gorseli — secili rengin
+  // gorseli varsa onu, yoksa urunun ilk gorselini kullan.
+  const coverImage =
+    (colorCode && product.colorImages[colorCode]?.[0]) ??
+    product.images[0] ??
+    null;
+
   const variant = useMemo(
-    () => product.variants.find((v) => v.color === color && v.size === size) ?? null,
-    [product.variants, color, size]
+    () =>
+      product.variants.find((v) => v.colorCode === colorCode && v.size === size) ??
+      null,
+    [product.variants, colorCode, size]
   );
 
   // Mobile sticky bar: ana 'Sepete Ekle' butonu ekrandan cikinca alta
@@ -51,12 +80,12 @@ export function ProductActions({
   const sizesInStock = useMemo(() => {
     const map = new Map<string, number>();
     for (const v of product.variants) {
-      if (v.color === color) {
+      if (v.colorCode === colorCode) {
         map.set(v.size, (map.get(v.size) ?? 0) + v.stock);
       }
     }
     return map;
-  }, [product.variants, color]);
+  }, [product.variants, colorCode]);
 
   function handleAdd() {
     if (product.soldOut) return;
@@ -75,7 +104,7 @@ export function ProductActions({
       name: product.name,
       size: variant.size,
       color: variant.color,
-      image: product.images[0] ?? null,
+      image: coverImage,
       unitPrice: effectivePrice,
       quantity: 1,
     });
@@ -110,15 +139,15 @@ export function ProductActions({
             <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
               Renk
             </p>
-            <p className="text-xs">{color}</p>
+            <p className="text-xs">{colorName}</p>
           </div>
           <div className="flex gap-2">
             {product.colors.map((c) => (
               <button
                 key={c.code}
-                onClick={() => setColor(c.name)}
+                onClick={() => chooseColor(c.code)}
                 className={`size-8 rounded-full border transition-all ${
-                  color === c.name
+                  colorCode === c.code
                     ? "border-ink ring-2 ring-ink/20 ring-offset-2"
                     : "border-line"
                 }`}
@@ -199,10 +228,10 @@ export function ProductActions({
           >
             <div className="flex items-center gap-3">
               <div className="relative size-12 shrink-0 overflow-hidden bg-bone">
-                {product.images[0] ? (
+                {coverImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={product.images[0]}
+                    src={coverImage}
                     alt=""
                     className="size-full object-cover"
                   />

@@ -40,6 +40,8 @@ const formSchema = z.object({
     .array(
       z.object({
         url: z.string().url("Geçerli URL girin"),
+        // Bos -> genel gorsel (her renkte gorunur); doluysa o renge ait
+        colorId: z.string().optional().default(""),
       })
     )
     .default([]),
@@ -107,7 +109,7 @@ export type ProductFormInitial = {
     material?: string | null;
     care?: string | null;
   };
-  images?: { url: string }[];
+  images?: { url: string; colorId?: string | null }[];
   variants?: {
     sizeId: string | null;
     colorId: string | null;
@@ -176,7 +178,11 @@ export function ProductForm({
         enDescription: initial?.en?.description ?? "",
         enMaterial: initial?.en?.material ?? "",
         enCare: initial?.en?.care ?? "",
-        images: initial?.images ?? [],
+        images:
+          initial?.images?.map((i) => ({
+            url: i.url,
+            colorId: i.colorId ?? "",
+          })) ?? [],
         selectedColorIds: defaultSelectedColors,
         selectedSizeIds: defaultSelectedSizes,
         selectedTagIds: initial?.tagIds ?? [],
@@ -195,6 +201,9 @@ export function ProductForm({
     () => colors.filter((c) => selectedColorIds.includes(c.id)),
     [colors, selectedColorIds]
   );
+  // Gorsel-renk eslemesi icin: varyantta renk secildiyse onlar (sade), henuz
+  // secilmediyse tum renkler (kullanici bloke olmasin).
+  const imageColorChoices = selectedColors.length > 0 ? selectedColors : colors;
   const selectedSizes = useMemo(
     () => sizes.filter((s) => selectedSizeIds.includes(s.id)),
     [sizes, selectedSizeIds]
@@ -345,6 +354,7 @@ export function ProductForm({
         alt: null,
         sortOrder: i,
         isHover: i === 1,
+        colorId: img.colorId && img.colorId.length > 0 ? img.colorId : null,
       })),
       variants,
       tagIds: parsed.selectedTagIds,
@@ -623,7 +633,7 @@ export function ProductForm({
           <h2 className="caps-wide text-sm">Görseller</h2>
           <button
             type="button"
-            onClick={() => imagesField.append({ url: "" })}
+            onClick={() => imagesField.append({ url: "", colorId: "" })}
             className="inline-flex items-center gap-1 border border-line bg-bone px-3 py-1.5 text-xs text-ink hover:bg-line"
           >
             <Plus className="size-3" />
@@ -632,13 +642,16 @@ export function ProductForm({
         </div>
         <p className="mt-1 text-xs text-mist">
           Cloudinary'ye dosya sürükle veya URL elden ekle. İlk görsel <strong>ana</strong>,
-          ikinci görsel <strong>hover</strong>.
+          ikinci görsel <strong>hover</strong>. Her görseli bir <strong>renge</strong> bağlayabilirsin:
+          müşteri o rengi seçince o görseller gösterilir <em>ve</em> mağaza listesinde o renk ayrı bir
+          kart olarak çıkar (aynı isim/açıklama). Renksiz görseller her renkte görünür. (Renkleri
+          aşağıdaki “Varyantlar” bölümünden seç.)
         </p>
 
         <div className="mt-4">
           <ImageUploader
             multiple
-            onUploaded={(url) => imagesField.append({ url })}
+            onUploaded={(url) => imagesField.append({ url, colorId: "" })}
           />
         </div>
 
@@ -655,6 +668,18 @@ export function ProductForm({
                   className={inputCls}
                   placeholder="https://..."
                 />
+                <select
+                  {...register(`images.${i}.colorId` as const)}
+                  className="w-36 shrink-0 border border-line bg-paper px-2 py-2 text-xs focus:border-ink outline-none"
+                  title="Bu görseli bir renge bağla (opsiyonel)"
+                >
+                  <option value="">— Genel (her renk)</option>
+                  {imageColorChoices.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nameTr}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button"
                   onClick={() => imagesField.remove(i)}
