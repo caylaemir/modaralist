@@ -45,6 +45,7 @@ export default async function EditCouponPage({
     minSubtotal: coupon.minSubtotal ? String(Number(coupon.minSubtotal)) : "",
     maxUses: coupon.maxUses ? String(coupon.maxUses) : "",
     perUserLimit: coupon.perUserLimit ? String(coupon.perUserLimit) : "",
+    fullPriceOnly: coupon.fullPriceOnly,
     startsAt: toLocalDatetimeInput(coupon.startsAt),
     endsAt: toLocalDatetimeInput(coupon.endsAt),
     isActive: coupon.isActive,

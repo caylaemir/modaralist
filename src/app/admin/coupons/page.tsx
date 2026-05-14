@@ -134,7 +134,12 @@ export default async function AdminCouponsPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-4 text-xs uppercase tracking-[0.2em] text-mist">
-                      {TYPE_LABEL[c.type]}
+                      <span>{TYPE_LABEL[c.type]}</span>
+                      {c.fullPriceOnly ? (
+                        <span className="mt-1 block text-[9px] tracking-[0.18em] text-ink">
+                          İndirimsiz
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-4 text-right tabular-nums">
                       {formatValue(c.type, Number(c.value))}

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  NEWSLETTER_DISCOUNT_CODE,
+  ensureNewsletterDiscountCoupon,
+  sendNewsletterDiscountEmail,
+} from "@/lib/newsletter-discount";
 
 const schema = z.object({
   email: z.string().email(),
@@ -23,13 +28,15 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Geçersiz e-posta." }, { status: 400 });
   }
-  const { email, source, locale } = parsed.data;
+  const { source, locale } = parsed.data;
+  const email = parsed.data.email.toLowerCase();
+  let emailSent = false;
 
   try {
     await db.newsletterSubscriber.upsert({
-      where: { email: email.toLowerCase() },
+      where: { email },
       create: {
-        email: email.toLowerCase(),
+        email,
         source: source ?? null,
         locale,
         unsubscribedAt: null,
@@ -37,12 +44,20 @@ export async function POST(req: NextRequest) {
       update: {
         unsubscribedAt: null,
         source: source ?? undefined,
+        locale,
       },
     });
+    await ensureNewsletterDiscountCoupon();
+    const result = await sendNewsletterDiscountEmail({ to: email, locale });
+    emailSent = Boolean(result.id);
   } catch (err) {
     console.error("[newsletter] subscribe failed", err);
   }
 
   // Her zaman 200 — abonelik durumu enumeration korumasi
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    discountCode: NEWSLETTER_DISCOUNT_CODE,
+    emailSent,
+  });
 }

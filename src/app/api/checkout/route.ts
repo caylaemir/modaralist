@@ -10,7 +10,7 @@ import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { calculateBundleDiscount, parseBundleConfig } from "@/lib/cart-bundle";
-import { effectivePrice } from "@/lib/utils";
+import { effectivePrice, hasValidDiscount } from "@/lib/utils";
 import { validateCoupon, recordCouponUsage } from "@/lib/coupon";
 
 const schema = z.object({
@@ -92,21 +92,28 @@ export async function POST(req: NextRequest) {
   // discountPrice 0 olabiliyor (admin form bos yerine 0 kaydediyor) — `??`
   // operatoru 0'i null kabul etmez, sonuc 0 olur ve odeme tutari 0 TL olur.
   // Helper basePrice + discountPrice'i guvenli sekilde degerlendirir.
-  const priceByVariantId = new Map(
+  const pricingByVariantId = new Map(
     dbVariants.map((v) => {
       const base = Number(v.product.basePrice);
       const disc =
         v.product.discountPrice != null
           ? Number(v.product.discountPrice)
           : null;
-      return [v.id, effectivePrice(base, disc)];
+      const unitPrice = effectivePrice(base, disc);
+      return [
+        v.id,
+        {
+          unitPrice,
+          discountableUnitPrice: hasValidDiscount(base, disc) ? 0 : base,
+        },
+      ];
     })
   );
 
   // Kanonik line'lar (server-trusted)
   const safeLines = lines.map((l) => {
-    const realPrice = priceByVariantId.get(l.variantId);
-    if (realPrice === undefined) {
+    const pricing = pricingByVariantId.get(l.variantId);
+    if (!pricing) {
       throw new Error("PRICE_NOT_FOUND");
     }
     return {
@@ -116,14 +123,19 @@ export async function POST(req: NextRequest) {
       color: l.color,
       image: l.image,
       quantity: l.quantity,
-      unitPrice: realPrice,
-      lineTotal: realPrice * l.quantity,
+      unitPrice: pricing.unitPrice,
+      lineTotal: pricing.unitPrice * l.quantity,
+      discountableLineTotal: pricing.discountableUnitPrice * l.quantity,
     };
   });
 
   // Kargo + ücretsiz kargo eşiği Settings'ten okunur — admin panelden değiştirilebilir
   const settings = await getAllSettings();
-  const subtotal = safeLines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+  const subtotal = safeLines.reduce((s, l) => s + l.lineTotal, 0);
+  const discountableSubtotal = safeLines.reduce(
+    (s, l) => s + l.discountableLineTotal,
+    0
+  );
   const standardCost = Number(settings["shop.shippingStandard"] ?? 0) || 0;
   const expressCost = Number(settings["shop.shippingExpress"] ?? 89) || 89;
 
@@ -165,6 +177,7 @@ export async function POST(req: NextRequest) {
     const result = await validateCoupon({
       code: parsed.data.couponCode,
       subtotal,
+      discountableSubtotal,
       userId,
     });
     if (!result.ok) {

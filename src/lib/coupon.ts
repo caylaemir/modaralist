@@ -10,6 +10,7 @@ export type CouponValidationResult =
         code: string;
         type: "PERCENT" | "FIXED" | "FREE_SHIPPING";
         value: number;
+        fullPriceOnly: boolean;
       };
       discountAmount: number; // TL — subtotal'dan dusulecek
       freeShipping: boolean;
@@ -30,10 +31,12 @@ export type CouponValidationResult =
  *  - PERCENT:  subtotal * value / 100
  *  - FIXED:    value (subtotal'i asmaz)
  *  - FREE_SHIPPING: discountAmount=0, freeShipping=true
+ *  - fullPriceOnly: indirim sadece indirimsiz urunlerin toplamindan hesaplanir
  */
 export async function validateCoupon(input: {
   code: string;
   subtotal: number;
+  discountableSubtotal?: number;
   userId?: string | null;
 }): Promise<CouponValidationResult> {
   const code = input.code.trim().toUpperCase();
@@ -54,7 +57,18 @@ export async function validateCoupon(input: {
     return { ok: false, error: "Bu kodun süresi dolmuş" };
   }
 
-  if (coupon.minSubtotal && input.subtotal < Number(coupon.minSubtotal)) {
+  const discountBase = coupon.fullPriceOnly
+    ? Math.max(0, input.discountableSubtotal ?? 0)
+    : input.subtotal;
+
+  if (coupon.fullPriceOnly && discountBase <= 0) {
+    return {
+      ok: false,
+      error: "Bu kod sadece indirimsiz ürünlerde geçerli",
+    };
+  }
+
+  if (coupon.minSubtotal && discountBase < Number(coupon.minSubtotal)) {
     return {
       ok: false,
       error: `Min sepet tutarı ₺${Number(coupon.minSubtotal).toFixed(2)} olmalı`,
@@ -84,12 +98,12 @@ export async function validateCoupon(input: {
 
   switch (coupon.type) {
     case "PERCENT":
-      discountAmount = Math.round((input.subtotal * value) / 100 * 100) / 100;
-      // Subtotal'i asamaz
-      if (discountAmount > input.subtotal) discountAmount = input.subtotal;
+      discountAmount = Math.round((discountBase * value) / 100 * 100) / 100;
+      // Indirim bazini asamaz
+      if (discountAmount > discountBase) discountAmount = discountBase;
       break;
     case "FIXED":
-      discountAmount = Math.min(value, input.subtotal);
+      discountAmount = Math.min(value, discountBase);
       break;
     case "FREE_SHIPPING":
       discountAmount = 0;
@@ -104,6 +118,7 @@ export async function validateCoupon(input: {
       code: coupon.code,
       type: coupon.type,
       value,
+      fullPriceOnly: coupon.fullPriceOnly,
     },
     discountAmount,
     freeShipping,

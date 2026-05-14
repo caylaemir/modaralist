@@ -40,6 +40,7 @@ export default function CheckoutPage() {
     code: string;
     discountAmount: number;
     freeShipping: boolean;
+    fullPriceOnly: boolean;
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -140,7 +141,14 @@ export default function CheckoutPage() {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponInput.trim(), subtotal: sub }),
+        body: JSON.stringify({
+          code: couponInput.trim(),
+          subtotal: sub,
+          lines: lines.map((line) => ({
+            variantId: line.variantId,
+            quantity: line.quantity,
+          })),
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -151,6 +159,7 @@ export default function CheckoutPage() {
         code: data.coupon.code,
         discountAmount: data.discountAmount,
         freeShipping: data.freeShipping,
+        fullPriceOnly: Boolean(data.coupon.fullPriceOnly),
       });
       setCouponInput("");
       toast.success(`Kupon uygulandı: ${data.coupon.code}`);
@@ -734,6 +743,11 @@ export default function CheckoutPage() {
                         ? "Ücretsiz kargo"
                         : `-${formatPrice(appliedCoupon.discountAmount, locale)}`}
                     </p>
+                    {appliedCoupon.fullPriceOnly ? (
+                      <p className="mt-0.5 text-[10px] text-mist">
+                        İndirimsiz ürünlerde
+                      </p>
+                    ) : null}
                   </div>
                   <button
                     type="button"

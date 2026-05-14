@@ -24,6 +24,7 @@ const schema = z.object({
   minSubtotal: z.number().nullable(),
   maxUses: z.number().int().nullable(),
   perUserLimit: z.number().int().nullable(),
+  fullPriceOnly: z.boolean(),
   startsAt: z.string().nullable(),
   endsAt: z.string().nullable(),
   isActive: z.boolean(),
@@ -47,6 +48,7 @@ function readPayload(fd: FormData) {
       fd.get("perUserLimit") && String(fd.get("perUserLimit")).trim() !== ""
         ? Number(fd.get("perUserLimit"))
         : null,
+    fullPriceOnly: fd.get("fullPriceOnly") === "on",
     startsAt:
       fd.get("startsAt") && String(fd.get("startsAt")).trim() !== ""
         ? String(fd.get("startsAt"))
@@ -82,6 +84,7 @@ export async function createCouponAction(
       minSubtotal: data.minSubtotal ?? undefined,
       maxUses: data.maxUses ?? undefined,
       perUserLimit: data.perUserLimit ?? undefined,
+      fullPriceOnly: data.fullPriceOnly,
       startsAt: data.startsAt ? new Date(data.startsAt) : undefined,
       endsAt: data.endsAt ? new Date(data.endsAt) : undefined,
       isActive: data.isActive,
@@ -113,6 +116,7 @@ export async function updateCouponAction(
         minSubtotal: data.minSubtotal,
         maxUses: data.maxUses,
         perUserLimit: data.perUserLimit,
+        fullPriceOnly: data.fullPriceOnly,
         startsAt: data.startsAt ? new Date(data.startsAt) : null,
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
         isActive: data.isActive,

@@ -1,11 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export function Newsletter() {
   const t = useTranslations("Home");
+  const locale = useLocale() as "tr" | "en";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -14,9 +15,17 @@ export function Newsletter() {
     if (!email) return;
     setLoading(true);
     try {
-      // TODO: /api/newsletter endpoint
-      await new Promise((r) => setTimeout(r, 600));
-      toast.success("Aboneliğin alındı.");
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "footer", locale }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error ?? "Bir şeyler ters gitti. Tekrar dener misin?");
+        return;
+      }
+      toast.success("Aboneliğin alındı. %10 indirim kodu e-postanda.");
       setEmail("");
     } catch {
       toast.error("Bir şeyler ters gitti. Tekrar dener misin?");

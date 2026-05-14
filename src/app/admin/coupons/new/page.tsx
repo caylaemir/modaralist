@@ -11,6 +11,7 @@ export default function NewCouponPage() {
     minSubtotal: "",
     maxUses: "",
     perUserLimit: "",
+    fullPriceOnly: false,
     startsAt: "",
     endsAt: "",
     isActive: true,

@@ -18,6 +18,7 @@ export type CouponFormValues = {
   minSubtotal: string;
   maxUses: string;
   perUserLimit: string;
+  fullPriceOnly: boolean;
   startsAt: string;
   endsAt: string;
   isActive: boolean;
@@ -165,6 +166,22 @@ export function CouponForm({ initial }: { initial: CouponFormValues }) {
               placeholder="opsiyonel"
             />
           </div>
+          <label className="flex items-start gap-4 md:col-span-2">
+            <input
+              type="checkbox"
+              name="fullPriceOnly"
+              defaultChecked={initial.fullPriceOnly}
+              className="mt-1 size-4 appearance-none border border-line bg-paper checked:border-ink checked:bg-ink"
+            />
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em]">
+                Sadece indirimsiz ürünler
+              </p>
+              <p className="mt-1 text-xs text-mist">
+                Açıkken kupon indirimi sadece indirimsiz ürünlerin toplamından hesaplanır.
+              </p>
+            </div>
+          </label>
           <div>
             <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
               Başlangıç

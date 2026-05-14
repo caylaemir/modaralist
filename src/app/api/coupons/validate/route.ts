@@ -2,11 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { validateCoupon } from "@/lib/coupon";
+import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { hasValidDiscount } from "@/lib/utils";
 
 const schema = z.object({
   code: z.string().min(1).max(40),
   subtotal: z.number().min(0),
+  lines: z
+    .array(
+      z.object({
+        variantId: z.string(),
+        quantity: z.number().int().min(1),
+      })
+    )
+    .optional(),
 });
 
 /**
@@ -37,9 +47,37 @@ export async function POST(req: NextRequest) {
   }
 
   const session = await auth();
+  let discountableSubtotal = parsed.data.subtotal;
+
+  if (parsed.data.lines?.length) {
+    const qtyByVariantId = new Map<string, number>();
+    for (const line of parsed.data.lines) {
+      qtyByVariantId.set(
+        line.variantId,
+        (qtyByVariantId.get(line.variantId) ?? 0) + line.quantity
+      );
+    }
+    const variants = await db.productVariant.findMany({
+      where: { id: { in: Array.from(qtyByVariantId.keys()) }, isActive: true },
+      include: {
+        product: { select: { basePrice: true, discountPrice: true } },
+      },
+    });
+    discountableSubtotal = variants.reduce((sum, variant) => {
+      const basePrice = Number(variant.product.basePrice);
+      const discountPrice =
+        variant.product.discountPrice != null
+          ? Number(variant.product.discountPrice)
+          : null;
+      if (hasValidDiscount(basePrice, discountPrice)) return sum;
+      return sum + basePrice * (qtyByVariantId.get(variant.id) ?? 0);
+    }, 0);
+  }
+
   const result = await validateCoupon({
     code: parsed.data.code,
     subtotal: parsed.data.subtotal,
+    discountableSubtotal,
     userId: session?.user?.id ?? null,
   });
 

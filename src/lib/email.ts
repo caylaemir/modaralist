@@ -350,6 +350,32 @@ export function abandonedCartHtml(args: {
   });
 }
 
+export function welcomeDiscountHtml(args: {
+  code: string;
+  discountPercent: number;
+  shopUrl: string;
+}) {
+  return baseLayout({
+    title: "İndirim kodun hazır",
+    body: `
+      <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0;">— ilk siparişine özel</p>
+      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">%${args.discountPercent} indirim kodun hazır.</h1>
+      <p style="font-size:14px;line-height:1.6;color:#8a8a8a;margin:16px 0 24px;">
+        Aşağıdaki kodu checkout'ta kullanabilirsin. Kod yalnızca indirimsiz ürünlerde geçerlidir; indirimli ürünlere ekstra indirim uygulanmaz.
+      </p>
+      <div style="margin:24px 0;padding:24px;background:#f5f2ed;text-align:center;border:1px solid #e5e1db;">
+        <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0 0 10px;">İndirim kodu</p>
+        <p style="font-family:Georgia,serif;font-size:34px;letter-spacing:0.12em;margin:0;">${escapeHtml(args.code)}</p>
+        <p style="font-size:12px;color:#8a8a8a;margin:12px 0 0;">İndirimsiz ürünlerde %${args.discountPercent}</p>
+      </div>
+      <a href="${escapeHtml(args.shopUrl)}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;">Alışverişe Başla</a>
+      <p style="margin-top:32px;font-size:12px;color:#8a8a8a;line-height:1.6;">
+        Bu e-postayı Modaralist indirim kodu talep ettiğin için aldın.
+      </p>
+    `,
+  });
+}
+
 export function shipmentUpdateHtml(args: {
   orderNumber: string;
   customerName: string;

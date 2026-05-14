@@ -534,6 +534,7 @@ model Coupon {
   minSubtotal Decimal?   @db.Decimal(10, 2)
   maxUses     Int?
   perUserLimit Int?
+  fullPriceOnly Boolean @default(false)
   startsAt    DateTime?
   endsAt      DateTime?
   isActive    Boolean    @default(true)

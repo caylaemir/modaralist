@@ -61,7 +61,7 @@ export const SETTING_DEFAULTS = {
   "popup.eyebrow": "— ilk siparişine özel",
   "popup.title": "%10 indirim hemen senin.",
   "popup.subtitle":
-    "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
+    "Email'ini bırak, indirimsiz ürünlerde kullanabileceğin %10 indirim kodunu yollayalım. Drop'lar açılınca da ilk sen öğren.",
   "popup.ctaLabel": "İndirim Kodumu Gönder",
   "popup.discountCode": "",
 
@@ -459,7 +459,7 @@ export const SETTING_SECTIONS: Array<{
         key: "popup.discountCode",
         label: "Kupon kodu (opsiyonel)",
         type: "text",
-        hint: "Kayıt olunca müşteriye gösterilen kod (sonra Resend ile mail atılacak).",
+        hint: "Boş bırakılabilir. Sistem kayıt olunca WELCOME10 kodunu e-posta ile gönderir.",
       },
     ],
   },

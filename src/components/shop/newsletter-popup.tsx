@@ -22,14 +22,14 @@ const DEFAULTS = {
     eyebrow: "— ilk siparişine özel",
     title: "%10 indirim hemen senin.",
     subtitle:
-      "Email'ini bırak, ilk siparişine özel %10 indirim kodunu yolla. Drop'lar açılınca da ilk sen öğren.",
+      "Email'ini bırak, indirimsiz ürünlerde kullanabileceğin %10 indirim kodunu yollayalım. Drop'lar açılınca da ilk sen öğren.",
     ctaLabel: "İndirim Kodumu Gönder",
   },
   en: {
     eyebrow: "— for your first order",
     title: "10% off, on us.",
     subtitle:
-      "Drop your email and we'll send a 10% discount code for your first order. You'll also be first to know about new drops.",
+      "Drop your email and we'll send a 10% discount code for full-price items. You'll also be first to know about new drops.",
     ctaLabel: "Send My Discount Code",
   },
 } as const;
@@ -41,6 +41,7 @@ export function NewsletterPopup() {
   const [pending, setPending] = useState(false);
   const [config, setConfig] = useState<PopupConfig | null>(null);
   const [done, setDone] = useState(false);
+  const [shownDiscountCode, setShownDiscountCode] = useState("");
 
   const defaults: PopupConfig = {
     enabled: true,
@@ -93,8 +94,9 @@ export function NewsletterPopup() {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "popup" }),
+        body: JSON.stringify({ email, source: "popup", locale }),
       });
+      const data = await res.json().catch(() => null);
       if (res.status === 429) {
         toast.error(
           locale === "en"
@@ -111,6 +113,7 @@ export function NewsletterPopup() {
         );
         return;
       }
+      setShownDiscountCode(data?.discountCode || config?.discountCode || "");
       setDone(true);
       try {
         window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -157,18 +160,18 @@ export function NewsletterPopup() {
             <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
               {locale === "en" ? "✓ subscribed" : "✓ kayıt alındı"}
             </p>
-            {config.discountCode ? (
+            {shownDiscountCode ? (
               <>
                 <p className="mt-3 text-sm">
                   {locale === "en" ? "Your discount code:" : "İndirim kodun:"}
                 </p>
                 <p className="display mt-3 select-all text-3xl tabular-nums">
-                  {config.discountCode}
+                  {shownDiscountCode}
                 </p>
                 <p className="mt-3 text-[11px] text-mist">
                   {locale === "en"
-                    ? "Apply at checkout. We've also emailed it to you."
-                    : "Checkout'ta uygula. Email'ine de gönderdik."}
+                    ? "Apply at checkout on full-price items. We've also emailed it to you."
+                    : "Checkout'ta indirimsiz ürünlerde kullan. Email'ine de gönderdik."}
                 </p>
               </>
             ) : (
