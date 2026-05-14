@@ -170,10 +170,10 @@ export default async function StaticPage({
                 ? "For any questions or requests regarding this document, please reach us at "
                 : "Bu metinle ilgili soru veya talepleriniz için bize "}
               <a
-                href="mailto:admin@modaralist.com"
+                href="mailto:info@modaralist.com"
                 className="font-medium text-ink underline underline-offset-2 hover:opacity-60"
               >
-                admin@modaralist.com
+                info@modaralist.com
               </a>
               {lang === "en" ? "." : " adresinden ulaşabilirsiniz."}
             </p>

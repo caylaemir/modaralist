@@ -9,65 +9,143 @@ export type LegalPage = {
 };
 
 const PRIVACY_TR_BODY = `
-<p>İşbu Gizlilik Politikası'nın amacı, <strong>Trend İş Güvenliği Malzemeleri Tekstil San.Tic.Ltd.Şti.</strong>'ne ("Şirket") ait <a href="https://modaralist.com">www.modaralist.com</a> alan adlı internet sitesi ("İnternet Sitesi") üzerinden Şirket ürünlerini satın alan müşterilerimizin ("Kullanıcılar"), elektronik ticaret işlemleri nedeniyle elde edilen kişisel verilerine ilişkin gizlilik kurallarını tespit etmektir.</p>
+<p><strong>Son güncelleme:</strong> 14 Mayıs 2026</p>
 
-<ol>
-<li>Şirket, Kullanıcılar tarafından üyelik formları ile veya sair surette kendisine iletilen kişisel verileri; Gizlilik Politikası, kişisel veri elde edilmesi esnasında Kullanıcı'ya sunulan Kişisel Verilere İlişkin Aydınlatma Metni ve Kullanıcı'nın açık rızasında belirtilen haller haricinde üçüncü şahıslarla paylaşmamakta, belirtilen amaçlar dışında hiçbir ticari amaçla kullanmamakta ve üçüncü kişilere aktarmamaktadır.</li>
+<p>Bu Gizlilik Politikası, <strong>Trend İş Güvenliği Malzemeleri Tekstil San.Tic.Ltd.Şti.</strong>'ne ait <a href="https://modaralist.com">modaralist.com</a> internet sitesi ve Modaralist e-ticaret hizmetleri kapsamında gizlilik ve veri güvenliği yaklaşımımızı açıklar. Kişisel verilerin işlenmesine ilişkin ayrıntılı aydınlatma için <a href="/pages/kvkk">KVKK Aydınlatma Metni</a>'ni de inceleyebilirsiniz.</p>
 
-<li>Kullanıcı'ya ait kişisel veriler ancak resmi makamlarca talep edilmesi halinde ve yürürlükteki emredici mevzuat hükümleri gereğince açıklama yapılmak zorunda olunduğu durumlarda resmi makamlara açıklanacaktır.</li>
+<h2>Topladığımız bilgiler</h2>
+<p>Üyelik, sipariş, ödeme, kargo, iade/değişim, destek, bülten ve indirim kodu süreçlerinde ad-soyad, e-posta, telefon, teslimat/fatura adresi, TC kimlik numarası, sipariş ve ürün tercihleri, kargo bilgileri, kupon kullanımı, teknik loglar, IP adresi ve çerez tercihleri gibi bilgiler işlenebilir.</p>
 
-<li>İnternet Sitesi'ne üyelik, ürün satın alma ve bilgi güncelleme amaçlı girilen kredi kartı ve banka kartlarına ilişkin kişisel veriler, Kullanıcı ile ilgili banka veya kart kuruluşları arasında, Şirket'ten bağımsız olarak gerçekleştirilmekte olup kredi kartı şifresi gibi bilgiler Şirket veya diğer İnternet Sitesi kullanıcıları tarafından görüntülenememektedir.</li>
+<h2>Ödeme güvenliği</h2>
+<p>Ödeme işlemleri PAYTR güvenli ödeme ekranı üzerinden yürütülür. Kart numarası, son kullanma tarihi ve CVC gibi tam kart bilgileriniz Modaralist sunucularında saklanmaz. Modaralist yalnızca ödeme tutarı, ödeme durumu ve işlem referansı gibi siparişin tamamlanması için gerekli ödeme kayıtlarını tutar.</p>
 
-<li>Ödeme sayfasında talep edilen Kullanıcı kredi kartı bilgileri, Kullanıcılar'ın güvenliğini en üst seviyede tutmak amacıyla hiçbir şekilde İnternet Sitesi'nde veya hizmet veren üçüncü şirketlerin sunucularında tutulmamaktadır. Bu şekilde ödemeye yönelik tüm işlemlerin, İnternet Sitesi üzerinden ilgili banka ve Kullanıcı'nın kullanmakta olduğu cihaz arasında gerçekleşmesi sağlanmaktadır.</li>
+<h2>E-posta, kargo ve teknik altyapı</h2>
+<p>Sipariş onayı, kargo bildirimi, şifre sıfırlama, bülten ve indirim kodu e-postaları Resend altyapısı ile gönderilebilir. Siparişin teslimi için ad-soyad, telefon ve adres bilgileriniz anlaşmalı kargo firmalarıyla paylaşılır. Site, Hostinger tarafından sağlanan yurt dışı lokasyonlu VPS altyapısında çalıştığı için bazı teknik veriler yurt dışındaki sunucularda işlenebilir.</p>
 
-<li>Şirket, Kullanıcı'nın İnternet Sitesi üzerinde gerçekleştirdiği kullanım ve işlem bilgilerini anonim hale getirerek; istatistiki değerlendirmelerde, performans değerlendirmelerinde, Şirket ve iş ortaklarının pazarlama kampanyalarında ve bağış kampanyalarında, yıllık rapor ve benzeri raporlarda kullanmak üzere bu amaçların gerçekleştirilmesi için gereken sürede saklayabilir, işleyebilir ve iş ortaklarına iletebilir.</li>
+<h2>Çerezler ve pazarlama</h2>
+<p>Zorunlu çerezler siteyi güvenli ve düzgün çalıştırmak için kullanılır. Analitik ve pazarlama çerezleri, reklam/ölçüm araçları ve ticari elektronik ileti gönderimleri açık rızanıza veya ilgili mevzuattaki onaylarınıza bağlıdır. Tarayıcı ayarlarınızdan çerezleri yönetebilir; bülten ve pazarlama iletişimlerinden dilediğiniz zaman çıkabilirsiniz.</p>
 
-<li>Kullanıcılar tarafından Şirket'e sağlanan veya Şirket tarafından edinilen kişisel verilerin ve İnternet Sitesi üzerinden gerçekleşen tüm işlemlerin güvenliği için bilgi ve işlemin mahiyetine göre Şirket veya ilgili kuruluşça sistemlerde ve internet altyapısında, teknolojik imkânlar ve maliyet unsurları dâhilinde, uygun teknik ve idari tedbirler alınmıştır.</li>
+<h2>Paylaşım ve aktarım</h2>
+<p>Kişisel veriler; ödeme hizmet sağlayıcısı PAYTR, kargo firmaları, e-posta ve bildirim altyapısı Resend, barındırma ve teknik altyapı sağlayıcıları, analiz/reklam araçları, muhasebe-hukuk danışmanları ve yetkili kamu kurumları ile yalnızca ilgili amaçla sınırlı olarak paylaşılabilir. Yurt dışına aktarım söz konusu olduğunda KVKK'nın 9. maddesi ve ilgili ikincil mevzuat hükümlerine uygun hareket edilir.</p>
 
-<li>Kullanıcı'nın, Şirket ile paylaşmış olduğu kişisel verilerinin Kullanıcı'ya ait olduğu kabul edilmektedir.</li>
+<h2>Saklama ve güvenlik</h2>
+<p>Verileriniz, işlenme amacının gerektirdiği süre ve ilgili mevzuatta öngörülen saklama süreleri boyunca tutulur. SSL/TLS, erişim yetkilendirmesi, loglama, yedekleme, ödeme verilerinin ayrıştırılması ve hizmet sağlayıcılarla amaç sınırlaması gibi teknik ve idari tedbirler uygulanır.</p>
 
-<li>Şirket, Gizlilik Politikası'nda ve Kullanıcı'ya sunacağı ürün, hizmet, fırsat ve kampanyalarda gerekli görebileceği her türlü değişikliği yapma hakkını saklı tutar; bu değişiklikler Şirket tarafından İnternet Sitesi'nde veya diğer uygun yöntemler ile duyurulduğu andan itibaren geçerli olur.</li>
-</ol>
-
-<p>Şirket tarafından işlenen kişisel verilerinize ilişkin detaylı bilgiye <a href="/pages/kvkk">Kişisel Verilere İlişkin Aydınlatma Metni</a>'nden ulaşabilirsiniz.</p>
+<h2>Haklarınız ve iletişim</h2>
+<p>KVKK kapsamındaki haklarınızı kullanmak veya gizlilikle ilgili soru iletmek için <a href="mailto:info@modaralist.com">info@modaralist.com</a> adresinden, KEP üzerinden <strong>ozkan.galak@hs01.kep.tr</strong> adresinden veya Kazım Karabekir Mahallesi 2. Konuk Sokak No:3 Yıldırım / Bursa adresine yazılı başvuru ile bize ulaşabilirsiniz.</p>
 
 <p>Bilginize sunarız.<br/><strong>Trend İş Güvenliği Malzemeleri Tekstil San.Tic.Ltd.Şti.</strong></p>
 `;
 
 const KVKK_TR_BODY = `
-<p><strong>TREND İŞ GÜVENLİĞİ MALZEMELERİ TEKSTİL SAN.TİC.LTD.ŞTİ.</strong> ("Şirket") olarak, işbu Aydınlatma Metni ile, Kişisel Verilerin Korunması Kanunu ("Kanun") kapsamında aydınlatma yükümlüğümüzün yerine getirilmesi amaçlanmaktadır. Bu kapsamda sizlere bilgi vermekle yükümlü olduğumuz konular aşağıdaki şekildedir:</p>
+<p><strong>Son güncelleme:</strong> 14 Mayıs 2026</p>
 
-<h2>Veri sorumlusunun ve varsa temsilcisinin kimliği</h2>
-<p>Veri sorumlusu; <strong>Kazım Karabekir Mahallesi 2.Konuk Sokak No:3 Yıldırım/BURSA</strong> adresinde mukim, Bursa Ticaret Sicili Müdürlüğü'ne <strong>112351</strong> sicil numarası ile kayıtlı <strong>0859-1228-3400-0001</strong> Mersis numaralı <strong>TREND İŞ GÜVENLİĞİ MALZEMELERİ TEKSTİL SAN.TİC.LTD.ŞTİ.</strong>'dir.</p>
+<p><strong>TREND İŞ GÜVENLİĞİ MALZEMELERİ TEKSTİL SAN.TİC.LTD.ŞTİ.</strong> ("Şirket", "Modaralist" veya "biz") olarak, <a href="https://modaralist.com">modaralist.com</a> internet sitesi, üyelik, sipariş, ödeme, kargo, müşteri hizmetleri, pazarlama ve satış sonrası süreçleri kapsamında işlenen kişisel veriler hakkında 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca sizleri bilgilendirmek isteriz.</p>
+
+<p>Bu metin, KVKK'nın 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ çerçevesinde hazırlanmıştır. Buradaki bilgiler, Modaralist'in mevcut e-ticaret faaliyetleri, PAYTR ödeme altyapısı, Resend e-posta gönderim servisi ve Hostinger tarafından sağlanan yurt dışı lokasyonlu VPS sunucu altyapısı dikkate alınarak düzenlenmiştir.</p>
+
+<h2>1. Veri sorumlusu</h2>
+<p>Veri sorumlusu; <strong>Kazım Karabekir Mahallesi 2. Konuk Sokak No:3 Yıldırım / Bursa</strong> adresinde mukim, Bursa Ticaret Sicili Müdürlüğü'ne <strong>112351</strong> sicil numarası ile kayıtlı, <strong>0859-1228-3400-0001</strong> MERSİS numaralı <strong>TREND İŞ GÜVENLİĞİ MALZEMELERİ TEKSTİL SAN.TİC.LTD.ŞTİ.</strong>'dir.</p>
 <ul>
+<li><strong>İnternet sitesi:</strong> <a href="https://modaralist.com">modaralist.com</a></li>
+<li><strong>E-posta:</strong> <a href="mailto:info@modaralist.com">info@modaralist.com</a></li>
 <li><strong>KEP adresi:</strong> ozkan.galak@hs01.kep.tr</li>
-<li><strong>E-posta:</strong> admin@modaralist.com</li>
 <li><strong>Telefon:</strong> +90 501 700 88 16</li>
 </ul>
 
-<h2>Kişisel verilerin hangi amaçla işleneceği</h2>
-<p>Şirket'imize sağladığınız <em>ad-soyadı, telefon numarası ve e-posta adresi, doğum tarihi, cinsiyet, medeni durumu, yaşadığı il</em> kategorilerindeki kişisel verileriniz; reklam/kampanya/promosyon süreçlerinin yürütülmesi, ürün ve hizmetlerin pazarlama süreçlerinin yürütülmesi, müşteri memnuniyetine yönelik aktivitelerin yürütülmesi, açık rızanızın bulunması halinde tarafınıza tanıtım, reklam, kampanya vb. içerikli elektronik ileti gönderilmesi (arama, SMS, E-posta) ve mevzuattan kaynaklanan zamanaşımı süresi doğrultusunda saklanması amacı ile işlenmektedir.</p>
+<h2>2. İşlenen kişisel veriler</h2>
+<p>Modaralist'i ziyaret etmeniz, üye olmanız, sipariş vermeniz, ödeme başlatmanız, indirim kodu veya bülten talep etmeniz, destek almanız ya da KVKK haklarınızı kullanmanız halinde aşağıdaki kişisel veriler işlenebilir:</p>
+<ul>
+<li><strong>Kimlik verileri:</strong> ad, soyad, TC kimlik numarası, hesap profil bilgileri.</li>
+<li><strong>İletişim verileri:</strong> e-posta adresi, telefon numarası, teslimat ve fatura adresi.</li>
+<li><strong>Müşteri işlem verileri:</strong> sepet içeriği, sipariş numarası, sipariş geçmişi, ürün/beden/renk tercihleri, kargo durumu, iade/değişim talepleri, kupon kullanımı, üyelik ve favori listesi işlemleri.</li>
+<li><strong>Ödeme işlem verileri:</strong> ödeme tutarı, ödeme durumu, ödeme sağlayıcı işlem referansları ve ödeme sonucuna ilişkin kayıtlar. Kart numarası, son kullanma tarihi ve CVC gibi tam kart verileri Modaralist sunucularında saklanmaz; ödeme PAYTR güvenli ödeme ekranında işlenir.</li>
+<li><strong>İşlem güvenliği ve teknik veriler:</strong> IP adresi, oturum bilgileri, çerez tercihleri, cihaz/tarayıcı bilgileri, erişim zamanı, hata ve güvenlik logları.</li>
+<li><strong>Pazarlama verileri:</strong> bülten aboneliği, kampanya/indirim kodu talepleri, ticari elektronik ileti tercihleri, reklam ve analiz çerezleriyle oluşan etkileşim verileri.</li>
+<li><strong>İletişim ve talep verileri:</strong> destek, şikayet, öneri, iade, kargo ve KVKK başvurularında ilettiğiniz mesajlar ve ek bilgiler.</li>
+</ul>
 
-<h2>Şirket tarafından işlenen kişisel verilerin kimlere ve hangi amaçla aktarılabileceği</h2>
-<p>Kişisel verileriniz yukarıdaki amaçlar doğrultusunda hizmet sağlayıcılarımız ile paylaşılabilecektir. Kişisel verileriniz pazarlama, reklam ve tanıtım faaliyetlerinin yürütülmesi amacıyla hizmet aldığımız yurt dışında mukim firmalara <em>Kişisel Verilerin Yurt Dışına Aktarılmasına İlişkin Usul ve Esaslar Hakkında Yönetmelik</em>'e uygun şekilde aktarılabilmektedir.</p>
+<h2>3. Kişisel verilerin toplanma yöntemleri</h2>
+<p>Kişisel verileriniz; internet sitesindeki üyelik, giriş, checkout, sipariş takip, iletişim, bülten, indirim kodu, çerez onayı ve hesap gizlilik ekranları üzerinden otomatik yollarla; e-posta, telefon, WhatsApp, sosyal medya mesajları, KEP veya yazılı başvuru kanalları üzerinden ise kısmen otomatik veya otomatik olmayan yollarla toplanır.</p>
 
-<h2>Kişisel veri toplamanın yöntemi ve hukuki sebebi</h2>
-<p>Kişisel verileriniz, İnternet Sitesi'nde yer alan form aracılığıyla veya mağazalarımızda işlem esnasında beyanlarınız ile otomatik veya otomatik olmayan yollarla; "bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması kaydıyla, sözleşmenin taraflarına ait kişisel verilerin işlenmesinin gerekli olması", "ilgili kişinin temel hak ve özgürlüklerine zarar vermemek kaydıyla, veri sorumlusunun meşru menfaatleri için veri işlenmesinin zorunlu olması" ve "açık rızanız" hukuki sebebi ile toplanmaktadır.</p>
+<h2>4. İşleme amaçları ve hukuki sebepler</h2>
+<table>
+<thead>
+<tr><th>Amaç</th><th>Hukuki sebep</th></tr>
+</thead>
+<tbody>
+<tr><td>Üyelik hesabı oluşturma, hesaba giriş, siparişleri "Siparişlerim" alanına bağlama</td><td>KVKK m. 5/2-c sözleşmenin kurulması veya ifası; m. 5/2-f meşru menfaat</td></tr>
+<tr><td>Sipariş alma, ürün bedelini hesaplama, ödeme başlatma, teslimat ve iade/değişim süreçlerini yürütme</td><td>KVKK m. 5/2-c sözleşmenin kurulması veya ifası</td></tr>
+<tr><td>Fatura, muhasebe, vergi, e-ticaret ve tüketici mevzuatından doğan yükümlülükleri yerine getirme</td><td>KVKK m. 5/2-ç hukuki yükümlülük</td></tr>
+<tr><td>PAYTR üzerinden ödeme güvenliğini sağlama, dolandırıcılık ve kötüye kullanımı önleme</td><td>KVKK m. 5/2-c sözleşmenin ifası; m. 5/2-f meşru menfaat</td></tr>
+<tr><td>Kargo takip, sipariş bilgilendirme, teslimat, iade ve müşteri hizmetleri mesajlarını göndermek</td><td>KVKK m. 5/2-c sözleşmenin ifası; m. 5/2-f meşru menfaat</td></tr>
+<tr><td>Teknik altyapıyı işletmek, güvenlik, loglama, hata takibi ve servis sürekliliğini sağlamak</td><td>KVKK m. 5/2-f meşru menfaat; ilgili mevzuat bakımından m. 5/2-ç hukuki yükümlülük</td></tr>
+<tr><td>Bülten, indirim kodu, kampanya duyurusu, pazarlama e-postası ve kişiselleştirilmiş reklam/analiz faaliyetleri yürütmek</td><td>KVKK m. 5/1 açık rıza; ticari elektronik ileti mevzuatı kapsamında onay</td></tr>
+<tr><td>KVKK başvurularını, şikayetleri ve yasal talepleri sonuçlandırmak</td><td>KVKK m. 5/2-ç hukuki yükümlülük; m. 5/2-f meşru menfaat</td></tr>
+</tbody>
+</table>
 
-<h2>Kişisel verileriniz ile ilgili Kanun kapsamındaki haklarınız</h2>
+<h2>5. Kişisel verilerin aktarıldığı taraflar</h2>
+<p>Kişisel verileriniz, sadece ilgili amaçla sınırlı olmak üzere aşağıdaki alıcı gruplarına aktarılabilir:</p>
+<ul>
+<li><strong>Ödeme hizmet sağlayıcısı:</strong> ödeme işlemlerinin yürütülmesi ve ödeme güvenliğinin sağlanması amacıyla PAYTR.</li>
+<li><strong>Kargo ve lojistik şirketleri:</strong> siparişin teslimi, kargo takip ve iade/değişim süreçleri için anlaşmalı kargo firmaları.</li>
+<li><strong>E-posta ve bildirim altyapısı:</strong> sipariş onayı, kargo bildirimi, şifre sıfırlama, indirim kodu ve bülten e-postalarının gönderimi için Resend ve ilgili e-posta altyapıları.</li>
+<li><strong>Sunucu, barındırma ve teknik altyapı sağlayıcıları:</strong> sitenin çalışması, veritabanı, güvenlik, yedekleme ve loglama süreçleri için Hostinger yurt dışı lokasyonlu VPS altyapısı ve kullanılan teknik hizmet sağlayıcılar.</li>
+<li><strong>Analiz, reklam ve performans araçları:</strong> çerez tercihlerinize ve açık rızanıza bağlı olarak Google Analytics, Meta Pixel ve benzeri analiz/reklam hizmet sağlayıcıları.</li>
+<li><strong>Muhasebe, hukuk, mali müşavirlik ve danışmanlık hizmetleri:</strong> yasal yükümlülüklerin yerine getirilmesi ve uyuşmazlıkların takibi amacıyla.</li>
+<li><strong>Yetkili kamu kurumları ve adli/idari makamlar:</strong> kanunen yetkili kişi, kurum ve kuruluşların talepleriyle sınırlı olarak.</li>
+</ul>
+
+<h2>6. Yurt dışına kişisel veri aktarımı</h2>
+<p>Modaralist'in sunucu altyapısı Hostinger tarafından sağlanan yurt dışı lokasyonlu VPS üzerinde çalışmaktadır. Ayrıca e-posta gönderimi, hata/güvenlik takibi, analiz, reklam ve benzeri teknik hizmetler kapsamında kullanılan bazı hizmet sağlayıcıların sunucuları veya alt işleyenleri yurt dışında bulunabilir.</p>
+<p>Bu nedenle; kimlik, iletişim, müşteri işlem, işlem güvenliği, teknik log, bülten ve pazarlama verileriniz, KVKK'nın 9. maddesi ile Kişisel Verilerin Yurt Dışına Aktarılmasına İlişkin Usul ve Esaslar Hakkında Yönetmelik'te belirtilen şartlara uygun olarak; ilgili aktarım bakımından gerekli olması halinde açık rızanız alınarak veya mevzuatta öngörülen uygun güvenceler sağlanarak yurt dışına aktarılabilir. Pazarlama, analiz ve reklam çerezleri bakımından açık rızanız olmadan zorunlu olmayan çerezler çalıştırılmaz.</p>
+
+<h2>7. Saklama süreleri</h2>
+<table>
+<thead>
+<tr><th>Veri türü</th><th>Saklama süresi</th></tr>
+</thead>
+<tbody>
+<tr><td>Sipariş, fatura, ödeme ve muhasebe kayıtları</td><td>Vergi, ticaret ve tüketici mevzuatı gereği genel olarak 10 yıl</td></tr>
+<tr><td>Üyelik ve hesap verileri</td><td>Üyelik devam ettiği sürece; üyelik sona erdikten sonra olası uyuşmazlık ve zamanaşımı süreleri boyunca</td></tr>
+<tr><td>Kargo, iade/değişim ve müşteri hizmetleri kayıtları</td><td>Talebin sonuçlanmasından sonra genel zamanaşımı ve ispat süreleri boyunca</td></tr>
+<tr><td>Bülten ve ticari elektronik ileti onayları</td><td>Onay geri alınana kadar ve ilgili mevzuatta öngörülen süre boyunca</td></tr>
+<tr><td>Çerez, işlem güvenliği ve teknik loglar</td><td>Amacın gerektirdiği süre ve ilgili mevzuatta öngörülen sürelerle sınırlı olarak</td></tr>
+<tr><td>KVKK başvuru kayıtları</td><td>Başvurunun sonuçlandırılması ve hukuki ispat süreleri boyunca</td></tr>
+</tbody>
+</table>
+<p>Saklama süresi dolan veya işlenmesini gerektiren sebep ortadan kalkan kişisel veriler silinir, yok edilir veya anonim hale getirilir.</p>
+
+<h2>8. Veri güvenliği</h2>
+<p>Kişisel verilerin korunması için SSL/TLS, erişim yetkilendirmesi, parola ve oturum güvenliği, loglama, düzenli yedekleme, ödeme verilerinin Modaralist sunucularında tutulmaması, yetkisiz erişimlerin sınırlandırılması ve hizmet sağlayıcılarla yetki/amaç sınırlaması gibi teknik ve idari tedbirler uygulanır. Kart bilgileriniz PAYTR güvenli ödeme ekranında işlenir; Modaralist kart numarası veya CVC bilgisini saklamaz.</p>
+
+<h2>9. KVKK m. 11 kapsamındaki haklarınız</h2>
+<p>KVKK'nın 11. maddesi uyarınca Şirket'e başvurarak aşağıdaki haklarınızı kullanabilirsiniz:</p>
 <ol type="a">
 <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme,</li>
 <li>Kişisel verileriniz işlenmişse buna ilişkin bilgi talep etme,</li>
 <li>Kişisel verilerinizin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme,</li>
 <li>Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme,</li>
-<li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme,</li>
-<li>Kişisel verilerinizin işlenmesini gerektiren sebeplerin ortadan kalkması halinde kişisel verilerinizin silinmesini veya yok edilmesini isteme,</li>
-<li>(d) ve (e) bentleri uyarınca yapılan işlemlerin, kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme,</li>
-<li>İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme,</li>
-<li>Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme.</li>
+<li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması halinde bunların düzeltilmesini isteme,</li>
+<li>KVKK'da öngörülen şartlar çerçevesinde kişisel verilerinizin silinmesini veya yok edilmesini isteme,</li>
+<li>Düzeltme, silme veya yok etme işlemlerinin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme,</li>
+<li>İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme,</li>
+<li>Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme.</li>
 </ol>
 
-<p>Bu haklarınızı yazılı olarak veya kayıtlı elektronik posta adresi (KEP adresi: <strong>ozkan.galak@hs01.kep.tr</strong>'dir), güvenli elektronik imza, mobil imza ya da Şirket'e daha önce bildirilen ve Şirket'in sisteminde kayıtlı bulunan elektronik posta adresinizi kullanmak suretiyle (<strong>admin@modaralist.com</strong> e-posta adresi üzerinden Şirket'e ulaşabilirsiniz) veya başvuru amacına yönelik geliştirilmiş bir yazılım ya da uygulama vasıtasıyla Şirket'e iletebilirsiniz.</p>
+<h2>10. Başvuru yöntemi</h2>
+<p>KVKK kapsamındaki taleplerinizi aşağıdaki kanallardan iletebilirsiniz:</p>
+<ul>
+<li><strong>E-posta:</strong> <a href="mailto:info@modaralist.com">info@modaralist.com</a> adresine, konu satırına "KVKK Başvurusu" yazarak.</li>
+<li><strong>KEP:</strong> <strong>ozkan.galak@hs01.kep.tr</strong> adresine kayıtlı elektronik posta ile.</li>
+<li><strong>Posta / yazılı başvuru:</strong> Kazım Karabekir Mahallesi 2. Konuk Sokak No:3 Yıldırım / Bursa adresine ıslak imzalı dilekçe ile.</li>
+<li><strong>Hesap içi işlemler:</strong> Üyeliğiniz varsa "Hesabım > Gizlilik / KVKK" alanından verilerinizi indirebilir veya hesap silme talebinizi başlatabilirsiniz.</li>
+</ul>
+<p>Başvurular, kimliğiniz doğrulandıktan sonra en geç <strong>30 gün</strong> içinde ücretsiz olarak sonuçlandırılır. İşlemin ayrıca bir maliyet gerektirmesi halinde, mevzuatta belirlenen tarifedeki ücret talep edilebilir. Başvurunuzun reddedilmesi, verilen cevabın yetersiz bulunması veya süresinde cevap verilmemesi halinde Kişisel Verileri Koruma Kurumu'na şikayet hakkınız bulunmaktadır.</p>
+
+<h2>11. Güncellemeler</h2>
+<p>Bu Aydınlatma Metni, mevzuat değişiklikleri, hizmet sağlayıcı değişiklikleri veya Modaralist süreçlerindeki güncellemeler nedeniyle değiştirilebilir. Güncel metin her zaman <a href="https://modaralist.com/pages/kvkk">modaralist.com/pages/kvkk</a> adresinde yayımlanır.</p>
 
 <p>Bilginize sunarız.<br/><strong>TREND İŞ GÜVENLİĞİ MALZEMELERİ TEKSTİL SAN.TİC.LTD.ŞTİ.</strong></p>
 `;
