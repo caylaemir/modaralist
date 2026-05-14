@@ -35,7 +35,7 @@ export async function Footer() {
               alt=""
               width={802}
               height={882}
-              className="h-28 w-auto object-contain"
+              className="h-36 w-auto object-contain"
             />
           </Link>
           <p className="mt-6 max-w-xs text-sm leading-relaxed text-mist">
