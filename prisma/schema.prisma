@@ -488,7 +488,7 @@ model OrderStatusHistory {
 model Payment {
   id             String        @id @default(cuid())
   orderId        String
-  provider       String // iyzico
+  provider       String // paytr
   providerTxnId  String?
   amount         Decimal       @db.Decimal(10, 2)
   status         PaymentStatus @default(PENDING)

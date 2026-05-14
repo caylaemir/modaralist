@@ -1,14 +1,36 @@
-import Script from "next/script";
+"use client";
 
-// Analytics — sadece production'da yüklenir ve kullanıcı "tümünü kabul et"
-// dediyse aktifleşir. Cookie banner karar vermeden gtag opt-out'ta kalır.
+import Script from "next/script";
+import { useEffect, useState } from "react";
+
+const COOKIE_KEY = "modaralist-cookies";
+
+// Analytics — sadece production'da ve kullanıcı "tümünü kabul et" dediyse
+// yüklenir. Böylece zorunlu olmayan üçüncü taraf scriptler opt-in çalışır.
 
 export function Analytics() {
   const ga = process.env.NEXT_PUBLIC_GA_ID;
   const metaPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const tiktokPixel = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID;
+  const [enabled, setEnabled] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(COOKIE_KEY) === "all"
+  );
+
+  useEffect(() => {
+    function onAcceptAll() {
+      setEnabled(true);
+    }
+
+    window.addEventListener("cookies-accepted-all", onAcceptAll);
+    return () => {
+      window.removeEventListener("cookies-accepted-all", onAcceptAll);
+    };
+  }, []);
 
   if (process.env.NODE_ENV !== "production") return null;
+  if (!enabled) return null;
 
   return (
     <>
@@ -23,17 +45,11 @@ export function Analytics() {
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('consent', 'default', {
-                'ad_storage': 'denied',
-                'analytics_storage': 'denied'
+                'ad_storage': 'granted',
+                'analytics_storage': 'granted'
               });
               gtag('js', new Date());
               gtag('config', '${ga}', { anonymize_ip: true });
-              window.addEventListener('cookies-accepted-all', function() {
-                gtag('consent', 'update', {
-                  'ad_storage': 'granted',
-                  'analytics_storage': 'granted'
-                });
-              });
             `}
           </Script>
         </>
@@ -47,12 +63,9 @@ export function Analytics() {
             n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
             t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
             document,'script','https://connect.facebook.net/en_US/fbevents.js');
-            fbq('consent', 'revoke');
             fbq('init', '${metaPixel}');
-            window.addEventListener('cookies-accepted-all', function() {
-              fbq('consent', 'grant');
-              fbq('track', 'PageView');
-            });
+            fbq('consent', 'grant');
+            fbq('track', 'PageView');
           `}
         </Script>
       )}
@@ -62,10 +75,8 @@ export function Analytics() {
           {`
             !function (w, d, t) {
               w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-              window.addEventListener('cookies-accepted-all', function() {
-                ttq.load('${tiktokPixel}');
-                ttq.page();
-              });
+              ttq.load('${tiktokPixel}');
+              ttq.page();
             }(window, document, 'ttq');
           `}
         </Script>

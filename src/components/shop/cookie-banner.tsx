@@ -21,7 +21,7 @@ export function CookieBanner() {
     localStorage.setItem(KEY, value);
     setShow(false);
     if (value === "all") {
-      // Analytics scriptlerini buradan aktifleştir
+      // Analytics ve reklam scriptleri yalnizca bu aktif tercih ile yuklenir.
       window.dispatchEvent(new CustomEvent("cookies-accepted-all"));
     }
   }
@@ -42,10 +42,10 @@ export function CookieBanner() {
                 Çerezler
               </p>
               <p className="mt-2 text-sm leading-relaxed">
-                Modaralist deneyimini kişiselleştirmek ve site performansını
-                anlamak için çerez kullanıyoruz.{" "}
+                Zorunlu çerezler siteyi çalıştırır. Analitik ve pazarlama
+                çerezleri yalnızca onayınla kullanılır.{" "}
                 <Link
-                  href="/privacy"
+                  href="/pages/privacy"
                   className="underline underline-offset-4 hover:no-underline"
                 >
                   Ayrıntılar

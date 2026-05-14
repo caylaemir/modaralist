@@ -29,7 +29,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["iyzipay"],
   poweredByHeader: false,
   images: {
     remotePatterns: [
