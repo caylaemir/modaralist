@@ -19,19 +19,19 @@ export default function manifest(): MetadataRoute.Manifest {
     prefer_related_applications: false,
     icons: [
       {
-        src: "/api/icon/192",
+        src: "/brand/modaralist-mark-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/api/icon/512",
+        src: "/brand/modaralist-mark-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/api/icon/maskable",
+        src: "/brand/modaralist-mark-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
@@ -43,21 +43,21 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: "Shop",
         description: "Tüm parçalar",
         url: "/shop",
-        icons: [{ src: "/api/icon/192", sizes: "192x192", type: "image/png" }],
+        icons: [{ src: "/brand/modaralist-mark-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
         name: "Drop'lar",
         short_name: "Drops",
         description: "Aktif koleksiyonlar",
         url: "/drops",
-        icons: [{ src: "/api/icon/192", sizes: "192x192", type: "image/png" }],
+        icons: [{ src: "/brand/modaralist-mark-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
         name: "Sipariş Takibi",
         short_name: "Track",
         description: "Sipariş durumu sorgu",
         url: "/track",
-        icons: [{ src: "/api/icon/192", sizes: "192x192", type: "image/png" }],
+        icons: [{ src: "/brand/modaralist-mark-192.png", sizes: "192x192", type: "image/png" }],
       },
     ],
   };

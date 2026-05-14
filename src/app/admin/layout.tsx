@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { Inter, Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
 import { auth } from "@/lib/auth";
@@ -97,7 +98,13 @@ export default async function AdminLayout({
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-paper px-4 md:hidden">
           <SidebarToggle />
           <div className="flex items-center gap-2">
-            <span className="display text-xl leading-none">modaralist</span>
+            <Image
+              src="/brand/modaralist-wordmark-text.png"
+              alt="Modaralist"
+              width={682}
+              height={76}
+              className="h-4 w-auto object-contain"
+            />
             <span className="inline-flex h-4 items-center rounded-sm bg-ink px-1.5 text-[8px] font-medium uppercase tracking-[0.25em] text-paper">
               admin
             </span>
@@ -107,13 +114,25 @@ export default async function AdminLayout({
         <div className="flex min-h-screen">
           <aside className="admin-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-paper md:translate-x-0">
             <div className="hidden h-20 items-center gap-3 border-b border-line px-7 md:flex">
-              <span className="display text-2xl leading-none">modaralist</span>
+              <Image
+                src="/brand/modaralist-wordmark-text.png"
+                alt="Modaralist"
+                width={682}
+                height={76}
+                className="h-5 w-auto object-contain"
+              />
               <span className="inline-flex h-5 items-center rounded-sm bg-ink px-2 text-[9px] font-medium uppercase tracking-[0.25em] text-paper">
                 admin
               </span>
             </div>
             <div className="flex h-14 items-center gap-3 border-b border-line px-6 md:hidden">
-              <span className="display text-xl leading-none">modaralist</span>
+              <Image
+                src="/brand/modaralist-wordmark-text.png"
+                alt="Modaralist"
+                width={682}
+                height={76}
+                className="h-4 w-auto object-contain"
+              />
               <span className="inline-flex h-4 items-center rounded-sm bg-ink px-1.5 text-[8px] font-medium uppercase tracking-[0.25em] text-paper">
                 admin
               </span>

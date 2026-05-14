@@ -63,6 +63,17 @@ export const metadata: Metadata = {
     title: "Modaralist",
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/modaralist-mark-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/brand/modaralist-mark-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" },
+    ],
+    shortcut: ["/favicon.ico"],
+  },
   openGraph: {
     siteName: "Modaralist",
     type: "website",
@@ -132,7 +143,7 @@ export default async function LocaleLayout({
     "@type": ["Organization", "OnlineStore"],
     name: settings?.["site.title"] || "Modaralist",
     url: base,
-    logo: `${base}/logo.svg`,
+    logo: `${base}/brand/modaralist-lockup.png`,
     sameAs,
     description:
       "Marmara bölgesinde tshirt, sweatshirt, oversize, outdoor, polar, eşofman ve şort modelleri. Numaralı koleksiyonlar, sınırlı üretim.",

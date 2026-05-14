@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 
 export default async function AuthLayout({
@@ -14,8 +15,14 @@ export default async function AuthLayout({
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       <header className="flex items-center justify-between border-b border-line px-6 py-5">
-        <Link href="/" className="display text-2xl">
-          modaralist
+        <Link href="/" className="flex h-8 items-center" aria-label="Modaralist">
+          <Image
+            src="/brand/modaralist-wordmark-text.png"
+            alt=""
+            width={682}
+            height={76}
+            className="h-6 w-auto object-contain"
+          />
         </Link>
         <Link
           href="/"

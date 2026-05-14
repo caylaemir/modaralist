@@ -29,8 +29,14 @@ export async function Footer() {
     <footer className="mt-32 border-t border-line bg-bone">
       <div className="mx-auto grid max-w-[1600px] gap-12 px-5 py-20 sm:grid-cols-2 md:grid-cols-3 md:px-10 lg:grid-cols-5">
         <div>
-          <Link href="/" className="display text-3xl">
-            {settings["site.title"] || "modaralist"}
+          <Link href="/" className="inline-flex" aria-label="Modaralist">
+            <Image
+              src="/brand/modaralist-lockup.png"
+              alt=""
+              width={802}
+              height={882}
+              className="h-28 w-auto object-contain"
+            />
           </Link>
           <p className="mt-6 max-w-xs text-sm leading-relaxed text-mist">
             {settings["site.description"] || tCommon("siteTagline")}

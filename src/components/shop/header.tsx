@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 // 'Menü', 'Kapat' gibi labellar Common namespace'inden gelir.
@@ -33,8 +34,11 @@ export function Header({ categories }: Props) {
   }, []);
 
   useEffect(() => {
-    setMenuOpen(false);
-    setOpenMobile(null);
+    const timer = window.setTimeout(() => {
+      setMenuOpen(false);
+      setOpenMobile(null);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [pathname]);
 
   return (
@@ -59,10 +63,17 @@ export function Header({ categories }: Props) {
 
         <Link
           href="/"
-          className="display text-2xl tracking-tight md:text-3xl"
+          className="flex h-10 items-center"
           aria-label="Modaralist"
         >
-          modaralist
+          <Image
+            src="/brand/modaralist-wordmark-text.png"
+            alt=""
+            width={682}
+            height={76}
+            priority
+            className="h-6 w-auto object-contain md:h-7"
+          />
         </Link>
 
         <div className="flex items-center gap-1 md:gap-2">
@@ -101,7 +112,13 @@ export function Header({ categories }: Props) {
       {menuOpen && (
         <div className="fixed inset-0 z-50 h-[100dvh] overflow-y-auto bg-paper pb-[env(safe-area-inset-bottom)] md:hidden">
           <div className="flex h-16 items-center justify-between px-5">
-            <span className="display text-2xl">modaralist</span>
+            <Image
+              src="/brand/modaralist-wordmark-text.png"
+              alt="Modaralist"
+              width={682}
+              height={76}
+              className="h-6 w-auto object-contain"
+            />
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
