@@ -214,7 +214,7 @@ async function main() {
         status: ProductStatus.PUBLISHED,
         publishedAt: new Date(),
         basePrice: p.basePrice,
-        taxRate: 20,
+        taxRate: 10,
         currency: "TRY",
         categoryId: categoryMap.get(p.category),
         translations: {

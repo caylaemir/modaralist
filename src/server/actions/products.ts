@@ -64,7 +64,7 @@ const productInputSchema = z.object({
   categoryId: z.string().optional().nullable(),
   basePrice: z.number().min(0, "Fiyat negatif olamaz"),
   discountPrice: z.number().min(0).optional().nullable(),
-  taxRate: z.number().min(0).max(100).default(20),
+  taxRate: z.number().min(0).max(100).default(10),
   currency: z.string().default("TRY"),
   lowStockLimit: z.number().int().min(0).default(3),
   translations: z.array(translationSchema).min(1),

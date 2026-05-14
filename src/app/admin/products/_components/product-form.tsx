@@ -187,7 +187,7 @@ export function ProductForm({
         collectionId: initial?.collectionId ?? "",
         basePrice: initial?.basePrice ?? 0,
         discountPrice: initial?.discountPrice ?? "",
-        taxRate: initial?.taxRate ?? 20,
+        taxRate: initial?.taxRate ?? 10,
         lowStockLimit: initial?.lowStockLimit ?? 3,
         trName: initial?.tr?.name ?? "",
         trDescription: initial?.tr?.description ?? "",

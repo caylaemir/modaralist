@@ -109,7 +109,7 @@ async function main() {
           status: "PUBLISHED",
           publishedAt: new Date(),
           basePrice: p.basePrice,
-          taxRate: 20,
+          taxRate: 10,
           currency: "TRY",
           categoryId: cat.id,
           translations: {
