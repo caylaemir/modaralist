@@ -28,6 +28,8 @@ const colorSchema = z.object({
   nameEn: z.string().min(1).max(80),
 });
 
+const reorderSchema = z.array(z.string().min(1)).min(1);
+
 export async function createColorAction(
   fd: FormData
 ): Promise<{ ok: boolean; error?: string }> {
@@ -47,7 +49,13 @@ export async function createColorAction(
   });
   if (existing) return { ok: false, error: "Bu kod zaten var" };
 
-  await db.color.create({ data: parsed.data });
+  const maxSort = await db.color.aggregate({ _max: { sortOrder: true } });
+  await db.color.create({
+    data: {
+      ...parsed.data,
+      sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
+    },
+  });
   revalidatePath("/admin/colors");
   return { ok: true };
 }
@@ -89,5 +97,28 @@ export async function deleteColorAction(
   }
   await db.color.delete({ where: { id } });
   revalidatePath("/admin/colors");
+  return { ok: true };
+}
+
+export async function reorderColorsAction(
+  ids: string[]
+): Promise<{ ok: boolean; error?: string }> {
+  await requireStaff();
+  const parsed = reorderSchema.safeParse(ids);
+  if (!parsed.success) {
+    return { ok: false, error: "Sıralama kaydedilemedi." };
+  }
+
+  await db.$transaction(
+    parsed.data.map((id, index) =>
+      db.color.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  revalidatePath("/admin/colors");
+  revalidatePath("/", "layout");
   return { ok: true };
 }

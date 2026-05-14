@@ -45,7 +45,9 @@ export default async function EditProductPage({
           orderBy: { sortOrder: "asc" },
         })
         .catch(() => []),
-      db.color.findMany({ orderBy: { code: "asc" } }).catch(() => []),
+      db.color
+        .findMany({ orderBy: [{ sortOrder: "asc" }, { code: "asc" }] })
+        .catch(() => []),
       db.size.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
       db.productTag.findMany({ orderBy: { code: "asc" } }).catch(() => []),
       db.collection

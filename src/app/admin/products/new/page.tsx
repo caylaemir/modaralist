@@ -14,7 +14,7 @@ export default async function NewProductPage() {
       include: { translations: { where: { locale: "tr" } } },
       orderBy: { sortOrder: "asc" },
     }),
-    db.color.findMany({ orderBy: { code: "asc" } }),
+    db.color.findMany({ orderBy: [{ sortOrder: "asc" }, { code: "asc" }] }),
     db.size.findMany({ orderBy: { sortOrder: "asc" } }),
     db.productTag.findMany({ orderBy: { code: "asc" } }),
     db.collection.findMany({

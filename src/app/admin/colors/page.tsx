@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ColorsPage() {
   const colors = await db.color.findMany({
-    orderBy: { code: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
     include: {
       _count: { select: { variants: true } },
     },
@@ -17,6 +17,7 @@ export default async function ColorsPage() {
     hex: c.hex,
     nameTr: c.nameTr,
     nameEn: c.nameEn,
+    sortOrder: c.sortOrder,
     variantCount: c._count.variants,
   }));
 

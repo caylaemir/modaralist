@@ -74,8 +74,10 @@ type ProductWithRelations = {
   variants: {
     id: string;
     stock: number;
-    size: { code: string } | null;
-    color: { code: string; hex: string; nameTr: string; nameEn: string } | null;
+    size: { code: string; sortOrder: number } | null;
+    color:
+      | { code: string; hex: string; nameTr: string; nameEn: string; sortOrder: number }
+      | null;
   }[];
   category: {
     slug: string;
@@ -95,14 +97,31 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
   const firstColl = p.collections[0]?.collection;
   const firstCollTr = firstColl?.translations.find((t) => t.locale === locale);
 
-  const totalStock = p.variants.reduce((s, v) => s + v.stock, 0);
+  const sortedVariants = [...p.variants].sort((a, b) => {
+    const colorA = a.color?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    const colorB = b.color?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    if (colorA !== colorB) return colorA - colorB;
+
+    const colorCodeCompare = (a.color?.code ?? "").localeCompare(
+      b.color?.code ?? ""
+    );
+    if (colorCodeCompare !== 0) return colorCodeCompare;
+
+    const sizeA = a.size?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    const sizeB = b.size?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    if (sizeA !== sizeB) return sizeA - sizeB;
+
+    return a.id.localeCompare(b.id);
+  });
+
+  const totalStock = sortedVariants.reduce((s, v) => s + v.stock, 0);
   const sizes = Array.from(
-    new Set(p.variants.map((v) => v.size?.code).filter(Boolean))
+    new Set(sortedVariants.map((v) => v.size?.code).filter(Boolean))
   ) as string[];
 
   const colors: ShopColor[] = [];
   const seenColors = new Set<string>();
-  for (const v of p.variants) {
+  for (const v of sortedVariants) {
     // colorId nullable — renksiz varyant (admin'de renk secilmemis) olabilir
     if (!v.color) continue;
     if (seenColors.has(v.color.code)) continue;
@@ -158,7 +177,7 @@ function mapProduct(p: ProductWithRelations, locale: ShopLocale): ShopProduct {
     care: tr?.care ?? "",
     sizes,
     colors,
-    variants: p.variants.map((v) => ({
+    variants: sortedVariants.map((v) => ({
       id: v.id,
       size: v.size?.code ?? "",
       color: v.color ? (locale === "tr" ? v.color.nameTr : v.color.nameEn) : "",

@@ -244,13 +244,16 @@ model CategoryTranslation {
 }
 
 model Color {
-  id       String  @id @default(cuid())
-  code     String  @unique
-  hex      String
-  nameTr   String
-  nameEn   String
+  id        String  @id @default(cuid())
+  code      String  @unique
+  hex       String
+  nameTr    String
+  nameEn    String
+  sortOrder Int     @default(0)
   variants ProductVariant[]
   images   ProductImage[]
+
+  @@index([sortOrder])
 }
 
 model Size {

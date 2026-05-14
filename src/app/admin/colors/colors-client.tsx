@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Save, X } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, X, GripVertical } from "lucide-react";
 import {
   createColorAction,
   updateColorAction,
   deleteColorAction,
+  reorderColorsAction,
 } from "./actions";
 
 type Row = {
@@ -15,6 +16,7 @@ type Row = {
   hex: string;
   nameTr: string;
   nameEn: string;
+  sortOrder: number;
   variantCount: number;
 };
 
@@ -22,6 +24,8 @@ export function ColorsClient({ initial }: { initial: Row[] }) {
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [rows, setRows] = useState(initial);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   function onCreate(fd: FormData) {
     startTransition(async () => {
@@ -63,10 +67,42 @@ export function ColorsClient({ initial }: { initial: Row[] }) {
     });
   }
 
+  function onDropColor(targetId: string) {
+    if (!draggingId || draggingId === targetId) {
+      setDraggingId(null);
+      return;
+    }
+
+    const fromIndex = rows.findIndex((row) => row.id === draggingId);
+    const toIndex = rows.findIndex((row) => row.id === targetId);
+    if (fromIndex < 0 || toIndex < 0) {
+      setDraggingId(null);
+      return;
+    }
+
+    const next = [...rows];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    setRows(next);
+    setDraggingId(null);
+
+    startTransition(async () => {
+      const res = await reorderColorsAction(next.map((row) => row.id));
+      if (res.ok) {
+        toast.success("Renk sırası kaydedildi");
+      } else {
+        toast.error(res.error ?? "Sıralama kaydedilemedi");
+        setRows(initial);
+      }
+    });
+  }
+
   return (
     <div className="mt-10">
       <div className="flex items-center justify-between border-b border-line pb-4">
-        <p className="text-[12px] text-mist">{initial.length} renk</p>
+        <p className="text-[12px] text-mist">
+          {rows.length} renk · sıralamak için satırı sürükle
+        </p>
         {!adding ? (
           <button
             type="button"
@@ -121,7 +157,7 @@ export function ColorsClient({ initial }: { initial: Row[] }) {
             </tr>
           </thead>
           <tbody>
-            {initial.map((r) => {
+            {rows.map((r) => {
               const isEditing = editing === r.id;
               if (isEditing) {
                 return (
@@ -160,12 +196,25 @@ export function ColorsClient({ initial }: { initial: Row[] }) {
                 );
               }
               return (
-                <tr key={r.id} className="border-b border-line transition-colors hover:bg-bone/40">
+                <tr
+                  key={r.id}
+                  draggable={!pending && !adding}
+                  onDragStart={() => setDraggingId(r.id)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => onDropColor(r.id)}
+                  onDragEnd={() => setDraggingId(null)}
+                  className={`border-b border-line transition-colors hover:bg-bone/40 ${
+                    draggingId === r.id ? "opacity-40" : ""
+                  }`}
+                >
                   <td className="py-3 pl-3">
-                    <span
-                      className="inline-block size-6 rounded-full border border-line"
-                      style={{ backgroundColor: r.hex }}
-                    />
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="size-4 cursor-grab text-mist active:cursor-grabbing" />
+                      <span
+                        className="inline-block size-6 rounded-full border border-line"
+                        style={{ backgroundColor: r.hex }}
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-3 font-mono text-[11px]">{r.code}</td>
                   <td className="px-4 py-3 font-mono text-[11px] text-mist">{r.hex}</td>
