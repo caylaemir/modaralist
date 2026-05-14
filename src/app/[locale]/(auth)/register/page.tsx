@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md" />}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw) return "/account";
+  if (!raw.startsWith("/")) return "/account";
+  if (raw.startsWith("//") || raw.startsWith("/\\")) return "/account";
+  return raw;
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const params = useSearchParams();
+  const callbackUrl = safeCallbackUrl(params.get("callbackUrl"));
+  const initialEmail = params.get("email") ?? "";
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,10 +35,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email: normalizedEmail, password }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -28,7 +48,7 @@ export default function RegisterPage() {
         return;
       }
       const signed = await signIn("credentials", {
-        email,
+        email: normalizedEmail,
         password,
         redirect: false,
       });
@@ -39,7 +59,7 @@ export default function RegisterPage() {
         return;
       }
       toast.success("Hesabın oluşturuldu. Hoş geldin.");
-      router.push("/account");
+      router.push(callbackUrl);
       router.refresh();
     } catch {
       setLoading(false);
@@ -56,6 +76,12 @@ export default function RegisterPage() {
       <p className="mt-4 text-sm text-mist">
         Drop'lara erken erişim, sipariş takibi, adres defteri.
       </p>
+      {initialEmail ? (
+        <div className="mt-8 border border-line bg-bone/50 p-5 text-sm leading-relaxed text-mist">
+          Bu e-postayla oluşturduğun hesap, varsa misafir siparişlerini
+          Siparişlerim alanına otomatik bağlar.
+        </div>
+      ) : null}
 
       <form onSubmit={onSubmit} className="mt-12 space-y-6">
         <div>
@@ -136,7 +162,10 @@ export default function RegisterPage() {
 
       <p className="mt-10 text-center text-sm text-mist">
         Zaten hesabın var mı?{" "}
-        <Link href="/login" className="text-ink underline underline-offset-4">
+        <Link
+          href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          className="text-ink underline underline-offset-4"
+        >
           Giriş yap
         </Link>
       </p>

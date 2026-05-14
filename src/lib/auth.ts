@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { claimGuestOrdersForUser, normalizeOrderEmail } from "@/lib/order-claim";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import type { UserRole } from "@prisma/client";
 
@@ -41,7 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
 
-        const { email, password } = parsed.data;
+        const { password } = parsed.data;
+        const email = normalizeOrderEmail(parsed.data.email);
 
         // Brute-force koruma: bcrypt.compare pahali oldugu icin kontroller
         // ondan ONCE. IP basina toplam deneme + hesap (email) basina deneme
@@ -58,11 +60,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const user = await db.user.findUnique({ where: { email } });
+        const user = await db.user.findFirst({
+          where: { email: { equals: email, mode: "insensitive" } },
+        });
         if (!user?.passwordHash) return null;
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return null;
+
+        try {
+          await claimGuestOrdersForUser({ userId: user.id, email: user.email });
+        } catch (err) {
+          console.error("[auth] guest order claim failed", err);
+        }
 
         return {
           id: user.id,

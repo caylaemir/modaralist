@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { claimGuestOrdersForUser, normalizeOrderEmail } from "@/lib/order-claim";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -28,9 +29,12 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { name, email, password } = parsed.data;
+  const { name, password } = parsed.data;
+  const email = normalizeOrderEmail(parsed.data.email);
 
-  const existing = await db.user.findUnique({ where: { email } });
+  const existing = await db.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
   if (existing) {
     return NextResponse.json(
       { error: "Bu e-posta zaten kayıtlı." },
@@ -44,5 +48,16 @@ export async function POST(req: NextRequest) {
     select: { id: true, email: true, name: true },
   });
 
-  return NextResponse.json({ ok: true, user });
+  let claimedOrders = 0;
+  try {
+    const claimed = await claimGuestOrdersForUser({
+      userId: user.id,
+      email: user.email,
+    });
+    claimedOrders = claimed.count;
+  } catch (err) {
+    console.error("[register] guest order claim failed", err);
+  }
+
+  return NextResponse.json({ ok: true, user, claimedOrders });
 }

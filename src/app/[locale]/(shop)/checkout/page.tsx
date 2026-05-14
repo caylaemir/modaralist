@@ -4,7 +4,8 @@ import Image from "next/image";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useSession } from "next-auth/react";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/stores/cart";
 import { formatPrice } from "@/lib/utils";
 import { Reveal } from "@/components/shop/reveal";
@@ -23,6 +24,7 @@ type PaytrWindow = Window & {
 export default function CheckoutPage() {
   const locale = useLocale() as "tr" | "en";
   const router = useRouter();
+  const { status: sessionStatus } = useSession();
   const { lines, subtotal, clear } = useCart();
   const [step, setStep] = useState<Step>("contact");
   const [loading, setLoading] = useState(false);
@@ -290,6 +292,32 @@ export default function CheckoutPage() {
               }}
               className="space-y-6"
             >
+              {sessionStatus === "unauthenticated" ? (
+                <div className="border border-line bg-bone/50 p-5">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
+                    Hesapla daha kolay
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-mist">
+                    Kayıt olursan siparişlerini Siparişlerim'den takip eder,
+                    adreslerini tekrar yazmadan alışveriş yaparsın. Misafir
+                    devam edersen takip bağlantısını e-postayla göndeririz.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-4 text-[11px] uppercase tracking-[0.25em]">
+                    <Link
+                      href="/register?callbackUrl=/checkout"
+                      className="border-b border-ink pb-1"
+                    >
+                      Hesap Oluştur
+                    </Link>
+                    <Link
+                      href="/login?callbackUrl=/checkout"
+                      className="border-b border-line pb-1 text-mist hover:text-ink"
+                    >
+                      Giriş Yap
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
               <div>
                 <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
                   E-posta

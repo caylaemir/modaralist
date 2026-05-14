@@ -4,6 +4,8 @@ import { customAlphabet } from "nanoid";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { initiatePaytrPayment } from "@/lib/payment/paytr";
+import { sendOrderConfirmationEmail } from "@/lib/order-emails";
+import { normalizeOrderEmail } from "@/lib/order-claim";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest) {
     );
   }
   const { lines, customer, address, shippingMethod, locale } = parsed.data;
+  const customerEmail = normalizeOrderEmail(customer.email);
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -209,7 +212,7 @@ export async function POST(req: NextRequest) {
         data: {
           orderNumber,
           userId,
-          email: customer.email,
+          email: customerEmail,
           phone: customer.phone,
           locale,
           subtotal,
@@ -320,6 +323,11 @@ export async function POST(req: NextRequest) {
         },
       }),
     ]);
+    try {
+      await sendOrderConfirmationEmail(order.id);
+    } catch (err) {
+      console.error("[checkout] simulation email error", err);
+    }
     return NextResponse.json({ ok: true, orderNumber, simulation: true });
   }
 
@@ -329,7 +337,7 @@ export async function POST(req: NextRequest) {
     const result = await initiatePaytrPayment({
       orderNumber,
       totalPrice: Number(grandTotal),
-      email: customer.email,
+      email: customerEmail,
       userName: customer.fullName,
       userAddress: `${address.street}, ${address.district}, ${address.city}`,
       userPhone: customer.phone,

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sendEmail, orderConfirmationHtml } from "@/lib/email";
-import { formatPrice } from "@/lib/utils";
+import { sendOrderConfirmationEmail } from "@/lib/order-emails";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { awardOrderPoints, parseLoyaltyConfig } from "@/lib/loyalty";
@@ -15,34 +14,6 @@ function ok() {
 
 function formValue(form: FormData, key: string) {
   return String(form.get(key) ?? "");
-}
-
-async function sendOrderConfirmation(orderId: string) {
-  const full = await db.order.findUnique({
-    where: { id: orderId },
-    include: { items: true, addresses: true },
-  });
-  if (!full) return;
-
-  const shipping = full.addresses.find((a) => a.type === "SHIPPING");
-  await sendEmail({
-    to: full.email,
-    subject: `Siparişin alındı — ${full.orderNumber}`,
-    html: orderConfirmationHtml({
-      orderNumber: full.orderNumber,
-      customerName: shipping?.fullName ?? "misafir",
-      total: formatPrice(Number(full.grandTotal), "tr"),
-      items: full.items.map((it) => ({
-        name: it.productNameSnapshot,
-        variant: it.variantSnapshot ?? undefined,
-        quantity: it.quantity,
-        total: formatPrice(Number(it.lineTotal), "tr"),
-      })),
-      address: shipping
-        ? `${shipping.fullName}\n${shipping.street}\n${shipping.district}, ${shipping.city}`
-        : "",
-    }),
-  });
 }
 
 // PAYTR Bildirim URL'si. Musterinin yonlendirildigi ok/fail sayfasi degil,
@@ -160,7 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await sendOrderConfirmation(order.id);
+      await sendOrderConfirmationEmail(order.id);
     } catch (err) {
       console.error("[paytr-callback] email error", err);
     }

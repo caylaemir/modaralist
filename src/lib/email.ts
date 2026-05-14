@@ -19,6 +19,15 @@ type SendArgs = {
   replyTo?: string;
 };
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function sendEmail({ to, subject, html, replyTo }: SendArgs) {
   const resend = getResend();
   if (!resend) {
@@ -89,16 +98,22 @@ export function orderConfirmationHtml(args: {
   total: string;
   items: { name: string; variant?: string; quantity: number; total: string }[];
   address: string;
+  trackUrl?: string;
+  registerUrl?: string;
+  guestCheckout?: boolean;
 }) {
+  const safeTrackUrl = args.trackUrl ? escapeHtml(args.trackUrl) : "";
+  const safeRegisterUrl = args.registerUrl ? escapeHtml(args.registerUrl) : "";
+  const addressHtml = escapeHtml(args.address).replace(/\n/g, "<br/>");
   const rows = args.items
     .map(
       (it) => `
     <tr>
       <td style="padding:12px 0;border-bottom:1px solid #e5e1db;">
-        <div style="font-size:14px;">${it.name}</div>
-        ${it.variant ? `<div style="font-size:11px;color:#8a8a8a;letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">${it.variant} · ${it.quantity} adet</div>` : ""}
+        <div style="font-size:14px;">${escapeHtml(it.name)}</div>
+        ${it.variant ? `<div style="font-size:11px;color:#8a8a8a;letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">${escapeHtml(it.variant)} · ${it.quantity} adet</div>` : ""}
       </td>
-      <td style="padding:12px 0;border-bottom:1px solid #e5e1db;text-align:right;font-variant-numeric:tabular-nums;">${it.total}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e1db;text-align:right;font-variant-numeric:tabular-nums;">${escapeHtml(it.total)}</td>
     </tr>`
     )
     .join("");
@@ -107,22 +122,36 @@ export function orderConfirmationHtml(args: {
     title: "Siparişin alındı",
     body: `
       <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0;">— sipariş alındı</p>
-      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">Hoş geldin drop'a, ${args.customerName}.</h1>
+      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">Hoş geldin drop'a, ${escapeHtml(args.customerName)}.</h1>
       <p style="font-size:14px;line-height:1.6;color:#8a8a8a;margin:16px 0 32px;">
-        Siparişin alındı. Kargolanınca tekrar haber vereceğiz. Aşağıda özeti var.
+        Siparişin alındı. Kargolanınca tekrar haber vereceğiz. Aşağıda özeti ve takip bağlantısı var.
       </p>
       <p style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0 0 8px;">Sipariş No</p>
-      <p style="font-size:16px;font-variant-numeric:tabular-nums;margin:0 0 32px;">${args.orderNumber}</p>
+      <p style="font-size:16px;font-variant-numeric:tabular-nums;margin:0 0 24px;">${escapeHtml(args.orderNumber)}</p>
+      ${
+        safeTrackUrl
+          ? `<a href="${safeTrackUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 24px;">Siparişi Takip Et</a>`
+          : ""
+      }
+      ${
+        args.guestCheckout && safeRegisterUrl
+          ? `<div style="margin:8px 0 32px;padding:20px;background:#f5f2ed;border:1px solid #e5e1db;">
+              <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0 0 8px;">Hesapla daha kolay</p>
+              <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">Bu e-postayla hesap oluşturursan siparişin otomatik olarak Siparişlerim alanına bağlanır. Kayıt olmak istemezsen takip bağlantısı sipariş numaran ve e-postanla çalışır.</p>
+              <a href="${safeRegisterUrl}" style="color:#0a0a0a;text-decoration:underline;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">Hesap Oluştur</a>
+            </div>`
+          : ""
+      }
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #e5e1db;">
         ${rows}
         <tr>
           <td style="padding:16px 0;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">Toplam</td>
-          <td style="padding:16px 0;text-align:right;font-variant-numeric:tabular-nums;font-size:16px;">${args.total}</td>
+          <td style="padding:16px 0;text-align:right;font-variant-numeric:tabular-nums;font-size:16px;">${escapeHtml(args.total)}</td>
         </tr>
       </table>
       <div style="margin-top:32px;padding:20px;background:#f5f2ed;">
         <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0 0 8px;">Teslimat</p>
-        <p style="font-size:14px;line-height:1.6;margin:0;">${args.address}</p>
+        <p style="font-size:14px;line-height:1.6;margin:0;">${addressHtml}</p>
       </div>
       <p style="margin-top:40px;font-size:12px;color:#8a8a8a;">Sorun varsa bu e-postayı yanıtla.</p>
     `,

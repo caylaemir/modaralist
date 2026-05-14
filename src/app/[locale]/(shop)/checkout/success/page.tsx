@@ -75,6 +75,13 @@ export default async function CheckoutSuccess({
         })
       : [];
   const reviewedProductIds = new Set(existingReviews.map((r) => r.productId));
+  const isGuestOrder = Boolean(order && !session?.user?.id);
+  const trackHref = order
+    ? `/track?order=${encodeURIComponent(order.orderNumber)}&email=${encodeURIComponent(order.email)}`
+    : "/track";
+  const registerHref = order
+    ? `/register?email=${encodeURIComponent(order.email)}&callbackUrl=${encodeURIComponent("/account/orders")}`
+    : "/register";
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-24 md:px-10 md:py-32">
@@ -90,6 +97,38 @@ export default async function CheckoutSuccess({
           Onay e-postası yolda. Kargolanınca tekrar haber vereceğiz.
         </p>
       </Reveal>
+
+      {isGuestOrder ? (
+        <Reveal delay={0.15}>
+          <section className="mt-12 border border-line bg-bone/50 p-6 md:p-8">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-mist">
+              — siparişini kaybetme
+            </p>
+            <h2 className="display mt-3 text-3xl">
+              Hesap oluştur, Siparişlerim'de tek yerde gör.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-mist">
+              Bu sipariş için onay ve takip bağlantısını e-postana gönderiyoruz.
+              Aynı e-postayla hesap oluşturursan siparişin otomatik olarak
+              Siparişlerim alanına bağlanır.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <Link
+                href={registerHref}
+                className="bg-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-paper"
+              >
+                Hesap Oluştur
+              </Link>
+              <Link
+                href={trackHref}
+                className="border border-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] hover:bg-ink hover:text-paper"
+              >
+                Siparişi Takip Et
+              </Link>
+            </div>
+          </section>
+        </Reveal>
+      ) : null}
 
       {order && order.items.length > 0 ? (
         <Reveal delay={0.2}>
@@ -156,14 +195,30 @@ export default async function CheckoutSuccess({
 
             {!isReviewable ? (
               <div className="mt-6 border border-line bg-bone/40 p-4 text-[12px] text-mist">
-                Ürünlerin eline ulaştığında{" "}
-                <Link
-                  href="/account/orders"
-                  className="text-ink underline underline-offset-4"
-                >
-                  Siparişlerim
-                </Link>{" "}
-                sayfasından her birine yorum bırakabilirsin.
+                {isGuestOrder ? (
+                  <>
+                    Kargolama durumunu{" "}
+                    <Link
+                      href={trackHref}
+                      className="text-ink underline underline-offset-4"
+                    >
+                      Sipariş Takibi
+                    </Link>{" "}
+                    sayfasından izleyebilir, hesap oluşturduktan sonra yorum
+                    bırakabilirsin.
+                  </>
+                ) : (
+                  <>
+                    Ürünlerin eline ulaştığında{" "}
+                    <Link
+                      href="/account/orders"
+                      className="text-ink underline underline-offset-4"
+                    >
+                      Siparişlerim
+                    </Link>{" "}
+                    sayfasından her birine yorum bırakabilirsin.
+                  </>
+                )}
               </div>
             ) : null}
           </section>
@@ -172,12 +227,29 @@ export default async function CheckoutSuccess({
 
       <Reveal delay={0.3}>
         <div className="mt-16 flex flex-wrap justify-center gap-4">
-          <Link
-            href="/account/orders"
-            className="border border-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] hover:bg-ink hover:text-paper"
-          >
-            Siparişlerim
-          </Link>
+          {isGuestOrder ? (
+            <>
+              <Link
+                href={registerHref}
+                className="border border-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] hover:bg-ink hover:text-paper"
+              >
+                Hesap Oluştur
+              </Link>
+              <Link
+                href={trackHref}
+                className="border border-line px-6 py-3 text-[11px] uppercase tracking-[0.3em] text-mist hover:border-ink hover:text-ink"
+              >
+                Sipariş Takibi
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/account/orders"
+              className="border border-ink px-6 py-3 text-[11px] uppercase tracking-[0.3em] hover:bg-ink hover:text-paper"
+            >
+              Siparişlerim
+            </Link>
+          )}
           <Link
             href="/shop"
             className="text-[11px] uppercase tracking-[0.3em] text-mist hover:text-ink"

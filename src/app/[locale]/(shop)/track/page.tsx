@@ -68,7 +68,7 @@ export default async function TrackPage({
           .findFirst({
             where: {
               orderNumber: orderNumber.trim().toUpperCase(),
-              email: email.trim().toLowerCase(),
+              email: { equals: email.trim(), mode: "insensitive" },
             },
             include: {
               items: { select: { productNameSnapshot: true, variantSnapshot: true, quantity: true, lineTotal: true } },
