@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Link } from "@/i18n/navigation";
+import { clearExperimentCookies } from "@/lib/ab-test";
 
 const KEY = "modaralist-cookies";
 
@@ -23,6 +24,8 @@ export function CookieBanner() {
     if (value === "all") {
       // Analytics ve reklam scriptleri yalnizca bu aktif tercih ile yuklenir.
       window.dispatchEvent(new CustomEvent("cookies-accepted-all"));
+    } else {
+      clearExperimentCookies();
     }
   }
 
