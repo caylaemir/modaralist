@@ -11,6 +11,10 @@ function getResend() {
 }
 
 const FROM = process.env.EMAIL_FROM || "Modaralist <no-reply@modaralist.com>";
+const APP_URL = (
+  process.env.NEXT_PUBLIC_APP_URL || "https://modaralist.com"
+).replace(/\/$/, "");
+const EMAIL_LOGO_URL = `${APP_URL}/brand/modaralist-lockup.png`;
 
 type SendArgs = {
   to: string;
@@ -69,8 +73,10 @@ export function baseLayout({ title, body }: { title: string; body: string }) {
         <td align="center">
           <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #e5e1db;">
             <tr>
-              <td style="padding:32px 40px;border-bottom:1px solid #e5e1db;">
-                <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:-0.02em;">modaralist</div>
+              <td align="center" style="padding:28px 40px;border-bottom:1px solid #e5e1db;text-align:center;">
+                <a href="${APP_URL}" style="display:inline-block;text-decoration:none;">
+                  <img src="${EMAIL_LOGO_URL}" width="180" alt="Modaralist" style="display:block;width:180px;max-width:70%;height:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+                </a>
               </td>
             </tr>
             <tr>
