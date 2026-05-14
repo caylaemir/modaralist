@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { initiatePaytrPayment } from "@/lib/payment/paytr";
@@ -44,6 +44,8 @@ const schema = z.object({
   // kullanilmaz, validate edilir ve burada hesaplanir)
   couponCode: z.string().optional(),
 });
+
+const createOrderSuffix = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 export async function POST(req: NextRequest) {
   // 1 dakikada en fazla 10 checkout/IP — bot/spam koruma
@@ -181,7 +183,7 @@ export async function POST(req: NextRequest) {
   const totalDiscount = bundleDiscount + couponDiscount;
   const grandTotal = Math.max(0, subtotal + finalShipping - totalDiscount);
 
-  const orderNumber = `MDR${new Date().getFullYear()}${nanoid(8).toUpperCase()}`;
+  const orderNumber = `MDR${new Date().getFullYear()}${createOrderSuffix()}`;
 
   // Stok kontrol + atomic decrement + sipariş oluşturma — hepsi tek transaction.
   // Stok yetmezse veya varyant yoksa transaction rollback olur.
