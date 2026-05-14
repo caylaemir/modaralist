@@ -305,7 +305,7 @@ export async function getBestSellingProducts(
   const since = new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000);
 
   // OrderItem -> variantId -> sum(quantity), join Variant'a productId icin.
-  // CAPTURED = iyzico'da basariyla cekilen odeme (PaymentStatus enum).
+  // CAPTURED = odeme saglayicisindan basariyla onaylanan odeme.
   const grouped = await db.orderItem.groupBy({
     by: ["variantId"],
     where: {

@@ -12,7 +12,7 @@ Modaralist — modern, drop-based moda/streetwear e-ticaret platformu. Türkçe 
 - **DB**: PostgreSQL + Prisma 6
 - **Auth**: Auth.js v5 (Credentials)
 - **i18n**: next-intl (tr / en)
-- **Payments**: iyzico (MVP)
+- **Payments**: PAYTR iFrame API
 - **Invoicing**: Nilvera (e-Arşiv / e-Fatura)
 - **Email**: Resend
 - **Images**: Cloudinary
@@ -75,7 +75,7 @@ prisma/
 - Ürün + varyant (beden × renk) + görsel yönetimi
 - Drop-based koleksiyonlar (countdown, coming-soon, sold-out, notify-me)
 - Sepet (drawer), misafir + üye checkout
-- iyzico ödeme (3D Secure)
+- PAYTR iFrame ödeme (3D Secure)
 - Nilvera e-Arşiv fatura
 - Admin: ürün/kategori/koleksiyon/sipariş/müşteri/CMS/ayarlar
 - TR/EN, KVKK, GA4 + Meta Pixel

@@ -10,7 +10,7 @@ Son güncelleme: 2026-04-19
 - [x] `/products/[slug]` ürün detay (galeri, varyant matrisi, beden tablosu, accordion)
 - [x] `/drops` + `/drops/[slug]` koleksiyon (countdown, notify-me, manifesto)
 - [x] `/cart` sepet (drawer + tam sayfa)
-- [x] `/checkout` 3 adımlı ödeme (contact → address → payment + 3DS iframe)
+- [x] `/checkout` 3 adımlı ödeme (contact → address → payment + PAYTR iframe)
 - [x] `/checkout/success` ve `/checkout/failed`
 - [x] Auth sayfaları (`/login`, `/register`, `/forgot-password`)
 - [x] `/account` (overview + orders + addresses + wishlist + profile)
@@ -37,7 +37,7 @@ Son güncelleme: 2026-04-19
 ### Backend
 - [x] Prisma 6 schema (30+ model, ayrı translation tabloları)
 - [x] Auth.js v5 (Credentials + Google, role guard)
-- [x] iyzico 3DS entegrasyonu (initiate + callback + finalize)
+- [x] PAYTR iFrame entegrasyonu (token + Bildirim URL callback)
 - [x] Resend email + order confirmation template
 - [x] Cloudinary loader + signed upload endpoint (Supabase'e swap edilecek)
 - [x] Kargo webhook endpoint (`/api/webhooks/shipping`)
@@ -69,11 +69,12 @@ Son güncelleme: 2026-04-19
 - [ ] `next.config.ts` `remotePatterns`'a Supabase domain'i ekle
 - [ ] Demo ürün görselleri Unsplash yerine Supabase'e yükle
 
-### 3. iyzico gerçek entegrasyon
-- [ ] iyzico merchant hesabı (sandbox ilk)
-- [ ] API key + secret al
-- [ ] Sandbox test kartıyla tam akış dene (ürün → sepet → checkout → 3DS → PAID)
-- [ ] Production keys'e geç (müşteri onayıyla)
+### 3. PAYTR gerçek entegrasyon
+- [ ] PAYTR merchant hesabı ve mağaza onayı
+- [ ] Merchant ID + Key + Salt al
+- [ ] PAYTR panelinde Bildirim URL'yi `https://modaralist.com/api/payment/callback` yap
+- [ ] Test modunda tam akış dene (ürün → sepet → checkout → PAYTR iframe → PAID)
+- [ ] Production mode'a geç (müşteri onayıyla)
 
 ### 4. Resend (email)
 - [ ] Resend hesap + API key
@@ -155,7 +156,7 @@ Yarın bu servislerin API key'lerini alıp `.env.local`'e (ve Vercel env vars'a)
 | Servis | Kullanım | Alınacak |
 |---|---|---|
 | Supabase | DB + Storage | DATABASE_URL, DIRECT_URL, URL, ANON_KEY, SERVICE_ROLE_KEY |
-| iyzico | Ödeme | IYZICO_API_KEY, IYZICO_SECRET_KEY |
+| PAYTR | Ödeme | PAYTR_MERCHANT_ID, PAYTR_MERCHANT_KEY, PAYTR_MERCHANT_SALT |
 | Resend | Email | RESEND_API_KEY, EMAIL_FROM (domain doğrulama) |
 | Google OAuth | Sosyal giriş | GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET |
 | GA4 | Analytics | NEXT_PUBLIC_GA_ID |
@@ -169,7 +170,7 @@ Yarın bu servislerin API key'lerini alıp `.env.local`'e (ve Vercel env vars'a)
 
 1. [ ] `/admin` → login → ürün ekle + görsel upload
 2. [ ] Ana sayfa → gerçek ürünleri gör
-3. [ ] Sepete ekle → checkout → iyzico sandbox kart
+3. [ ] Sepete ekle → checkout → PAYTR test ödeme ekranı
 4. [ ] Başarılı ödeme → confirmation mail geldi mi
 5. [ ] Admin'de sipariş listesi → durum güncelle
 6. [ ] Kargo takip no gir → müşteri hesabında göründü mü

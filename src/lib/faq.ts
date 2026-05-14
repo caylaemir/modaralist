@@ -30,7 +30,7 @@ export const FAQS_TR: FaqItem[] = [
   {
     question: "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
     answer:
-      "iyzico altyapısı üzerinden tüm Visa, Mastercard ve American Express kartları kabul ediyoruz. Tek çekim veya 3 taksit seçenekleri var. Kart bilgilerin sunucumuzda saklanmaz, doğrudan iyzico ile şifrelenir.",
+      "PAYTR altyapısı üzerinden tüm Visa, Mastercard ve American Express kartları kabul ediyoruz. Taksit seçenekleri PAYTR ödeme ekranında görünür. Kart bilgilerin sunucumuzda saklanmaz, doğrudan PAYTR ekranında işlenir.",
   },
   {
     question: "Bedenim olmayan ürün için haber alabilir miyim?",
@@ -50,7 +50,7 @@ export const FAQS_TR: FaqItem[] = [
   {
     question: "KVKK kapsamında verilerim güvende mi?",
     answer:
-      "Evet. Ad-soyad, telefon ve adres bilgilerin sadece sipariş işleme + kargo amaçlı kullanılır. Kart bilgilerin asla bizde saklanmaz (PCI-DSS uyumlu iyzico'ya direkt iletilir). Tüm haklarını /pages/kvkk üzerinden okuyabilir, hesabından verilerini indirebilir veya silebilirsin.",
+      "Evet. Ad-soyad, telefon ve adres bilgilerin sadece sipariş işleme + kargo amaçlı kullanılır. Kart bilgilerin asla bizde saklanmaz; PAYTR ödeme ekranında işlenir. Tüm haklarını /pages/kvkk üzerinden okuyabilir, hesabından verilerini indirebilir veya silebilirsin.",
   },
   {
     question: "Yurt dışına kargo yapıyor musunuz?",
@@ -78,7 +78,7 @@ export const FAQS_EN: FaqItem[] = [
   {
     question: "What payment methods do you accept?",
     answer:
-      "Visa, Mastercard and American Express via iyzico. Single payment or 3 installments. Card data is never stored on our servers — encrypted directly with iyzico.",
+      "Visa, Mastercard and American Express via PAYTR. Installment options are shown on the PAYTR payment screen. Card data is never stored on our servers.",
   },
   {
     question: "Can I get notified when my size restocks?",
@@ -98,7 +98,7 @@ export const FAQS_EN: FaqItem[] = [
   {
     question: "Is my data safe under KVKK?",
     answer:
-      "Yes. Your name, phone and address are used solely for order processing and shipping. Card data is never stored on our servers — it's encrypted and sent directly to PCI-DSS compliant iyzico. You can review your full rights at /pages/kvkk and download or delete your data from your account.",
+      "Yes. Your name, phone and address are used solely for order processing and shipping. Card data is never stored on our servers; it is processed on the PAYTR payment screen. You can review your full rights at /pages/kvkk and download or delete your data from your account.",
   },
   {
     question: "Do you ship internationally?",

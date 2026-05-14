@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Phone, MapPin, Mail, ShieldCheck, Truck, Undo2 } from "lucide-react";
@@ -221,6 +222,16 @@ export async function Footer() {
             icon={<Truck className="size-5" strokeWidth={1.5} />}
             title={t("trustShippingTitle")}
             desc={t("trustShippingDesc")}
+          />
+        </div>
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 px-5 pb-8 text-[10px] uppercase tracking-[0.3em] text-mist md:px-10">
+          <span>{locale === "en" ? "Payment infrastructure" : "Ödeme altyapısı"}</span>
+          <Image
+            src="/brand/paytr-logo.svg"
+            alt="PayTR"
+            width={150}
+            height={26}
+            className="h-6 w-auto"
           />
         </div>
       </div>

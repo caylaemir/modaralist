@@ -349,7 +349,7 @@ function getReturnAndLegal() {
     returnShippingCost: "Modaralist karşılar",
     refundTimeline: "5-10 iş günü içinde aynı kart/hesaba",
     paymentMethods: ["Visa", "Mastercard", "American Express"],
-    paymentSecurity: "iyzico ile şifrelenir, kart bilgileri sunucuda saklanmaz",
+    paymentSecurity: "PAYTR güvenli ödeme ekranında işlenir, kart bilgileri Modaralist sunucusunda saklanmaz",
     kvkkPage: "https://modaralist.com/tr/pages/kvkk",
     distanceSalesPage: "https://modaralist.com/tr/pages/distance-sales",
   };

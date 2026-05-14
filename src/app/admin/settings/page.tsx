@@ -9,7 +9,10 @@ export default async function AdminSettingsPage() {
 
   const paymentSim = process.env.PAYMENT_SIMULATION_MODE === "true";
   const hasResend = !!process.env.RESEND_API_KEY;
-  const hasIyzico = !!process.env.IYZICO_API_KEY;
+  const hasPaytr =
+    !!process.env.PAYTR_MERCHANT_ID &&
+    !!process.env.PAYTR_MERCHANT_KEY &&
+    !!process.env.PAYTR_MERCHANT_SALT;
   const hasCloudinary = !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const hasShippingSecret = !!process.env.SHIPPING_WEBHOOK_SECRET;
 
@@ -26,12 +29,12 @@ export default async function AdminSettingsPage() {
       note: hasCloudinary ? "Bağlı" : "Env key eksik",
     },
     {
-      name: "iyzico",
-      key: "3DS ödeme",
-      connected: hasIyzico,
+      name: "PAYTR",
+      key: "iFrame ödeme",
+      connected: hasPaytr,
       note: paymentSim
         ? "Simülasyon modu aktif"
-        : hasIyzico
+        : hasPaytr
           ? "Bağlı"
           : "Key bekleniyor",
     },
@@ -150,7 +153,7 @@ export default async function AdminSettingsPage() {
                 PAYMENT_SIMULATION_MODE
               </p>
               <p className="mt-2 max-w-md text-xs text-mist">
-                Aktifken sipariş iyzico&apos;ya gitmeden direkt PAID olarak
+                Aktifken sipariş PAYTR&apos;ye gitmeden direkt PAID olarak
                 kaydedilir. Canlıya çıkmadan önce kapatılmalı (env&apos;de{" "}
                 <code className="font-mono">false</code>).
               </p>

@@ -1,75 +1,127 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { finalizeThreeDSPayment } from "@/lib/payment/iyzico";
 import { sendEmail, orderConfirmationHtml } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { awardOrderPoints, parseLoyaltyConfig } from "@/lib/loyalty";
+import { verifyPaytrCallback } from "@/lib/payment/paytr";
 
-// iyzico 3DS sonunda buraya POST atar.
-// Body: application/x-www-form-urlencoded
-// Alanlar: paymentId, conversationId, status, mdStatus
+export const dynamic = "force-dynamic";
+
+function ok() {
+  return new NextResponse("OK", { status: 200 });
+}
+
+function formValue(form: FormData, key: string) {
+  return String(form.get(key) ?? "");
+}
+
+async function sendOrderConfirmation(orderId: string) {
+  const full = await db.order.findUnique({
+    where: { id: orderId },
+    include: { items: true, addresses: true },
+  });
+  if (!full) return;
+
+  const shipping = full.addresses.find((a) => a.type === "SHIPPING");
+  await sendEmail({
+    to: full.email,
+    subject: `Siparişin alındı — ${full.orderNumber}`,
+    html: orderConfirmationHtml({
+      orderNumber: full.orderNumber,
+      customerName: shipping?.fullName ?? "misafir",
+      total: formatPrice(Number(full.grandTotal), "tr"),
+      items: full.items.map((it) => ({
+        name: it.productNameSnapshot,
+        variant: it.variantSnapshot ?? undefined,
+        quantity: it.quantity,
+        total: formatPrice(Number(it.lineTotal), "tr"),
+      })),
+      address: shipping
+        ? `${shipping.fullName}\n${shipping.street}\n${shipping.district}, ${shipping.city}`
+        : "",
+    }),
+  });
+}
+
+// PAYTR Bildirim URL'si. Musterinin yonlendirildigi ok/fail sayfasi degil,
+// odemenin kesin sonucunu aldigimiz server-to-server callback budur.
 export async function POST(req: NextRequest) {
   const form = await req.formData();
-  const paymentId = String(form.get("paymentId") ?? "");
-  const conversationId = String(form.get("conversationId") ?? "");
-  const status = String(form.get("status") ?? "");
-  const mdStatus = String(form.get("mdStatus") ?? "");
+  const merchantOid = formValue(form, "merchant_oid");
+  const status = formValue(form, "status");
+  const totalAmount = formValue(form, "total_amount");
+  const hash = formValue(form, "hash");
+  const failedReasonCode = formValue(form, "failed_reason_code");
+  const failedReasonMsg = formValue(form, "failed_reason_msg");
 
-  const orderNumber = req.nextUrl.searchParams.get("order");
-  if (!orderNumber) {
-    return NextResponse.redirect(
-      new URL("/tr/checkout/failed", req.url)
-    );
+  const verified = verifyPaytrCallback({
+    merchantOid,
+    status,
+    totalAmount,
+    hash,
+  });
+
+  if (!verified) {
+    console.error("[paytr-callback] bad hash", { merchantOid, status });
+    return new NextResponse("PAYTR notification failed: bad hash", {
+      status: 400,
+    });
   }
 
-  const order = await db.order.findUnique({ where: { orderNumber } }).catch(() => null);
+  const order = await db.order.findUnique({ where: { orderNumber: merchantOid } });
   if (!order) {
-    return NextResponse.redirect(
-      new URL(`/tr/checkout/failed?reason=not-found`, req.url)
-    );
+    console.error("[paytr-callback] order not found", { merchantOid });
+    return new NextResponse("order not found", { status: 404 });
   }
 
-  // IDEMPOTENCY (H4): iyzico callback'i bazen 2 kez gelir (network retry).
-  // paymentStatus zaten CAPTURED ise tum is bitmistir — direkt success'e
-  // yonlendir, mail/loyalty/order update yeniden tetiklenmesin.
-  if (order.paymentStatus === "CAPTURED") {
-    return NextResponse.redirect(
-      new URL(`/tr/checkout/success?order=${orderNumber}`, req.url)
-    );
+  // PAYTR ayni siparis icin tekrar bildirim yollayabilir. Onaylanmis veya
+  // iptal edilmis sipariste ikinci kez mail/puan/stok islemi yapma.
+  if (order.paymentStatus === "CAPTURED" || order.status === "CANCELLED") {
+    return ok();
   }
 
-  if (status !== "success" || mdStatus !== "1") {
-    if (order.status === "PENDING") {
+  const callbackRaw = {
+    merchant_oid: merchantOid,
+    status,
+    total_amount: totalAmount,
+    failed_reason_code: failedReasonCode || null,
+    failed_reason_msg: failedReasonMsg || null,
+  };
+
+  if (status === "success") {
+    const expectedKurus = Math.round(Number(order.grandTotal) * 100);
+    const paidKurus = Number(totalAmount);
+
+    if (!Number.isFinite(paidKurus) || paidKurus < expectedKurus) {
+      console.error("[paytr-callback] amount mismatch", {
+        merchantOid,
+        expectedKurus,
+        paidKurus,
+      });
       await db.$transaction(async (tx) => {
         await tx.order.update({
           where: { id: order.id },
-          data: { paymentStatus: "FAILED", status: "CANCELLED" },
+          data: {
+            paymentStatus: "FAILED",
+            status: "CANCELLED",
+            history: {
+              create: {
+                fromStatus: order.status,
+                toStatus: "CANCELLED",
+                note: `PAYTR tutar uyusmazligi: beklenen ${expectedKurus}, gelen ${totalAmount}`,
+              },
+            },
+          },
+        });
+        await tx.payment.updateMany({
+          where: { orderId: order.id },
+          data: { status: "FAILED", raw: callbackRaw },
         });
         await restoreStockForOrder(order.id, tx);
       });
-    }
-    return NextResponse.redirect(
-      new URL(`/tr/checkout/failed?reason=3ds`, req.url)
-    );
-  }
-
-  try {
-    const final = await finalizeThreeDSPayment(paymentId, conversationId);
-    if (final.status !== "success") {
-      if (order.status === "PENDING") {
-        await db.$transaction(async (tx) => {
-          await tx.order.update({
-            where: { id: order.id },
-            data: { paymentStatus: "FAILED", status: "CANCELLED" },
-          });
-          await restoreStockForOrder(order.id, tx);
-        });
-      }
-      return NextResponse.redirect(
-        new URL(`/tr/checkout/failed?reason=capture`, req.url)
-      );
+      return ok();
     }
 
     await db.$transaction([
@@ -80,20 +132,23 @@ export async function POST(req: NextRequest) {
           status: "PAID",
           history: {
             create: {
-              fromStatus: "PENDING",
+              fromStatus: order.status,
               toStatus: "PAID",
-              note: `iyzico paymentId: ${final.paymentId}`,
+              note: `PAYTR merchant_oid: ${merchantOid}`,
             },
           },
         },
       }),
       db.payment.updateMany({
         where: { orderId: order.id },
-        data: { status: "CAPTURED", providerTxnId: final.paymentId },
+        data: {
+          status: "CAPTURED",
+          providerTxnId: merchantOid,
+          raw: callbackRaw,
+        },
       }),
     ]);
 
-    // Loyalty puan ekle (siparis CAPTURED oldu) — hata olsa akisi durdurma
     try {
       const settings = await getAllSettings();
       const cfg = parseLoyaltyConfig(settings);
@@ -101,47 +156,42 @@ export async function POST(req: NextRequest) {
         await awardOrderPoints(order.id, cfg);
       }
     } catch (err) {
-      console.error("[payment-callback] loyalty error", err);
+      console.error("[paytr-callback] loyalty error", err);
     }
 
-    // Sipariş onay e-postası (async, hata olsa da akışı durdurma)
     try {
-      const full = await db.order.findUnique({
-        where: { id: order.id },
-        include: { items: true, addresses: true },
-      });
-      if (full) {
-        const shipping = full.addresses.find((a) => a.type === "SHIPPING");
-        await sendEmail({
-          to: full.email,
-          subject: `Siparişin alındı — ${full.orderNumber}`,
-          html: orderConfirmationHtml({
-            orderNumber: full.orderNumber,
-            customerName: shipping?.fullName ?? "misafir",
-            total: formatPrice(Number(full.grandTotal), "tr"),
-            items: full.items.map((it) => ({
-              name: it.productNameSnapshot,
-              variant: it.variantSnapshot ?? undefined,
-              quantity: it.quantity,
-              total: formatPrice(Number(it.lineTotal), "tr"),
-            })),
-            address: shipping
-              ? `${shipping.fullName}\n${shipping.street}\n${shipping.district}, ${shipping.city}`
-              : "",
-          }),
-        });
-      }
+      await sendOrderConfirmation(order.id);
     } catch (err) {
-      console.error("[payment-callback] email error", err);
+      console.error("[paytr-callback] email error", err);
     }
 
-    return NextResponse.redirect(
-      new URL(`/tr/checkout/success?order=${orderNumber}`, req.url)
-    );
-  } catch (err) {
-    console.error("[payment-callback]", err);
-    return NextResponse.redirect(
-      new URL(`/tr/checkout/failed?reason=exception`, req.url)
-    );
+    return ok();
   }
+
+  await db.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "FAILED",
+        status: "CANCELLED",
+        history: {
+          create: {
+            fromStatus: order.status,
+            toStatus: "CANCELLED",
+            note:
+              failedReasonMsg ||
+              failedReasonCode ||
+              "PAYTR odeme onaylanmadi",
+          },
+        },
+      },
+    });
+    await tx.payment.updateMany({
+      where: { orderId: order.id },
+      data: { status: "FAILED", raw: callbackRaw },
+    });
+    await restoreStockForOrder(order.id, tx);
+  });
+
+  return ok();
 }

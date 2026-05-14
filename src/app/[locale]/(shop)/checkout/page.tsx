@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Script from "next/script";
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -15,6 +16,9 @@ type Step = "contact" | "address" | "payment";
 
 type Rates = { standard: number; express: number; freeOver: number };
 const DEFAULT_RATES: Rates = { standard: 0, express: 89, freeOver: 0 };
+type PaytrWindow = Window & {
+  iFrameResize?: (options: Record<string, unknown>, selector: string) => void;
+};
 
 export default function CheckoutPage() {
   const locale = useLocale() as "tr" | "en";
@@ -23,6 +27,9 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("contact");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [paytrFrameUrl, setPaytrFrameUrl] = useState<string | null>(null);
+  const [paytrOrderNumber, setPaytrOrderNumber] = useState<string | null>(null);
+  const [paytrScriptReady, setPaytrScriptReady] = useState(false);
 
   // Kupon state
   const [couponInput, setCouponInput] = useState("");
@@ -44,11 +51,6 @@ export default function CheckoutPage() {
     zip: "",
     billingSame: true,
     shippingMethod: "standard" as "standard" | "express",
-    cardHolder: "",
-    cardNumber: "",
-    expireMonth: "",
-    expireYear: "",
-    cvc: "",
     kvkkOk: false,
     distanceSalesOk: false,
   });
@@ -89,6 +91,11 @@ export default function CheckoutPage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!paytrFrameUrl || !paytrScriptReady) return;
+    (window as PaytrWindow).iFrameResize?.({}, "#paytriframe");
+  }, [paytrFrameUrl, paytrScriptReady]);
 
   const sub = subtotal();
   const baseShipping =
@@ -162,6 +169,11 @@ export default function CheckoutPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  function resetPaytrFrame() {
+    setPaytrFrameUrl(null);
+    setPaytrOrderNumber(null);
+  }
+
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-5 py-40 text-center md:px-10">
@@ -186,12 +198,7 @@ export default function CheckoutPage() {
       toast.error(msg);
       return;
     }
-    if (form.cardNumber.replace(/\s/g, "").length < 15) {
-      const msg = "Kart numarası eksik (15-16 hane).";
-      setFormError(msg);
-      toast.error(msg);
-      return;
-    }
+    resetPaytrFrame();
     setLoading(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -212,13 +219,7 @@ export default function CheckoutPage() {
             zip: form.zip,
           },
           shippingMethod: form.shippingMethod,
-          card: {
-            cardHolder: form.cardHolder,
-            cardNumber: form.cardNumber.replace(/\s/g, ""),
-            expireMonth: form.expireMonth,
-            expireYear: form.expireYear,
-            cvc: form.cvc,
-          },
+          locale,
           couponCode: appliedCoupon?.code,
         }),
       });
@@ -230,11 +231,11 @@ export default function CheckoutPage() {
         setLoading(false);
         return;
       }
-      if (data.htmlContent) {
-        // iyzico 3DS iframe HTML
-        document.open();
-        document.write(data.htmlContent);
-        document.close();
+      if (data.iframeUrl) {
+        setPaytrFrameUrl(data.iframeUrl);
+        setPaytrOrderNumber(data.orderNumber ?? null);
+        toast.success("PAYTR güvenli ödeme ekranı hazır.");
+        setLoading(false);
         return;
       }
       clear();
@@ -499,184 +500,162 @@ export default function CheckoutPage() {
           )}
 
           {step === "payment" && (
-            <form onSubmit={submitPayment} className="space-y-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                  Kart bilgileri iyzico ile şifrelenir, sunucumuzda saklanmaz.
-                </p>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                  Kart Üzerindeki İsim
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="cc-name"
-                  value={form.cardHolder}
-                  onChange={(e) => set("cardHolder", e.target.value)}
-                  className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
+            paytrFrameUrl ? (
+              <div className="space-y-6">
+                <Script
+                  id="paytr-iframe-resizer"
+                  src="https://www.paytr.com/js/iframeResizer.min.js?v2"
+                  strategy="afterInteractive"
+                  onLoad={() => setPaytrScriptReady(true)}
                 />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                  Kart Numarası
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="cc-number"
-                  required
-                  maxLength={19}
-                  placeholder="0000 0000 0000 0000"
-                  value={form.cardNumber}
-                  onChange={(e) =>
-                    set(
-                      "cardNumber",
-                      e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 16)
-                        .replace(/(.{4})/g, "$1 ")
-                        .trim()
-                    )
-                  }
-                  className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                    Ay
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="cc-exp-month"
-                    maxLength={2}
-                    required
-                    placeholder="MM"
-                    value={form.expireMonth}
-                    onChange={(e) =>
-                      set("expireMonth", e.target.value.replace(/\D/g, ""))
-                    }
-                    className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
+                <div className="flex flex-col gap-4 border border-line bg-paper p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
+                      PAYTR güvenli ödeme
+                    </p>
+                    <p className="mt-2 text-sm text-mist">
+                      Kart bilgilerini yalnızca PAYTR ekranında girersin; Modaralist
+                      kart numarası veya CVC saklamaz.
+                    </p>
+                    {paytrOrderNumber ? (
+                      <p className="mt-2 font-mono text-[11px] text-mist">
+                        Sipariş: {paytrOrderNumber}
+                      </p>
+                    ) : null}
+                  </div>
+                  <Image
+                    src="/brand/paytr-logo.svg"
+                    alt="PayTR"
+                    width={160}
+                    height={28}
+                    className="h-8 w-auto shrink-0"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                    Yıl
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="cc-exp-year"
-                    maxLength={4}
-                    required
-                    placeholder="YYYY"
-                    value={form.expireYear}
-                    onChange={(e) =>
-                      set("expireYear", e.target.value.replace(/\D/g, ""))
+                <div className="overflow-hidden border border-line bg-paper">
+                  <iframe
+                    id="paytriframe"
+                    src={paytrFrameUrl}
+                    title="PAYTR güvenli ödeme formu"
+                    className="block min-h-[760px] w-full"
+                    frameBorder={0}
+                    scrolling="no"
+                    onLoad={() =>
+                      (window as PaytrWindow).iFrameResize?.(
+                        {},
+                        "#paytriframe"
+                      )
                     }
-                    className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.3em] text-mist">
-                    CVC
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="cc-csc"
-                    maxLength={4}
-                    required
-                    placeholder="***"
-                    value={form.cvc}
-                    onChange={(e) =>
-                      set("cvc", e.target.value.replace(/\D/g, ""))
-                    }
-                    className="mt-2 w-full border-b border-line bg-transparent py-3 outline-none focus:border-ink"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3 border-t border-line pt-6 text-xs leading-relaxed">
-                <label className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={form.kvkkOk}
-                    onChange={(e) => set("kvkkOk", e.target.checked)}
-                    className="mt-0.5 size-4 accent-ink"
-                  />
-                  <span>
-                    <a
-                      href="/pages/kvkk"
-                      target="_blank"
-                      rel="noopener"
-                      className="underline underline-offset-2"
-                    >
-                      KVKK Aydınlatma Metni
-                    </a>
-                    'ni okudum, kişisel verilerimin işlenmesini onaylıyorum.
-                  </span>
-                </label>
-                <label className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={form.distanceSalesOk}
-                    onChange={(e) =>
-                      set("distanceSalesOk", e.target.checked)
-                    }
-                    className="mt-0.5 size-4 accent-ink"
-                  />
-                  <span>
-                    <a
-                      href="/pages/distance-sales"
-                      target="_blank"
-                      rel="noopener"
-                      className="underline underline-offset-2"
-                    >
-                      Mesafeli Satış Sözleşmesi
-                    </a>{" "}
-                    ve Ön Bilgilendirme Formu'nu okudum, kabul ediyorum.
-                  </span>
-                </label>
-              </div>
-
-              {formError ? (
-                <div
-                  role="alert"
-                  className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800"
-                >
-                  <p className="font-medium">Ödeme tamamlanamadı</p>
-                  <p className="mt-1 text-[13px]">{formError}</p>
-                </div>
-              ) : null}
-
-              <div className="flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={() => setStep("address")}
+                  onClick={resetPaytrFrame}
                   className="text-[11px] uppercase tracking-[0.3em] text-mist hover:text-ink"
                 >
-                  ← Geri
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center gap-3 bg-ink px-8 py-4 text-[11px] uppercase tracking-[0.3em] text-paper disabled:opacity-50"
-                >
-                  <span>
-                    {loading
-                      ? "İşleniyor..."
-                      : `${formatPrice(total, locale)} — Ödemeyi Tamamla`}
-                  </span>
-                  <span>→</span>
+                  ← Bilgileri düzenle
                 </button>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={submitPayment} className="space-y-6">
+                <div className="border border-line bg-paper p-5">
+                  <div className="flex items-center justify-between gap-5">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
+                        PAYTR güvenli ödeme
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-mist">
+                        Devam ettiğinde PAYTR iFrame ödeme ekranı açılır. Kart
+                        bilgileri Modaralist sunucularından geçmez.
+                      </p>
+                    </div>
+                    <Image
+                      src="/brand/paytr-logo.svg"
+                      alt="PayTR"
+                      width={160}
+                      height={28}
+                      className="h-8 w-auto shrink-0"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3 border-t border-line pt-6 text-xs leading-relaxed">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={form.kvkkOk}
+                      onChange={(e) => set("kvkkOk", e.target.checked)}
+                      className="mt-0.5 size-4 accent-ink"
+                    />
+                    <span>
+                      <a
+                        href="/pages/kvkk"
+                        target="_blank"
+                        rel="noopener"
+                        className="underline underline-offset-2"
+                      >
+                        KVKK Aydınlatma Metni
+                      </a>
+                      'ni okudum, kişisel verilerimin işlenmesini onaylıyorum.
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={form.distanceSalesOk}
+                      onChange={(e) =>
+                        set("distanceSalesOk", e.target.checked)
+                      }
+                      className="mt-0.5 size-4 accent-ink"
+                    />
+                    <span>
+                      <a
+                        href="/pages/distance-sales"
+                        target="_blank"
+                        rel="noopener"
+                        className="underline underline-offset-2"
+                      >
+                        Mesafeli Satış Sözleşmesi
+                      </a>{" "}
+                      ve Ön Bilgilendirme Formu'nu okudum, kabul ediyorum.
+                    </span>
+                  </label>
+                </div>
+
+                {formError ? (
+                  <div
+                    role="alert"
+                    className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800"
+                  >
+                    <p className="font-medium">Ödeme tamamlanamadı</p>
+                    <p className="mt-1 text-[13px]">{formError}</p>
+                  </div>
+                ) : null}
+
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep("address")}
+                    className="text-[11px] uppercase tracking-[0.3em] text-mist hover:text-ink"
+                  >
+                    ← Geri
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex items-center gap-3 bg-ink px-8 py-4 text-[11px] uppercase tracking-[0.3em] text-paper disabled:opacity-50"
+                  >
+                    <span>
+                      {loading
+                        ? "İşleniyor..."
+                        : `${formatPrice(total, locale)} — PAYTR ile Öde`}
+                    </span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </form>
+            )
           )}
         </div>
 

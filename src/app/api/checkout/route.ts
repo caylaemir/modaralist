@@ -3,7 +3,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { initiateThreeDSPayment } from "@/lib/payment/iyzico";
+import { initiatePaytrPayment } from "@/lib/payment/paytr";
 import { restoreStockForOrder } from "@/lib/stock";
 import { getAllSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -39,13 +39,7 @@ const schema = z.object({
     zip: z.string().optional().default(""),
   }),
   shippingMethod: z.enum(["standard", "express"]),
-  card: z.object({
-    cardHolder: z.string().min(3),
-    cardNumber: z.string().min(15).max(16),
-    expireMonth: z.string().min(1).max(2),
-    expireYear: z.string().min(2).max(4),
-    cvc: z.string().min(3).max(4),
-  }),
+  locale: z.enum(["tr", "en"]).optional().default("tr"),
   // Opsiyonel kupon kodu — server-side recompute (client'in dedigi tutar
   // kullanilmaz, validate edilir ve burada hesaplanir)
   couponCode: z.string().optional(),
@@ -69,7 +63,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { lines, customer, address, shippingMethod, card } = parsed.data;
+  const { lines, customer, address, shippingMethod, locale } = parsed.data;
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -187,9 +181,7 @@ export async function POST(req: NextRequest) {
   const totalDiscount = bundleDiscount + couponDiscount;
   const grandTotal = Math.max(0, subtotal + finalShipping - totalDiscount);
 
-  const orderNumber = `MDR-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`;
-  const [name, ...rest] = customer.fullName.trim().split(" ");
-  const surname = rest.join(" ") || name;
+  const orderNumber = `MDR${new Date().getFullYear()}${nanoid(8).toUpperCase()}`;
 
   // Stok kontrol + atomic decrement + sipariş oluşturma — hepsi tek transaction.
   // Stok yetmezse veya varyant yoksa transaction rollback olur.
@@ -217,6 +209,7 @@ export async function POST(req: NextRequest) {
           userId,
           email: customer.email,
           phone: customer.phone,
+          locale,
           subtotal,
           shippingCost: finalShipping,
           discountTotal: totalDiscount,
@@ -293,13 +286,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "127.0.0.1";
+  const clientIp = getClientIp(req);
+  const ip = clientIp === "unknown" ? "127.0.0.1" : clientIp;
 
-  // Simülasyon modu — iyzico API key alınana kadar bu aktif.
-  // Canlıda gerçek iyzico'ya geçmek için PAYMENT_SIMULATION_MODE=false yap.
+  // Simülasyon modu — PAYTR bilgileri tanimlanana kadar bu aktif kalabilir.
+  // Canlida gerçek PAYTR iFrame'e gecmek icin PAYMENT_SIMULATION_MODE=false yap.
   if (process.env.PAYMENT_SIMULATION_MODE === "true") {
     await db.$transaction([
       db.order.update({
@@ -311,7 +302,7 @@ export async function POST(req: NextRequest) {
             create: {
               fromStatus: "PENDING",
               toStatus: "PAID",
-              note: "simülasyon modu — iyzico atlandı",
+              note: "simülasyon modu — PAYTR atlandı",
             },
           },
         },
@@ -323,7 +314,7 @@ export async function POST(req: NextRequest) {
           providerTxnId: `SIM-${orderNumber}`,
           amount: grandTotal,
           status: "CAPTURED",
-          raw: { simulation: true, card: { last4: card.cardNumber.slice(-4) } },
+          raw: { simulation: true, provider: "paytr" },
         },
       }),
     ]);
@@ -331,83 +322,50 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await initiateThreeDSPayment({
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const localePath = locale === "en" ? "/en" : "/tr";
+    const result = await initiatePaytrPayment({
       orderNumber,
       totalPrice: Number(grandTotal),
-      currency: "TRY",
-      buyer: {
-        id: order.id,
-        name,
-        surname,
-        email: customer.email,
-        phone: customer.phone,
-        tcNo: customer.tcNo,
-        ip,
-        registrationAddress: address.street,
-        city: address.city,
-        country: "Turkey",
-        zip: address.zip,
-      },
-      shippingAddress: {
-        contactName: customer.fullName,
-        city: address.city,
-        country: "Turkey",
-        address: address.street,
-        zip: address.zip,
-      },
-      billingAddress: {
-        contactName: customer.fullName,
-        city: address.city,
-        country: "Turkey",
-        address: address.street,
-        zip: address.zip,
-      },
+      email: customer.email,
+      userName: customer.fullName,
+      userAddress: `${address.street}, ${address.district}, ${address.city}`,
+      userPhone: customer.phone,
+      userIp: ip,
+      okUrl: `${baseUrl}${localePath}/checkout/success?order=${orderNumber}`,
+      failUrl: `${baseUrl}${localePath}/checkout/failed?order=${orderNumber}&reason=paytr`,
+      locale,
       items: safeLines.map((l) => ({
-        id: l.variantId,
         name: l.name,
-        category: "Fashion",
-        price: l.unitPrice * l.quantity,
+        unitPrice: l.unitPrice,
+        quantity: l.quantity,
       })),
-      card: {
-        cardHolderName: card.cardHolder,
-        cardNumber: card.cardNumber,
-        expireMonth: card.expireMonth,
-        expireYear: card.expireYear.length === 2 ? `20${card.expireYear}` : card.expireYear,
-        cvc: card.cvc,
-      },
-      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payment/callback?order=${orderNumber}`,
     });
-
-    if (result.status !== "success" || !result.threeDSHtmlContent) {
-      await db.$transaction(async (tx) => {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: "FAILED", status: "CANCELLED" },
-        });
-        await restoreStockForOrder(order.id, tx);
-      });
-      return NextResponse.json(
-        { error: result.errorMessage ?? "Ödeme başlatılamadı" },
-        { status: 400 }
-      );
-    }
 
     await db.payment.create({
       data: {
         orderId: order.id,
-        provider: "iyzico",
-        providerTxnId: result.paymentId ?? null,
+        provider: "paytr",
+        providerTxnId: orderNumber,
         amount: grandTotal,
         status: "PENDING",
-        raw: JSON.parse(JSON.stringify(result)) as object,
+        raw: {
+          token: result.token,
+          iframeUrl: result.iframeUrl,
+          paymentAmount: result.paymentAmount,
+          testMode: result.testMode,
+        },
       },
     });
 
-    // 3DS iframe HTML'i (base64 encoded iyzico'da) frontend'e yollanıp iframe'de açılacak
-    const html = Buffer.from(result.threeDSHtmlContent, "base64").toString("utf-8");
-    return NextResponse.json({ ok: true, orderNumber, htmlContent: html });
+    return NextResponse.json({
+      ok: true,
+      orderNumber,
+      provider: "paytr",
+      iframeUrl: result.iframeUrl,
+    });
   } catch (err) {
-    console.error("[checkout] iyzico error", err);
+    console.error("[checkout] paytr error", err);
     await db.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
