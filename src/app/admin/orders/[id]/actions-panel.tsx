@@ -56,12 +56,20 @@ export function ActionsPanel({ orderId, currentStatus, currentTracking }: Props)
     }
     startTransition(async () => {
       try {
-        await setShipmentTracking(orderId, {
+        const result = await setShipmentTracking(orderId, {
           carrier: carrier.trim(),
           trackingNumber: trackingNumber.trim(),
           trackingUrl: trackingUrl.trim() || null,
         });
-        toast.success("Kargo bilgisi kaydedildi.");
+        if (result.notified) {
+          toast.success(
+            result.emailSent
+              ? "Kargo bilgisi kaydedildi ve müşteriye mail gönderildi."
+              : "Kargo bilgisi kaydedildi; mail gönderimi loglara düştü."
+          );
+        } else {
+          toast.success("Kargo bilgisi kaydedildi.");
+        }
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : "Bir hata oluştu."

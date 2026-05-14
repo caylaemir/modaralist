@@ -5,6 +5,7 @@ import { z } from "zod";
 import { OrderStatus, ShipmentStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { sendShipmentUpdateEmail } from "@/lib/order-emails";
 import { restoreStockForOrder } from "@/lib/stock";
 
 // Stok checkout'ta (siparis olusturulurken) dusulur. Siparis CANCELLED veya
@@ -114,6 +115,12 @@ export async function setShipmentTracking(
       : null;
 
   const existing = order.shipments[0];
+  const shouldNotify =
+    !existing ||
+    existing.carrier !== parsed.carrier ||
+    existing.trackingNumber !== parsed.trackingNumber ||
+    (existing.trackingUrl ?? null) !== trackingUrl ||
+    existing.status !== ShipmentStatus.IN_TRANSIT;
 
   await db.$transaction(async (tx) => {
     if (existing) {
@@ -168,9 +175,24 @@ export async function setShipmentTracking(
     }
   });
 
+  let emailSent = false;
+  if (shouldNotify) {
+    try {
+      const result = await sendShipmentUpdateEmail({
+        orderId,
+        carrier: parsed.carrier,
+        trackingNumber: parsed.trackingNumber,
+        trackingUrl,
+      });
+      emailSent = Boolean(result.id);
+    } catch (err) {
+      console.error("[orders] shipment email failed", err);
+    }
+  }
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
-  return { ok: true };
+  return { ok: true, notified: shouldNotify, emailSent };
 }
 
 export async function cancelOrder(orderId: string, reason?: string) {

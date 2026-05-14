@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { sendShipmentUpdateEmail } from "@/lib/order-emails";
 
 // Kargo scripti bu endpoint'e istek atacak.
 // Header: x-shipping-secret
@@ -48,10 +49,23 @@ export async function POST(req: NextRequest) {
   const { orderNumber, trackingNumber, carrier, trackingUrl, status } =
     parsed.data;
 
-  const order = await db.order.findUnique({ where: { orderNumber } });
+  const order = await db.order.findUnique({
+    where: { orderNumber },
+    include: { shipments: true },
+  });
   if (!order) {
     return NextResponse.json({ error: "order not found" }, { status: 404 });
   }
+
+  const existing = order.shipments.find((s) => s.id === `${order.id}-default`);
+  const shouldNotify =
+    status === "IN_TRANSIT" &&
+    Boolean(trackingNumber) &&
+    (!existing ||
+      existing.status !== "IN_TRANSIT" ||
+      existing.carrier !== carrier ||
+      existing.trackingNumber !== trackingNumber ||
+      (existing.trackingUrl ?? null) !== (trackingUrl ?? null));
 
   await db.shipment.upsert({
     where: { id: `${order.id}-default` }, // pratik olarak ilk shipment
@@ -83,6 +97,19 @@ export async function POST(req: NextRequest) {
         : {}),
     },
   });
+
+  if (shouldNotify && trackingNumber) {
+    try {
+      await sendShipmentUpdateEmail({
+        orderId: order.id,
+        carrier,
+        trackingNumber,
+        trackingUrl,
+      });
+    } catch (err) {
+      console.error("[shipping-webhook] shipment email failed", err);
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

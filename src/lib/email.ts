@@ -96,7 +96,13 @@ export function orderConfirmationHtml(args: {
   orderNumber: string;
   customerName: string;
   total: string;
-  items: { name: string; variant?: string; quantity: number; total: string }[];
+  items: {
+    name: string;
+    variant?: string;
+    quantity: number;
+    total: string;
+    image?: string;
+  }[];
   address: string;
   trackUrl?: string;
   registerUrl?: string;
@@ -109,7 +115,14 @@ export function orderConfirmationHtml(args: {
     .map(
       (it) => `
     <tr>
-      <td style="padding:12px 0;border-bottom:1px solid #e5e1db;">
+      <td width="72" style="padding:12px 16px 12px 0;border-bottom:1px solid #e5e1db;vertical-align:top;">
+        ${
+          it.image
+            ? `<img src="${escapeHtml(it.image)}" width="64" height="80" alt="${escapeHtml(it.name)}" style="display:block;width:64px;height:80px;object-fit:cover;border:1px solid #e5e1db;background:#f5f2ed;" />`
+            : `<div style="width:64px;height:80px;background:#f5f2ed;border:1px solid #e5e1db;"></div>`
+        }
+      </td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e1db;vertical-align:top;">
         <div style="font-size:14px;">${escapeHtml(it.name)}</div>
         ${it.variant ? `<div style="font-size:11px;color:#8a8a8a;letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">${escapeHtml(it.variant)} · ${it.quantity} adet</div>` : ""}
       </td>
@@ -337,21 +350,38 @@ export function shipmentUpdateHtml(args: {
   carrier: string;
   trackingNumber: string;
   trackingUrl?: string;
+  orderTrackUrl?: string;
 }) {
+  const safeTrackingUrl = args.trackingUrl ? escapeHtml(args.trackingUrl) : "";
+  const safeOrderTrackUrl = args.orderTrackUrl
+    ? escapeHtml(args.orderTrackUrl)
+    : "";
+
   return baseLayout({
     title: "Siparişin yola çıktı",
     body: `
       <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0;">— kargoda</p>
-      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">${args.customerName}, siparişin yola çıktı.</h1>
+      <h1 style="font-family:Georgia,serif;font-size:36px;margin:16px 0 8px;letter-spacing:-0.02em;">${escapeHtml(args.customerName)}, siparişin yola çıktı.</h1>
       <p style="font-size:14px;line-height:1.6;color:#8a8a8a;margin:16px 0 32px;">
-        ${args.carrier} ile gönderildi. Takip numarasıyla yolu boyunca nerede olduğunu görebilirsin.
+        ${escapeHtml(args.carrier)} ile gönderildi. Takip numarasıyla yolu boyunca nerede olduğunu görebilirsin.
       </p>
       <div style="padding:20px;background:#f5f2ed;margin-bottom:24px;">
         <p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8a8a;margin:0 0 8px;">Takip No</p>
-        <p style="font-size:16px;font-variant-numeric:tabular-nums;margin:0;">${args.trackingNumber}</p>
+        <p style="font-size:16px;font-variant-numeric:tabular-nums;margin:0;">${escapeHtml(args.trackingNumber)}</p>
       </div>
-      ${args.trackingUrl ? `<a href="${args.trackingUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;">Kargoyu Takip Et</a>` : ""}
-      <p style="margin-top:32px;font-size:12px;color:#8a8a8a;">Sipariş no: ${args.orderNumber}</p>
+      <div style="display:block;margin-bottom:24px;">
+        ${
+          safeTrackingUrl
+            ? `<a href="${safeTrackingUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;margin:0 8px 12px 0;">Kargoyu Takip Et</a>`
+            : ""
+        }
+        ${
+          safeOrderTrackUrl
+            ? `<a href="${safeOrderTrackUrl}" style="display:inline-block;border:1px solid #0a0a0a;color:#0a0a0a;padding:13px 28px;text-decoration:none;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px 0;">Sipariş Durumu</a>`
+            : ""
+        }
+      </div>
+      <p style="margin-top:32px;font-size:12px;color:#8a8a8a;">Sipariş no: ${escapeHtml(args.orderNumber)}</p>
     `,
   });
 }
