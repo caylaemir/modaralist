@@ -55,6 +55,25 @@ const formSchema = z.object({
 type FormValues = z.input<typeof formSchema>;
 type FormOutput = z.output<typeof formSchema>;
 
+function productSaveErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (!message) return "Ürün kaydedilemedi. Lütfen bilgileri kontrol edin.";
+
+  const technicalSignals = [
+    "Prisma",
+    "P2002",
+    "P2003",
+    "Foreign key",
+    "constraint",
+    "Server Components",
+  ];
+  if (technicalSignals.some((signal) => message.includes(signal))) {
+    return "Ürün kaydedilemedi. Ürün daha önce siparişlerde kullanılmış olabilir. Silmek yerine arşivleyin.";
+  }
+
+  return message;
+}
+
 // ---------- Props ----------
 
 export type ProductFormCategory = {
@@ -372,7 +391,7 @@ export function ProductForm({
           router.refresh();
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Kayıt başarısız.");
+        toast.error(productSaveErrorMessage(err));
       }
     });
   }
@@ -1100,9 +1119,16 @@ function CategoryCascade({
 
   // categories veya currentCategoryId disardan degisirse state'i resync et.
   useEffect(() => {
-    setTopId(ancestry.top ?? "");
-    setSubId(ancestry.sub ?? "");
-    setLeafId(ancestry.leaf ?? "");
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setTopId(ancestry.top ?? "");
+      setSubId(ancestry.sub ?? "");
+      setLeafId(ancestry.leaf ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [ancestry.top, ancestry.sub, ancestry.leaf]);
 
   const tops = useMemo(

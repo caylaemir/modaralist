@@ -79,6 +79,7 @@ const productInputSchema = z.object({
 // Type-only export TypeScript tarafindan compile-time'da silinir,
 // runtime'da object yok — Next.js'i tetiklemez.
 type ProductInput = z.infer<typeof productInputSchema>;
+type ProductVariantInput = ProductInput["variants"][number];
 
 // ---------- Helpers ----------
 
@@ -93,6 +94,23 @@ function normalizeTranslations(input: ProductInput) {
     seoDesc: t.seoDesc ?? null,
     slug: t.slug && t.slug.length > 0 ? t.slug : slugify(t.name),
   }));
+}
+
+function throwFriendlyProductError(error: unknown): never {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      throw new Error(
+        "Bu ürün başka bir kayıtla çakışıyor. Slug veya SKU farklı olmalı."
+      );
+    }
+    if (error.code === "P2003") {
+      throw new Error(
+        "Bu ürün geçmiş siparişlerde kullanıldığı için silinemez. Satışı durdurmak için arşivleyin."
+      );
+    }
+  }
+
+  throw error;
 }
 
 // Urune koleksiyon bagla. input.collectionId varsa direkt o, yoksa
@@ -132,6 +150,76 @@ async function attachToCollection(
   });
 }
 
+function variantOptionKey(sizeId: string | null, colorId: string | null) {
+  return `${sizeId ?? "none"}:${colorId ?? "none"}`;
+}
+
+async function syncProductVariants(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  variants: ProductVariantInput[]
+) {
+  const existingVariants = await tx.productVariant.findMany({
+    where: { productId },
+    include: { _count: { select: { orderItems: true } } },
+  });
+
+  const byOptions = new Map<string, (typeof existingVariants)[number]>();
+  for (const variant of existingVariants) {
+    byOptions.set(variantOptionKey(variant.sizeId, variant.colorId), variant);
+  }
+
+  const incomingKeys = new Set(
+    variants.map((variant) =>
+      variantOptionKey(variant.sizeId || null, variant.colorId || null)
+    )
+  );
+
+  for (const variant of existingVariants) {
+    const key = variantOptionKey(variant.sizeId, variant.colorId);
+    if (incomingKeys.has(key)) continue;
+
+    if (variant._count.orderItems > 0) {
+      await tx.productVariant.update({
+        where: { id: variant.id },
+        data: { stock: 0, isActive: false },
+      });
+    } else {
+      await tx.productVariant.delete({ where: { id: variant.id } });
+    }
+  }
+
+  for (const variant of variants) {
+    const sizeId = variant.sizeId || null;
+    const colorId = variant.colorId || null;
+    const existing = byOptions.get(variantOptionKey(sizeId, colorId));
+
+    if (existing) {
+      await tx.productVariant.update({
+        where: { id: existing.id },
+        data: {
+          sku: variant.sku,
+          sizeId,
+          colorId,
+          stock: variant.stock,
+          isActive: variant.isActive,
+        },
+      });
+    } else {
+      await tx.productVariant.create({
+        data: {
+          productId,
+          sku: variant.sku,
+          sizeId,
+          colorId,
+          stock: variant.stock,
+          isActive: variant.isActive,
+        },
+      });
+    }
+  }
+}
+
 // ---------- Actions ----------
 
 export async function createProduct(rawInput: ProductInput) {
@@ -145,50 +233,52 @@ export async function createProduct(rawInput: ProductInput) {
     throw new Error("Bu slug zaten kullanılıyor.");
   }
 
-  const product = await db.$transaction(async (tx) => {
-    const created = await tx.product.create({
-      data: {
-        slug: input.slug,
-        status: input.status as ProductStatus,
-        categoryId: input.categoryId || null,
-        basePrice: new Prisma.Decimal(input.basePrice),
-        discountPrice:
-          input.discountPrice != null && input.discountPrice !== undefined
-            ? new Prisma.Decimal(input.discountPrice)
-            : null,
-        taxRate: new Prisma.Decimal(input.taxRate),
-        currency: input.currency,
-        lowStockLimit: input.lowStockLimit,
-        publishedAt: input.status === "PUBLISHED" ? new Date() : null,
-        translations: { create: translations },
-        images: {
-          create: input.images.map((img, i) => ({
-            url: img.url,
-            alt: img.alt ?? null,
-            sortOrder: img.sortOrder ?? i,
-            isHover: img.isHover ?? false,
-            colorId: img.colorId || null,
-          })),
+  const product = await db
+    .$transaction(async (tx) => {
+      const created = await tx.product.create({
+        data: {
+          slug: input.slug,
+          status: input.status as ProductStatus,
+          categoryId: input.categoryId || null,
+          basePrice: new Prisma.Decimal(input.basePrice),
+          discountPrice:
+            input.discountPrice != null && input.discountPrice !== undefined
+              ? new Prisma.Decimal(input.discountPrice)
+              : null,
+          taxRate: new Prisma.Decimal(input.taxRate),
+          currency: input.currency,
+          lowStockLimit: input.lowStockLimit,
+          publishedAt: input.status === "PUBLISHED" ? new Date() : null,
+          translations: { create: translations },
+          images: {
+            create: input.images.map((img, i) => ({
+              url: img.url,
+              alt: img.alt ?? null,
+              sortOrder: img.sortOrder ?? i,
+              isHover: img.isHover ?? false,
+              colorId: img.colorId || null,
+            })),
+          },
+          variants: {
+            create: input.variants.map((v) => ({
+              sku: v.sku,
+              sizeId: v.sizeId || null,
+              colorId: v.colorId || null,
+              stock: v.stock,
+              isActive: v.isActive,
+            })),
+          },
+          tags:
+            input.tagIds.length > 0
+              ? { connect: input.tagIds.map((id) => ({ id })) }
+              : undefined,
         },
-        variants: {
-          create: input.variants.map((v) => ({
-            sku: v.sku,
-            sizeId: v.sizeId || null,
-            colorId: v.colorId || null,
-            stock: v.stock,
-            isActive: v.isActive,
-          })),
-        },
-        tags:
-          input.tagIds.length > 0
-            ? { connect: input.tagIds.map((id) => ({ id })) }
-            : undefined,
-      },
-    });
+      });
 
-    await attachToCollection(tx, created.id, input.collectionId, new Date());
-    return created;
-  });
+      await attachToCollection(tx, created.id, input.collectionId, new Date());
+      return created;
+    })
+    .catch((error) => throwFriendlyProductError(error));
 
   revalidatePath("/admin/products");
   return { id: product.id };
@@ -215,7 +305,8 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
   const willPublish =
     input.status === "PUBLISHED" && existing.status !== "PUBLISHED";
 
-  await db.$transaction(async (tx) => {
+  try {
+    await db.$transaction(async (tx) => {
     // 1. Update core product
     await tx.product.update({
       where: { id },
@@ -279,20 +370,8 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
       });
     }
 
-    // 4. Replace variants (delete then recreate — MVP approach)
-    await tx.productVariant.deleteMany({ where: { productId: id } });
-    if (input.variants.length > 0) {
-      await tx.productVariant.createMany({
-        data: input.variants.map((v) => ({
-          productId: id,
-          sku: v.sku,
-          sizeId: v.sizeId || null,
-          colorId: v.colorId || null,
-          stock: v.stock,
-          isActive: v.isActive,
-        })),
-      });
-    }
+    // 4. Sync variants; order-linked old variants are archived, not deleted.
+    await syncProductVariants(tx, id, input.variants);
 
     // 5. Replace tags (M:N — set butun array'i degistirir)
     await tx.product.update({
@@ -312,7 +391,10 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
       input.collectionId,
       existing.createdAt
     );
-  });
+    });
+  } catch (error) {
+    throwFriendlyProductError(error);
+  }
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
@@ -327,7 +409,20 @@ export async function deleteProduct(id: string) {
     throw new Error("Ürün bulunamadı.");
   }
 
-  await db.product.delete({ where: { id } });
+  const orderLinkedVariantCount = await db.productVariant.count({
+    where: { productId: id, orderItems: { some: {} } },
+  });
+  if (orderLinkedVariantCount > 0) {
+    throw new Error(
+      "Bu ürün geçmiş siparişlerde kullanıldığı için silinemez. Satışı durdurmak için arşivleyin."
+    );
+  }
+
+  try {
+    await db.product.delete({ where: { id } });
+  } catch (error) {
+    throwFriendlyProductError(error);
+  }
 
   revalidatePath("/admin/products");
   return { ok: true };

@@ -60,7 +60,8 @@ export function DeleteProductButton({
             <p className="mt-2 text-sm text-mist">
               <span className="text-ink">{name}</span> kalıcı olarak silinecek.
               Tüm varyantlar, görseller ve çeviriler de silinir. Bu işlem geri
-              alınamaz.
+              alınamaz. Bu ürün daha önce siparişte kullanıldıysa silmek yerine
+              arşivlemen gerekir.
             </p>
             <div className="mt-6 flex justify-end gap-2">
               <button

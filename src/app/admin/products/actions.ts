@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import type { ProductStatus } from "@prisma/client";
+import { Prisma, type ProductStatus } from "@prisma/client";
 
 async function requireStaff() {
   const session = await auth();
@@ -68,8 +68,35 @@ export async function bulkDeleteProductsAction(
   }
   if (!ids.length) return { ok: false, error: "Seçim boş" };
 
+  const orderLinkedProducts = await db.productVariant.findMany({
+    where: { productId: { in: ids }, orderItems: { some: {} } },
+    select: { productId: true },
+    distinct: ["productId"],
+  });
+  if (orderLinkedProducts.length > 0) {
+    return {
+      ok: false,
+      error:
+        "Seçili ürünlerden bazıları geçmiş siparişlerde kullanıldığı için silinemez. Satışı durdurmak için arşivleyin.",
+    };
+  }
+
   // Cascade delete (variants, images, translations, collections, reviews, wishlist)
-  await db.product.deleteMany({ where: { id: { in: ids } } });
+  try {
+    await db.product.deleteMany({ where: { id: { in: ids } } });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return {
+        ok: false,
+        error:
+          "Bu ürünlerden biri geçmiş siparişlerde kullanılmış. Silmek yerine arşivleyin.",
+      };
+    }
+    throw error;
+  }
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
   return { ok: true };
