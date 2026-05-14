@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
@@ -9,8 +10,8 @@ export function Splash() {
   useEffect(() => {
     const seen = typeof window !== "undefined" && sessionStorage.getItem("modaralist-splash");
     if (seen) {
-      show_(false);
-      return;
+      const close = window.setTimeout(() => show_(false), 0);
+      return () => window.clearTimeout(close);
     }
     document.body.style.overflow = "hidden";
     const t = setTimeout(() => {
@@ -24,8 +25,6 @@ export function Splash() {
     };
   }, []);
 
-  const letters = "MODARALIST".split("");
-
   return (
     <AnimatePresence>
       {show && (
@@ -34,23 +33,21 @@ export function Splash() {
           transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-ink motion-reduce:!hidden"
         >
-          <div className="flex overflow-hidden">
-            {letters.map((l, i) => (
-              <motion.span
-                key={i}
-                initial={{ y: "110%" }}
-                animate={{ y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: 0.05 + i * 0.04,
-                }}
-                className="display text-[14vw] leading-none text-paper md:text-[9vw]"
-              >
-                {l}
-              </motion.span>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 18 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+            className="flex w-[min(78vw,520px)] items-center justify-center"
+          >
+            <Image
+              src="/brand/modaralist-lockup.png"
+              alt="Modaralist"
+              width={802}
+              height={882}
+              priority
+              className="h-auto max-h-[68vh] w-full object-contain invert"
+            />
+          </motion.div>
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
