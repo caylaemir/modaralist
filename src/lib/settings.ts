@@ -63,7 +63,8 @@ export const SETTING_DEFAULTS = {
   "popup.subtitle":
     "Email'ini bırak, indirimsiz ürünlerde kullanabileceğin %10 indirim kodunu yollayalım. Drop'lar açılınca da ilk sen öğren.",
   "popup.ctaLabel": "İndirim Kodumu Gönder",
-  "popup.discountCode": "",
+  "popup.discountCode": "WELCOME10",
+  "popup.discountPercent": "10",
 
   // WhatsApp destek butonu (sag-alt float)
   "whatsapp.enabled": "false",
@@ -457,9 +458,17 @@ export const SETTING_SECTIONS: Array<{
       },
       {
         key: "popup.discountCode",
-        label: "Kupon kodu (opsiyonel)",
+        label: "Newsletter kupon kodu",
         type: "text",
-        hint: "Boş bırakılabilir. Sistem kayıt olunca WELCOME10 kodunu e-posta ile gönderir.",
+        placeholder: "WELCOME10",
+        hint: "Popup/footer kaydından sonra müşteriye e-posta ile gönderilecek kupon kodu.",
+      },
+      {
+        key: "popup.discountPercent",
+        label: "Newsletter indirim yüzdesi",
+        type: "number",
+        placeholder: "10",
+        hint: "Örn: 10 = %10. Sistem bu kuponu sadece indirimsiz ürünlerde geçerli oluşturur.",
       },
     ],
   },

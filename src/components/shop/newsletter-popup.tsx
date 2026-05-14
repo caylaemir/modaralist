@@ -15,6 +15,7 @@ type PopupConfig = {
   subtitle: string;
   ctaLabel: string;
   discountCode: string;
+  discountPercent: number;
 };
 
 const DEFAULTS = {
@@ -47,6 +48,7 @@ export function NewsletterPopup() {
     enabled: true,
     delaySeconds: 15,
     discountCode: "",
+    discountPercent: 10,
     ...DEFAULTS[locale],
   };
 

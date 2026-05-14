@@ -25,7 +25,9 @@ export function Newsletter() {
         toast.error(data?.error ?? "Bir şeyler ters gitti. Tekrar dener misin?");
         return;
       }
-      toast.success("Aboneliğin alındı. %10 indirim kodu e-postanda.");
+      const data = await res.json().catch(() => null);
+      const percent = Number(data?.discountPercent) || 10;
+      toast.success(`Aboneliğin alındı. %${percent} indirim kodu e-postanda.`);
       setEmail("");
     } catch {
       toast.error("Bir şeyler ters gitti. Tekrar dener misin?");

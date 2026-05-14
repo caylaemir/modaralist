@@ -7,6 +7,8 @@ import { getAllSettings } from "@/lib/settings";
  */
 export async function GET() {
   const s = await getAllSettings();
+  const popupDiscountCode = s["popup.discountCode"] || "WELCOME10";
+  const popupDiscountPercent = Number(s["popup.discountPercent"]) || 10;
 
   return NextResponse.json(
     {
@@ -37,7 +39,8 @@ export async function GET() {
         title: s["popup.title"] || "",
         subtitle: s["popup.subtitle"] || "",
         ctaLabel: s["popup.ctaLabel"] || "Gönder",
-        discountCode: s["popup.discountCode"] || "",
+        discountCode: popupDiscountCode,
+        discountPercent: popupDiscountPercent,
       },
     },
     {

@@ -3,8 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import {
-  NEWSLETTER_DISCOUNT_CODE,
   ensureNewsletterDiscountCoupon,
+  getNewsletterDiscountConfig,
   sendNewsletterDiscountEmail,
 } from "@/lib/newsletter-discount";
 
@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
   const { source, locale } = parsed.data;
   const email = parsed.data.email.toLowerCase();
   let emailSent = false;
+  let discountCode = "WELCOME10";
+  let discountPercent = 10;
 
   try {
     await db.newsletterSubscriber.upsert({
@@ -47,8 +49,15 @@ export async function POST(req: NextRequest) {
         locale,
       },
     });
-    await ensureNewsletterDiscountCoupon();
-    const result = await sendNewsletterDiscountEmail({ to: email, locale });
+    const discountConfig = await getNewsletterDiscountConfig();
+    discountCode = discountConfig.code;
+    discountPercent = discountConfig.discountPercent;
+    await ensureNewsletterDiscountCoupon(discountConfig);
+    const result = await sendNewsletterDiscountEmail({
+      to: email,
+      locale,
+      config: discountConfig,
+    });
     emailSent = Boolean(result.id);
   } catch (err) {
     console.error("[newsletter] subscribe failed", err);
@@ -57,7 +66,8 @@ export async function POST(req: NextRequest) {
   // Her zaman 200 — abonelik durumu enumeration korumasi
   return NextResponse.json({
     ok: true,
-    discountCode: NEWSLETTER_DISCOUNT_CODE,
+    discountCode,
+    discountPercent,
     emailSent,
   });
 }
