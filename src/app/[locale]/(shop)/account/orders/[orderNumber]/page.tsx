@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -7,6 +8,21 @@ import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
+
+// Bir order item icin gosterilecek gorseli sec: 1) o varyantin renginin
+// gorseli, 2) renksiz/genel gorsel, 3) urunun ilk gorseli.
+function pickItemImage(
+  images: { url: string; colorId: string | null }[],
+  variantColorId: string | null
+): string | null {
+  if (variantColorId) {
+    const m = images.find((i) => i.colorId === variantColorId);
+    if (m) return m.url;
+  }
+  const shared = images.find((i) => i.colorId === null);
+  if (shared) return shared.url;
+  return images[0]?.url ?? null;
+}
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: "Bekliyor",
@@ -46,7 +62,18 @@ export default async function CustomerOrderDetail({
         items: {
           include: {
             variant: {
-              include: { product: { select: { id: true, slug: true } } },
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    images: {
+                      orderBy: { sortOrder: "asc" },
+                      select: { url: true, colorId: true },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -150,11 +177,26 @@ export default async function CustomerOrderDetail({
                   : productId && reviewedProductIds.has(productId)
                     ? "reviewed"
                     : "reviewable";
+              const cover = pickItemImage(
+                it.variant?.product?.images ?? [],
+                it.variant?.colorId ?? null
+              );
               return (
                 <li
                   key={it.id}
-                  className="flex items-center justify-between gap-4 border-b border-line py-4 text-sm"
+                  className="flex items-center gap-4 border-b border-line py-4 text-sm"
                 >
+                  <div className="relative size-16 shrink-0 overflow-hidden bg-bone">
+                    {cover ? (
+                      <Image
+                        src={cover}
+                        alt={it.productNameSnapshot}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    ) : null}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p>{it.productNameSnapshot}</p>
                     {it.variantSnapshot ? (

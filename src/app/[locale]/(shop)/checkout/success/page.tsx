@@ -7,6 +7,21 @@ import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+// Bir order item icin gosterilecek gorseli sec: 1) o varyantin renginin
+// gorseli, 2) renksiz/genel gorsel, 3) urunun ilk gorseli.
+function pickItemImage(
+  images: { url: string; colorId: string | null }[],
+  variantColorId: string | null
+): string | null {
+  if (variantColorId) {
+    const m = images.find((i) => i.colorId === variantColorId);
+    if (m) return m.url;
+  }
+  const shared = images.find((i) => i.colorId === null);
+  if (shared) return shared.url;
+  return images[0]?.url ?? null;
+}
+
 export default async function CheckoutSuccess({
   searchParams,
 }: {
@@ -40,8 +55,7 @@ export default async function CheckoutSuccess({
                         slug: true,
                         images: {
                           orderBy: { sortOrder: "asc" },
-                          take: 1,
-                          select: { url: true },
+                          select: { url: true, colorId: true },
                         },
                       },
                     },
@@ -144,7 +158,10 @@ export default async function CheckoutSuccess({
               {order.items.map((it) => {
                 const slug = it.variant?.product?.slug;
                 const productId = it.variant?.product?.id;
-                const cover = it.variant?.product?.images[0]?.url;
+                const cover = pickItemImage(
+                  it.variant?.product?.images ?? [],
+                  it.variant?.colorId ?? null
+                );
                 const reviewState =
                   !isReviewable || !slug
                     ? "not-deliverable"
