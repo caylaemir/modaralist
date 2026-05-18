@@ -230,7 +230,10 @@ export async function Footer() {
             desc={t("trustShippingDesc")}
           />
         </div>
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-6 px-5 pb-8 md:px-10">
+        {/* 3 kolonlu grid — ust satirdaki "Guvenli Odeme / 14 Gun Iade / Hizli
+            Kargo" ile ayni hizada: odeme altyapisi sol kolonda, ETBIS karekodu
+            sag kolonda (Hizli Kargo'nun altinda). */}
+        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-5 pb-8 md:grid-cols-3 md:px-10">
           <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-mist">
             <span>
               {locale === "en" ? "Payment infrastructure" : "Ödeme altyapısı"}
@@ -243,6 +246,8 @@ export async function Footer() {
               className="h-6 w-auto"
             />
           </div>
+
+          <div className="hidden md:block" aria-hidden="true" />
 
           {/* ETBIS — T.C. Ticaret Bakanligi resmi e-Ticaret kaydi. QR'i okutunca
               dogrulama sayfasi acilir; tiklayinca da ayni link. */}
