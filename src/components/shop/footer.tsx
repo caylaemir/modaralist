@@ -230,15 +230,54 @@ export async function Footer() {
             desc={t("trustShippingDesc")}
           />
         </div>
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 px-5 pb-8 text-[10px] uppercase tracking-[0.3em] text-mist md:px-10">
-          <span>{locale === "en" ? "Payment infrastructure" : "Ödeme altyapısı"}</span>
-          <Image
-            src="/brand/paytr-logo.svg"
-            alt="PayTR"
-            width={150}
-            height={26}
-            className="h-6 w-auto"
-          />
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-6 px-5 pb-8 md:px-10">
+          <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-mist">
+            <span>
+              {locale === "en" ? "Payment infrastructure" : "Ödeme altyapısı"}
+            </span>
+            <Image
+              src="/brand/paytr-logo.svg"
+              alt="PayTR"
+              width={150}
+              height={26}
+              className="h-6 w-auto"
+            />
+          </div>
+
+          {/* ETBIS — T.C. Ticaret Bakanligi resmi e-Ticaret kaydi. QR'i okutunca
+              dogrulama sayfasi acilir; tiklayinca da ayni link. */}
+          <a
+            href="https://etbis.ticaret.gov.tr/tr/SiteSorgulamaSonuc?siteId=2a8921a9-a656-4769-b740-b901d3ccc754"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={
+              locale === "en"
+                ? "Verified on T.R. Ministry of Trade ETBIS"
+                : "T.C. Ticaret Bakanlığı ETBİS doğrulama"
+            }
+            className="group flex items-center gap-3 text-mist transition-colors hover:text-ink"
+          >
+            <Image
+              src="/legal/etbis-qr.svg"
+              alt={
+                locale === "en"
+                  ? "ETBIS verification QR"
+                  : "ETBİS doğrulama karekodu"
+              }
+              width={56}
+              height={56}
+              className="size-14 bg-paper p-1"
+              unoptimized
+            />
+            <span className="text-[10px] uppercase tracking-[0.3em] leading-tight">
+              {locale === "en" ? "Registered on ETBIS" : "ETBİS Kayıtlı"}
+              <span className="mt-1 block text-[9px] tracking-[0.15em] normal-case text-mist">
+                {locale === "en"
+                  ? "Scan to verify"
+                  : "Doğrulamak için karekodu okut"}
+              </span>
+            </span>
+          </a>
         </div>
       </div>
 
