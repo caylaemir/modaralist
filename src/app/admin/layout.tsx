@@ -113,15 +113,15 @@ export default async function AdminLayout({
 
         <div className="flex min-h-screen">
           <aside className="admin-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-paper md:translate-x-0">
-            <div className="hidden h-20 items-center gap-3 border-b border-line px-7 md:flex">
+            <div className="hidden h-20 items-center gap-2 border-b border-line px-6 md:flex">
               <Image
                 src="/brand/modaralist-wordmark-text.png"
                 alt="Modaralist"
                 width={682}
                 height={76}
-                className="h-5 w-auto object-contain"
+                className="h-4 w-auto shrink object-contain"
               />
-              <span className="inline-flex h-5 items-center rounded-sm bg-ink px-2 text-[9px] font-medium uppercase tracking-[0.25em] text-paper">
+              <span className="inline-flex h-4 shrink-0 items-center rounded-sm bg-ink px-1.5 text-[8px] font-medium uppercase tracking-[0.25em] text-paper">
                 admin
               </span>
             </div>

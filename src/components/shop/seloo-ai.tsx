@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Loader2, ArrowUp } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify";
@@ -152,15 +153,22 @@ export function SelooAI() {
               </motion.span>
             ) : (
               <motion.span
-                key="monogram"
+                key="mark"
                 initial={{ rotate: 90, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={{ rotate: -90, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="display select-none text-3xl italic leading-none text-paper"
-                style={{ marginTop: "-2px" }}
+                className="relative grid size-10 place-items-center"
               >
-                S
+                {/* Modaralist kus markasi — siyah PNG, koyu zeminde beyaz
+                    olarak gozuksun diye brightness-0 invert */}
+                <Image
+                  src="/brand/modaralist-mark.png"
+                  alt=""
+                  fill
+                  sizes="40px"
+                  className="object-contain brightness-0 invert"
+                />
               </motion.span>
             )}
           </AnimatePresence>
@@ -208,12 +216,13 @@ export function SelooAI() {
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
                   <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-paper/10 ring-1 ring-paper/20">
-                    <span
-                      className="display text-2xl italic leading-none text-paper"
-                      style={{ marginTop: "-1px" }}
-                    >
-                      S
-                    </span>
+                    <Image
+                      src="/brand/modaralist-mark.png"
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="size-8 object-contain brightness-0 invert"
+                    />
                     <span className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-ink bg-emerald-400" />
                   </div>
                   <div>
@@ -372,13 +381,14 @@ function Bubble({
       className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}
     >
       {!isUser ? (
-        <div className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-paper">
-          <span
-            className="display text-sm italic leading-none"
-            style={{ marginTop: "-1px" }}
-          >
-            S
-          </span>
+        <div className="grid size-7 shrink-0 place-items-center rounded-full bg-ink">
+          <Image
+            src="/brand/modaralist-mark.png"
+            alt=""
+            width={18}
+            height={18}
+            className="size-[18px] object-contain brightness-0 invert"
+          />
         </div>
       ) : null}
       <div
