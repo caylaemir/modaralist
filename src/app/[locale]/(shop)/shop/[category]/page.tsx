@@ -267,7 +267,7 @@ export default async function CategoryPage({
           <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {cat.children.map((child) => {
               const childTr = child.translations[0];
-              const cover = child.products[0]?.images[0]?.url;
+              const cover = child.bannerUrl ?? child.products[0]?.images[0]?.url;
               const name = childTr?.name ?? child.slug;
               return (
                 <Link

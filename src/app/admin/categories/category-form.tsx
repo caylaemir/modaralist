@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +13,7 @@ import {
   updateCategory,
   type CategoryInput,
 } from "@/server/actions/categories";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 const formSchema = z.object({
   slug: z.string().min(1, "Slug zorunlu"),
@@ -95,6 +97,7 @@ export function CategoryForm({
   });
 
   const nameTr = watch("nameTr");
+  const bannerUrl = watch("bannerUrl");
 
   function autofillSlugs() {
     const base = slugify(nameTr || "");
@@ -176,10 +179,6 @@ export function CategoryForm({
             </select>
           </div>
           <div>
-            <label className={labelCls}>Banner URL</label>
-            <input className={inputCls} {...register("bannerUrl")} />
-          </div>
-          <div>
             <label className={labelCls}>Sıra</label>
             <input
               type="number"
@@ -198,6 +197,58 @@ export function CategoryForm({
               Aktif
             </label>
           </div>
+        </div>
+      </section>
+
+      {/* --------- Banner --------- */}
+      <section className="border border-line bg-paper p-6">
+        <h2 className="caps-wide text-sm">Banner / Kapak Görseli</h2>
+        <p className="mt-1 text-xs text-mist">
+          Bu kategori anasayfa ızgarasında ve üst-kategori sayfasında bu görselle
+          gösterilir. Boş bırakırsan kategorideki ilk ürünün ilk görseli
+          kullanılır (eski davranış). İstediğin görseli yükleyebilirsin.
+        </p>
+
+        {bannerUrl ? (
+          <div className="mt-4 flex items-start gap-4">
+            <div className="relative aspect-[4/3] w-48 shrink-0 overflow-hidden border border-line bg-bone">
+              <Image
+                src={bannerUrl}
+                alt="Banner önizleme"
+                fill
+                sizes="192px"
+                className="object-cover"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setValue("bannerUrl", "", { shouldDirty: true })
+              }
+              className="border border-line px-3 py-1.5 text-xs hover:border-red-600 hover:text-red-600"
+            >
+              Kaldır
+            </button>
+          </div>
+        ) : null}
+
+        <div className="mt-4">
+          <ImageUploader
+            multiple={false}
+            onUploaded={(url) =>
+              setValue("bannerUrl", url, { shouldDirty: true })
+            }
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className={labelCls}>veya URL yapıştır</label>
+          <input
+            type="url"
+            className={inputCls}
+            placeholder="https://..."
+            {...register("bannerUrl")}
+          />
         </div>
       </section>
 
