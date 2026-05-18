@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Reveal } from "@/components/shop/reveal";
 import { formatPrice } from "@/lib/utils";
+import { pickOrderItemImage } from "@/lib/order-image";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,21 +17,6 @@ const statusLabel: Record<string, string> = {
   CANCELLED: "İptal",
   REFUNDED: "İade",
 };
-
-// Bir order item icin gosterilecek gorseli sec: 1) o varyantin renginin
-// gorseli, 2) renksiz/genel gorsel, 3) urunun ilk gorseli.
-function pickItemImage(
-  images: { url: string; colorId: string | null }[],
-  variantColorId: string | null
-): string | null {
-  if (variantColorId) {
-    const m = images.find((i) => i.colorId === variantColorId);
-    if (m) return m.url;
-  }
-  const shared = images.find((i) => i.colorId === null);
-  if (shared) return shared.url;
-  return images[0]?.url ?? null;
-}
 
 function orderQuery(userId: string) {
   return db.order.findMany({
@@ -104,7 +90,7 @@ export default async function OrdersPage() {
             const seen = new Set<string>();
             const thumbs: { url: string; alt: string }[] = [];
             for (const it of o.items) {
-              const url = pickItemImage(
+              const url = pickOrderItemImage(
                 it.variant?.product?.images ?? [],
                 it.variant?.colorId ?? null
               );

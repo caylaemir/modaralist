@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Prisma } from "@prisma/client";
 import type { OrderStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
+import { pickOrderItemImage } from "@/lib/order-image";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
 import {
   ORDER_STATUS_LABELS,
@@ -85,6 +87,26 @@ export default async function AdminOrdersPage({
         include: {
           user: { select: { name: true, email: true } },
           _count: { select: { items: true } },
+          items: {
+            select: {
+              id: true,
+              productNameSnapshot: true,
+              variantSnapshot: true,
+              variant: {
+                select: {
+                  colorId: true,
+                  product: {
+                    select: {
+                      images: {
+                        orderBy: { sortOrder: "asc" },
+                        select: { url: true, colorId: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       }),
       db.order.count({ where: { placedAt: { gte: todayStart } } }),
@@ -288,7 +310,29 @@ export default async function AdminOrdersPage({
                 </td>
               </tr>
             ) : (
-              orders.map((order) => (
+              orders.map((order) => {
+                // Her item icin (rengine gore) gorsel sec, dedupe et, ilk 3 + "+N"
+                const seen = new Set<string>();
+                const thumbs: { url: string; alt: string }[] = [];
+                for (const it of order.items) {
+                  const url = pickOrderItemImage(
+                    it.variant?.product?.images ?? [],
+                    it.variant?.colorId ?? null
+                  );
+                  if (!url || seen.has(url)) continue;
+                  seen.add(url);
+                  thumbs.push({
+                    url,
+                    alt: [it.productNameSnapshot, it.variantSnapshot]
+                      .filter(Boolean)
+                      .join(" — "),
+                  });
+                }
+                const maxThumbs = 3;
+                const visible = thumbs.slice(0, maxThumbs);
+                const extra = Math.max(0, thumbs.length - maxThumbs);
+
+                return (
                 <tr
                   key={order.id}
                   className="border-b border-line transition-colors hover:bg-bone/70"
@@ -303,6 +347,30 @@ export default async function AdminOrdersPage({
                     <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-mist">
                       {order._count.items} kalem
                     </p>
+                    {visible.length > 0 ? (
+                      <div className="mt-2 flex items-center gap-1.5">
+                        {visible.map((t, i) => (
+                          <div
+                            key={i}
+                            className="relative size-10 shrink-0 overflow-hidden bg-bone"
+                            title={t.alt}
+                          >
+                            <Image
+                              src={t.url}
+                              alt={t.alt}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                        {extra > 0 ? (
+                          <span className="grid size-10 shrink-0 place-items-center bg-bone text-[10px] uppercase tracking-[0.15em] text-mist">
+                            +{extra}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-4 py-4 text-xs text-mist tabular-nums">
                     {formatDateTR(order.placedAt)}
@@ -338,7 +406,8 @@ export default async function AdminOrdersPage({
                     </Link>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>

@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
+import { pickOrderItemImage } from "@/lib/order-image";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
 import { ActionsPanel } from "./actions-panel";
 import {
@@ -46,7 +48,23 @@ export default async function AdminOrderDetailPage({
     .findUnique({
       where: { id },
       include: {
-        items: true,
+        items: {
+          include: {
+            variant: {
+              select: {
+                colorId: true,
+                product: {
+                  select: {
+                    images: {
+                      orderBy: { sortOrder: "asc" },
+                      select: { url: true, colorId: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         addresses: true,
         payments: { orderBy: { createdAt: "desc" } },
         shipments: { orderBy: { createdAt: "desc" } },
@@ -129,9 +147,29 @@ export default async function AdminOrderDetailPage({
                     </td>
                   </tr>
                 ) : (
-                  order.items.map((item) => (
+                  order.items.map((item) => {
+                    const cover = pickOrderItemImage(
+                      item.variant?.product?.images ?? [],
+                      item.variant?.colorId ?? null
+                    );
+                    return (
                     <tr key={item.id} className="border-b border-line">
-                      <td className="py-4 pr-4">{item.productNameSnapshot}</td>
+                      <td className="py-4 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative size-12 shrink-0 overflow-hidden bg-bone">
+                            {cover ? (
+                              <Image
+                                src={cover}
+                                alt={item.productNameSnapshot}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            ) : null}
+                          </div>
+                          <span>{item.productNameSnapshot}</span>
+                        </div>
+                      </td>
                       <td className="py-4 pr-4 text-mist">
                         {item.variantSnapshot ?? "—"}
                       </td>
@@ -145,7 +183,8 @@ export default async function AdminOrderDetailPage({
                         {formatPrice(Number(item.lineTotal), "tr")}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
               <tfoot>

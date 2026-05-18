@@ -5,24 +5,10 @@ import { db } from "@/lib/db";
 import { Reveal } from "@/components/shop/reveal";
 import { OrderReviewButton } from "@/components/shop/order-review-button";
 import { formatPrice } from "@/lib/utils";
+import { pickOrderItemImage } from "@/lib/order-image";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
-
-// Bir order item icin gosterilecek gorseli sec: 1) o varyantin renginin
-// gorseli, 2) renksiz/genel gorsel, 3) urunun ilk gorseli.
-function pickItemImage(
-  images: { url: string; colorId: string | null }[],
-  variantColorId: string | null
-): string | null {
-  if (variantColorId) {
-    const m = images.find((i) => i.colorId === variantColorId);
-    if (m) return m.url;
-  }
-  const shared = images.find((i) => i.colorId === null);
-  if (shared) return shared.url;
-  return images[0]?.url ?? null;
-}
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: "Bekliyor",
@@ -177,7 +163,7 @@ export default async function CustomerOrderDetail({
                   : productId && reviewedProductIds.has(productId)
                     ? "reviewed"
                     : "reviewable";
-              const cover = pickItemImage(
+              const cover = pickOrderItemImage(
                 it.variant?.product?.images ?? [],
                 it.variant?.colorId ?? null
               );
