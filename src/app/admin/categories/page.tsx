@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/db";
 import { DeleteCategoryButton } from "./delete-button";
 
@@ -12,6 +13,7 @@ type CategoryRow = {
   isActive: boolean;
   nameTr: string;
   slugTr: string;
+  bannerUrl: string | null;
   productCount: number;
   children: CategoryRow[];
 };
@@ -38,6 +40,7 @@ export default async function CategoriesPage() {
       isActive: c.isActive,
       nameTr: tr?.name ?? c.slug,
       slugTr: tr?.slug ?? c.slug,
+      bannerUrl: c.bannerUrl,
       productCount: c._count.products,
       children: [],
     });
@@ -137,12 +140,26 @@ function renderRow(row: CategoryRow, depth: number): React.ReactNode {
         <td className="py-4 pr-4">
           <Link
             href={`/admin/categories/${row.id}`}
-            className="inline-block"
+            className="inline-flex items-center gap-3"
             style={{ paddingLeft: depth * 24 }}
+            title={row.bannerUrl ? "Banner görseli atanmış" : "Banner görseli yok"}
           >
-            {depth > 0 ? (
-              <span className="mr-3 text-mist">└</span>
-            ) : null}
+            {depth > 0 ? <span className="text-mist">└</span> : null}
+            <span className="relative block aspect-[4/3] w-12 shrink-0 overflow-hidden border border-line bg-bone">
+              {row.bannerUrl ? (
+                <Image
+                  src={row.bannerUrl}
+                  alt=""
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="absolute inset-0 grid place-items-center text-[8px] uppercase tracking-[0.15em] text-mist/60">
+                  yok
+                </span>
+              )}
+            </span>
             <span className="text-ink">{row.nameTr}</span>
           </Link>
         </td>
