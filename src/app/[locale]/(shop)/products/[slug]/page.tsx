@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getProduct, getRelatedProducts } from "@/lib/shop";
+import { getSizeChartForCategorySlug } from "@/lib/size-chart";
 import { effectivePrice } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -56,6 +57,13 @@ export default async function ProductPage({
   ]);
 
   if (!product) notFound();
+
+  // Beden tablosu — kategori atamasindan turetir; yoksa null doner
+  // (SizeGuide butonu hic render edilmez).
+  const sizeChart = await getSizeChartForCategorySlug(
+    product.categorySlug,
+    lang
+  );
   const userId = session?.user?.id;
 
   // Yorum yazma durumu — sadece bu urunu satin alan kullanici yazabilir.
@@ -198,6 +206,7 @@ export default async function ProductPage({
         product={product}
         locale={locale as "tr" | "en"}
         initialColor={initialColor ?? null}
+        sizeChart={sizeChart}
       />
 
       <section className="mx-auto mt-32 max-w-3xl px-5 md:px-10">

@@ -229,6 +229,9 @@ model Category {
   // tablo cross-listing icin). Urun ayni anda Outdoor + Oversize'da gozukmek
   // gibi senaryolar icin.
   productLinks ProductCategory[]
+  // M:N — bu kategoride hangi beden tablolari kullaniliyor (genelde 1, ama
+  // birden fazla olabilir — frontend ilkini alir veya prefer eder).
+  sizeCharts   SizeChart[]        @relation("CategorySizeChart")
 }
 
 model CategoryTranslation {
@@ -265,6 +268,65 @@ model Size {
   code     String  @unique
   sortOrder Int    @default(0)
   variants ProductVariant[]
+}
+
+// ---------- Beden Tablolari ----------
+//
+// Bir SizeChart = bir tablo (orn. "Oversize Tshirt", "Klasik Sweatshirt").
+// Kolonlar (Gogus/Boy/Kol vs.) ve satirlar (XS/S/M/L/XL + degerleri) ayri
+// tablolarda — admin kolonlari ve satirlari dinamik ekleyebilsin diye.
+// Bir chart birden cok kategoride (Category) kullanilabilir (M:N).
+// Frontend bir urun icin chart bulurken: urun ana kategorisi -> yoksa
+// parent -> yoksa grandparent (3 seviye yukari) sirasiyla bakar.
+model SizeChart {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  unit      String   @default("cm")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  translations SizeChartTranslation[]
+  columns      SizeChartColumn[]
+  rows         SizeChartRow[]
+  categories   Category[]             @relation("CategorySizeChart")
+}
+
+model SizeChartTranslation {
+  id      String @id @default(cuid())
+  chartId String
+  locale  Locale
+  name    String
+  note    String?
+
+  chart SizeChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+
+  @@unique([chartId, locale])
+}
+
+model SizeChartColumn {
+  id        String @id @default(cuid())
+  chartId   String
+  key       String
+  labelTr   String
+  labelEn   String
+  sortOrder Int    @default(0)
+
+  chart SizeChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+
+  @@unique([chartId, key])
+}
+
+model SizeChartRow {
+  id        String @id @default(cuid())
+  chartId   String
+  sizeCode  String
+  // { "gogus": "84-88", "boy": "66-68", "kol": "20-22" } — column.key -> deger
+  values    Json
+  sortOrder Int    @default(0)
+
+  chart SizeChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+
+  @@unique([chartId, sizeCode])
 }
 
 model Product {

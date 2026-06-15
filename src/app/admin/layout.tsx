@@ -59,6 +59,7 @@ const NAV = [
   { href: "/admin/categories", label: "Kategoriler", icon: Tags },
   { href: "/admin/colors", label: "Renkler", icon: Palette },
   { href: "/admin/sizes", label: "Bedenler", icon: Ruler },
+  { href: "/admin/size-charts", label: "Beden Tabloları", icon: Ruler },
   { href: "/admin/tags", label: "Etiketler", icon: TagIcon },
   { href: "/admin/collections", label: "Koleksiyonlar", icon: Box },
   { href: "/admin/orders", label: "Siparişler", icon: ShoppingCart },

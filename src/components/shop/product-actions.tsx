@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useCart } from "@/stores/cart";
 import { formatPrice, hasValidDiscount, effectivePrice as calcEffectivePrice } from "@/lib/utils";
-import { SizeGuide } from "./size-guide";
+import { SizeGuide, type SizeGuideChart } from "./size-guide";
 import type { ShopProduct } from "@/lib/shop";
 
 export function ProductActions({
@@ -13,6 +13,7 @@ export function ProductActions({
   locale,
   initialColorCode,
   onColorChange,
+  sizeChart,
 }: {
   product: ShopProduct;
   locale: "tr" | "en";
@@ -20,6 +21,8 @@ export function ProductActions({
   initialColorCode?: string | null;
   // Renk degisince ust bilesene (galeriye) bildirir
   onColorChange?: (colorCode: string | null) => void;
+  // Bu urune uygun beden tablosu (kategori atamalarindan turetilir)
+  sizeChart?: SizeGuideChart | null;
 }) {
   const add = useCart((s) => s.add);
   const [colorCode, setColorCode] = useState(
@@ -164,7 +167,7 @@ export function ProductActions({
           <p className="text-[10px] uppercase tracking-[0.3em] text-mist">
             Beden
           </p>
-          <SizeGuide />
+          <SizeGuide chart={sizeChart ?? null} />
         </div>
         <div className="grid grid-cols-5 gap-2">
           {product.sizes.map((s) => {

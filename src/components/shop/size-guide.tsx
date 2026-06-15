@@ -4,16 +4,21 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 
-const SIZE_CHART = [
-  { size: "XS", bust: "80-84", waist: "60-64", hip: "86-90" },
-  { size: "S", bust: "84-88", waist: "64-68", hip: "90-94" },
-  { size: "M", bust: "88-92", waist: "68-72", hip: "94-98" },
-  { size: "L", bust: "92-96", waist: "72-76", hip: "98-102" },
-  { size: "XL", bust: "96-100", waist: "76-80", hip: "102-106" },
-];
+export type SizeGuideChart = {
+  unit: string;
+  name: string;
+  note: string | null;
+  columns: { key: string; label: string }[];
+  rows: { sizeCode: string; values: Record<string, string> }[];
+};
 
-export function SizeGuide() {
+export function SizeGuide({ chart }: { chart: SizeGuideChart | null }) {
   const [open, setOpen] = useState(false);
+
+  // Chart tanimli degilse buton hic gozukmesin (sessizce kaybol).
+  if (!chart || chart.columns.length === 0 || chart.rows.length === 0) {
+    return null;
+  }
 
   return (
     <>
@@ -40,14 +45,21 @@ export function SizeGuide() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,640px)] -translate-x-1/2 -translate-y-1/2 bg-paper p-8 md:p-12"
+              className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,640px)] max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto bg-paper p-8 md:p-12"
             >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.4em] text-mist">
                     Beden Tablosu
                   </p>
-                  <h3 className="display mt-3 text-3xl">Ölçüler cm cinsinden.</h3>
+                  <h3 className="display mt-3 text-3xl">
+                    Ölçüler {chart.unit} cinsinden.
+                  </h3>
+                  {chart.name ? (
+                    <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-mist">
+                      {chart.name}
+                    </p>
+                  ) : null}
                 </div>
                 <button onClick={() => setOpen(false)} aria-label="Kapat">
                   <X className="size-5" />
@@ -58,26 +70,36 @@ export function SizeGuide() {
                 <thead>
                   <tr className="border-b border-line text-[10px] uppercase tracking-[0.3em] text-mist">
                     <th className="py-3 text-left font-normal">Beden</th>
-                    <th className="py-3 text-left font-normal">Göğüs</th>
-                    <th className="py-3 text-left font-normal">Bel</th>
-                    <th className="py-3 text-left font-normal">Kalça</th>
+                    {chart.columns.map((c) => (
+                      <th
+                        key={c.key}
+                        className="py-3 text-left font-normal"
+                      >
+                        {c.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {SIZE_CHART.map((r) => (
-                    <tr key={r.size} className="border-b border-line">
-                      <td className="py-3 font-medium">{r.size}</td>
-                      <td className="py-3 tabular-nums text-mist">{r.bust}</td>
-                      <td className="py-3 tabular-nums text-mist">{r.waist}</td>
-                      <td className="py-3 tabular-nums text-mist">{r.hip}</td>
+                  {chart.rows.map((r) => (
+                    <tr key={r.sizeCode} className="border-b border-line">
+                      <td className="py-3 font-medium">{r.sizeCode}</td>
+                      {chart.columns.map((c) => (
+                        <td
+                          key={c.key}
+                          className="py-3 tabular-nums text-mist"
+                        >
+                          {r.values[c.key] ?? "—"}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              <p className="mt-6 text-xs text-mist">
-                Arasında kaldıysan, iki beden de olur — bedenine güven.
-              </p>
+              {chart.note ? (
+                <p className="mt-6 text-xs text-mist">{chart.note}</p>
+              ) : null}
             </motion.div>
           </>
         )}

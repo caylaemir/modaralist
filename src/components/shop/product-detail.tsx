@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ProductGallery } from "./product-gallery";
 import { ProductActions } from "./product-actions";
+import type { SizeGuideChart } from "./size-guide";
 import type { ShopProduct } from "@/lib/shop";
 
 // Galeri ile aksiyon paneli arasinda secili rengi paylasan istemci sarmalayici.
@@ -12,10 +13,12 @@ export function ProductDetail({
   product,
   locale,
   initialColor,
+  sizeChart,
 }: {
   product: ShopProduct;
   locale: "tr" | "en";
   initialColor?: string | null;
+  sizeChart?: SizeGuideChart | null;
 }) {
   const startColor =
     (initialColor && product.colors.some((c) => c.code === initialColor)
@@ -40,6 +43,7 @@ export function ProductDetail({
           locale={locale}
           initialColorCode={startColor}
           onColorChange={setSelectedColor}
+          sizeChart={sizeChart}
         />
       </div>
     </section>
