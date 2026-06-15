@@ -91,6 +91,11 @@ export default async function CategoryPage({
   const lang = (locale === "en" ? "en" : "tr") as Locale;
 
   // DB'den kategoriyi cek — isActive=false ise 404 (gizli)
+  // children'lerin de torun (grandchildren) ID'lerini cekiyoruz ki her alt
+  // kategorinin "X parça" sayisini TUM alt-agacindan (kendi + cocuklari) +
+  // M:N pivot'tan (ProductCategory) hesaplayalim. Default _count sadece o
+  // kategoriye DIREKT atanmis publishedleri sayar — uc-seviyeli yapida ve
+  // cross-listing varken yanlis sonuc verir.
   const cat = await db.category.findUnique({
     where: { slug: category },
     include: {
@@ -100,7 +105,10 @@ export default async function CategoryPage({
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
         include: {
           translations: { where: { locale: lang } },
-          _count: { select: { products: { where: { status: "PUBLISHED" } } } },
+          children: {
+            where: { isActive: true },
+            select: { id: true },
+          },
           products: {
             where: { status: "PUBLISHED" },
             take: 1,
@@ -119,6 +127,27 @@ export default async function CategoryPage({
     },
   });
   if (!cat || !cat.isActive) notFound();
+
+  // Her alt kategorinin alt-agac (kendi + cocuklari) icin DOGRU urun sayisi:
+  // categoryId DIREKT eslesir VEYA ProductCategory pivot'undan eslesir.
+  // Tek sorgu daha verimli olabilirdi ama paralel countlar yeterince hizli
+  // (en fazla ~6 cocuk) ve kod basit kalir.
+  const childCounts = await Promise.all(
+    cat.children.map(async (child) => {
+      const subtree = [child.id, ...child.children.map((g) => g.id)];
+      const count = await db.product.count({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { categoryId: { in: subtree } },
+            { extraCategories: { some: { categoryId: { in: subtree } } } },
+          ],
+        },
+      });
+      return [child.id, count] as const;
+    })
+  );
+  const productCountByChild = new Map<string, number>(childCounts);
 
   // "Diger kategoriler" — DB'den aktif top-level'lar (deactivate edilen
   // 'polar' gibi eski kategoriler artik gozukmesin).
@@ -290,7 +319,7 @@ export default async function CategoryPage({
                     <div>
                       <p className="display text-xl text-paper md:text-2xl">{name}</p>
                       <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-paper/70">
-                        {child._count.products} parça
+                        {productCountByChild.get(child.id) ?? 0} parça
                       </p>
                     </div>
                     <span aria-hidden className="text-paper">→</span>

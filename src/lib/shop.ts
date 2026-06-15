@@ -401,6 +401,8 @@ export type CategoryWithCover = {
 /**
  * Kategoriler + her birinin kapak gorseli (bannerUrl > ilk publish urunun ilk gorseli).
  * Anasayfa kategori gridi icin tasarlandi — sadece urunu olan kategoriler doner.
+ * Parça sayisi: tum alt-agac (3 seviye) + M:N pivot (ProductCategory) dahil,
+ * urun ID'ye gore dedupe — yani bir urun ayni kategoride iki kez sayilmaz.
  */
 export async function getCategoriesWithCover(
   locale: ShopLocale,
@@ -412,7 +414,13 @@ export async function getCategoriesWithCover(
     take: limit,
     include: {
       translations: { where: { locale } },
-      _count: { select: { products: true } },
+      children: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          children: { where: { isActive: true }, select: { id: true } },
+        },
+      },
       products: {
         where: { status: "PUBLISHED" },
         take: 1,
@@ -429,12 +437,34 @@ export async function getCategoriesWithCover(
     },
   });
 
+  // Her kategori icin alt-agac ID'leri + dogru sayim
+  const counts = await Promise.all(
+    cats.map(async (c) => {
+      const subtree = [
+        c.id,
+        ...c.children.map((ch) => ch.id),
+        ...c.children.flatMap((ch) => ch.children.map((g) => g.id)),
+      ];
+      const count = await db.product.count({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { categoryId: { in: subtree } },
+            { extraCategories: { some: { categoryId: { in: subtree } } } },
+          ],
+        },
+      });
+      return [c.id, count] as const;
+    })
+  );
+  const countById = new Map(counts);
+
   return cats
-    .filter((c) => c._count.products > 0)
+    .filter((c) => (countById.get(c.id) ?? 0) > 0)
     .map((c) => ({
       slug: c.slug,
       name: c.translations[0]?.name ?? c.slug,
-      productCount: c._count.products,
+      productCount: countById.get(c.id) ?? 0,
       coverImage: c.bannerUrl ?? c.products[0]?.images[0]?.url ?? null,
     }));
 }
