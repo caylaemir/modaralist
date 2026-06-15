@@ -48,6 +48,9 @@ const formSchema = z.object({
   selectedColorIds: z.array(z.string()).default([]),
   selectedSizeIds: z.array(z.string()).default([]),
   selectedTagIds: z.array(z.string()).default([]),
+  // Ek kategoriler — ana kategori (categoryId) disinda bu urunun gozukmesi
+  // istenen diger kategori ID'leri.
+  extraCategoryIds: z.array(z.string()).default([]),
   // stockMatrix: object keyed by `${colorId}:${sizeId}` — OR `nocolor:${sizeId}` / `${colorId}:nosize` / "nocolor:nosize"
   stockMatrix: z.record(z.string(), z.coerce.number().int().min(0)).default({}),
 });
@@ -111,6 +114,7 @@ export type ProductFormInitial = {
   slug?: string;
   status?: "DRAFT" | "PUBLISHED" | "ARCHIVED" | "COMING_SOON";
   categoryId?: string | null;
+  extraCategoryIds?: string[];
   collectionId?: string | null;
   basePrice?: number;
   discountPrice?: number | null;
@@ -205,6 +209,7 @@ export function ProductForm({
         selectedColorIds: defaultSelectedColors,
         selectedSizeIds: defaultSelectedSizes,
         selectedTagIds: initial?.tagIds ?? [],
+        extraCategoryIds: initial?.extraCategoryIds ?? [],
         stockMatrix: defaultStockMatrix,
       },
     });
@@ -336,10 +341,17 @@ export function ProductForm({
       }
     }
 
+    // Ek kategorilerden ana kategoriyi disla (cifte kayit anlamsiz, ayrica
+    // mağaza queryside zaten OR yapıyor)
+    const extraCategoryIds = (parsed.extraCategoryIds ?? []).filter(
+      (id) => id && id !== parsed.categoryId
+    );
+
     const payload = {
       slug: parsed.slug,
       status: parsed.status,
       categoryId: parsed.categoryId ? parsed.categoryId : null,
+      extraCategoryIds,
       collectionId: parsed.collectionId ? parsed.collectionId : null,
       basePrice: parsed.basePrice,
       discountPrice: parsed.discountPrice ?? null,
@@ -526,6 +538,29 @@ export function ProductForm({
             />
           </div>
         </div>
+      </section>
+
+      {/* --------- Ek Kategoriler (M:N) --------- */}
+      <section className="border border-line bg-paper p-6">
+        <h2 className="caps-wide text-sm">Ek Kategoriler</h2>
+        <p className="mt-1 text-xs text-mist">
+          Bu ürün <strong>ana kategorisi</strong>nin (yukarıda seçtiğin) dışında
+          gözükmesini istediğin ek kategorileri işaretle. Örnek: bir oversize
+          tişört hem &ldquo;Oversize Adventure&rdquo;da hem &ldquo;Outdoor
+          Kamp&rdquo;ta listelensin. Boş bırakırsan sadece ana kategoride çıkar.
+        </p>
+        <Controller
+          control={control}
+          name="extraCategoryIds"
+          render={({ field }) => (
+            <ExtraCategoriesPicker
+              categories={categories}
+              primaryCategoryId={watch("categoryId") || ""}
+              value={field.value ?? []}
+              onChange={field.onChange}
+            />
+          )}
+        />
       </section>
 
       {/* --------- TR --------- */}
@@ -1219,6 +1254,83 @@ function CategoryCascade({
           </select>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+
+// ---------- Ek Kategoriler Secici ----------
+//
+// Aktif kategorileri 3 seviyeli agaç olarak listeler (top -> sub -> leaf),
+// her birinin yanında checkbox vardır. Ana kategori (primaryCategoryId)
+// gri yazılı + devre dışıdır (zaten orada gözüküyor, ek olarak seçmek
+// gereksiz). 
+function ExtraCategoriesPicker({
+  categories,
+  primaryCategoryId,
+  value,
+  onChange,
+}: {
+  categories: ProductFormCategory[];
+  primaryCategoryId: string;
+  value: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const tops = categories.filter((c) => c.parentId == null);
+
+  function toggle(id: string) {
+    const set = new Set(value);
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    onChange(Array.from(set));
+  }
+
+  function renderNode(node: ProductFormCategory, depth: number): React.ReactNode {
+    const children = categories.filter((c) => c.parentId === node.id);
+    const isPrimary = node.id === primaryCategoryId;
+    const checked = value.includes(node.id);
+    return (
+      <div key={node.id}>
+        <label
+          className={`flex items-center gap-2 py-1 text-sm ${
+            isPrimary ? "text-mist/60" : "cursor-pointer hover:text-ink"
+          }`}
+          style={{ paddingLeft: depth * 16 }}
+        >
+          <input
+            type="checkbox"
+            disabled={isPrimary}
+            checked={isPrimary ? true : checked}
+            onChange={() => !isPrimary && toggle(node.id)}
+            className="size-3.5 shrink-0"
+          />
+          <span>
+            {node.name}
+            {isPrimary ? (
+              <span className="ml-2 text-[10px] uppercase tracking-wider text-mist">
+                · ana kategori
+              </span>
+            ) : null}
+          </span>
+        </label>
+        {children.length > 0 ? (
+          <div>{children.map((c) => renderNode(c, depth + 1))}</div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (tops.length === 0) {
+    return (
+      <p className="mt-3 text-xs text-mist italic">
+        Henuz kategori yok. Once /admin/categories sayfasindan kategori ekle.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-4 grid max-h-[420px] grid-cols-1 gap-x-6 gap-y-1 overflow-y-auto border border-line bg-bone/40 p-4 md:grid-cols-2">
+      {tops.map((t) => renderNode(t, 0))}
     </div>
   );
 }

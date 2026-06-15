@@ -31,6 +31,7 @@ export default async function EditProductPage({
               include: { translations: { where: { locale: "tr" } } },
             },
             tags: { select: { id: true } },
+            extraCategories: { select: { categoryId: true } },
             collections: {
               take: 1,
               select: { collectionId: true },
@@ -147,6 +148,7 @@ export default async function EditProductPage({
             stock: v.stock,
           })),
           tagIds: product.tags.map((t) => t.id),
+          extraCategoryIds: product.extraCategories.map((e) => e.categoryId),
         }}
       />
     </div>

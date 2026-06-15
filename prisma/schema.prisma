@@ -225,6 +225,10 @@ model Category {
   children     Category[]            @relation("CategoryTree")
   translations CategoryTranslation[]
   products     Product[]
+  // M:N — bir urunun "ek" kategorileri (ana kategori product.categoryId; bu
+  // tablo cross-listing icin). Urun ayni anda Outdoor + Oversize'da gozukmek
+  // gibi senaryolar icin.
+  productLinks ProductCategory[]
 }
 
 model CategoryTranslation {
@@ -285,8 +289,27 @@ model Product {
   collections  CollectionProduct[]
   reviews      Review[]
   wishlistedBy WishlistItem[]
+  // M:N — bu urunun ek olarak gozukecegi kategoriler (ana kategori disinda).
+  extraCategories ProductCategory[]
 
   @@index([status, publishedAt])
+}
+
+// Urun <-> Kategori M:N join — bir urun ana kategorisi (Product.categoryId)
+// disinda ek kategorilerde de gozukmek isteyebilir. Ornek: bir oversize tisort
+// hem "Oversize Tshirt Adventure" hem de "Outdoor Kamp"'ta listelenebilir.
+// Mağaza sorgusu (getProductsByCategoryTree) hem categoryId hem bu pivot'tan
+// gelen iliskileri OR'lar ve dedupe eder.
+model ProductCategory {
+  productId  String
+  categoryId String
+  assignedAt DateTime @default(now())
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
 }
 
 model ProductTranslation {

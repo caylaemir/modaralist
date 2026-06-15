@@ -250,12 +250,20 @@ export async function getProductsByCategoryTree(
     for (const grand of child.children) ids.push(grand.id);
   }
 
+  // Ana kategorisi bu agacin icindekiler VEYA pivot tablodan ek kategori
+  // ataniyor olanlar — biri OR diğeri ile ayni urun gelebilir, distinct() ile
+  // dedupe. Boylece bir urun hem Outdoor hem Oversize gibi cross-listing'de
+  // gozukur ama tek satir olarak doner.
   const products = await db.product.findMany({
     where: {
       status: { in: ["PUBLISHED", "COMING_SOON"] },
-      categoryId: { in: ids },
+      OR: [
+        { categoryId: { in: ids } },
+        { extraCategories: { some: { categoryId: { in: ids } } } },
+      ],
     },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    distinct: ["id"],
     include: productInclude,
   });
   return products.map((p) => mapProduct(p as ProductWithRelations, locale));

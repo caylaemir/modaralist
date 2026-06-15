@@ -71,6 +71,8 @@ const productInputSchema = z.object({
   images: z.array(imageSchema).default([]),
   variants: z.array(variantSchema).default([]),
   tagIds: z.array(z.string()).default([]),
+  // Ek kategori ID'leri — ana kategoriyle birlikte bu kategorilerde de listelenir.
+  extraCategoryIds: z.array(z.string()).default([]),
   // Koleksiyon: admin form'da secilirse direkt o ID kullanilir.
   // null/bos -> tarih bazli auto-assign (mart-mayis -> ilkbahar vs.)
   collectionId: z.string().optional().nullable(),
@@ -275,6 +277,20 @@ export async function createProduct(rawInput: ProductInput) {
         },
       });
 
+      // Ek kategoriler (M:N pivot). Ana kategoriyi disla (cifte kayit anlamsiz).
+      const extras = input.extraCategoryIds.filter(
+        (cid) => cid && cid !== input.categoryId
+      );
+      if (extras.length > 0) {
+        await tx.productCategory.createMany({
+          data: extras.map((categoryId) => ({
+            productId: created.id,
+            categoryId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
       await attachToCollection(tx, created.id, input.collectionId, new Date());
       return created;
     })
@@ -382,6 +398,18 @@ export async function updateProduct(id: string, rawInput: ProductInput) {
         },
       },
     });
+
+    // 5b. Ek kategoriler (M:N) — eskisini sil, yenisini yarat
+    await tx.productCategory.deleteMany({ where: { productId: id } });
+    const extras = input.extraCategoryIds.filter(
+      (cid) => cid && cid !== input.categoryId
+    );
+    if (extras.length > 0) {
+      await tx.productCategory.createMany({
+        data: extras.map((categoryId) => ({ productId: id, categoryId })),
+        skipDuplicates: true,
+      });
+    }
 
     // 6. Koleksiyon: form'da secilmisse direkt, yoksa tarih bazli auto.
     // (Update'te urunun createdAt'ini kullaniyoruz — yeni urun degil.)
